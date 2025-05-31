@@ -1,7 +1,7 @@
 # SWP391_BenhVien
 
 ## Tech 
-Frontend: ReactJS, Vite
+Frontend: ReactJS, Vite <br> 
 Backend: NodeJS/Express
 
 **Tracking, UC list**
