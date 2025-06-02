@@ -4,7 +4,7 @@
 Frontend: ReactJS, Vite <br> 
 Backend: NodeJS/Express
 
-**Steps to run**
+**Steps to run** <br>
 b1: cd backend <br>
 b2: npm i <br>
 b3: npm start
