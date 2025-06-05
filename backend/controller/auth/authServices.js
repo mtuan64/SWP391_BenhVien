@@ -1,7 +1,7 @@
 const User = require("../../models/User");
 
 //[POST] /api/login
-module.exports.login = async (req, res) => {
+module.exports.Login = async (req, res) => {
   try {
     const { username, password } = req.body;
     if (!username || !password) {
