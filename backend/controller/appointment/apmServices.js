@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const Employee = mongoose.model('Employee');
+const Employee = require('../../models/Employee');
 const bcrypt = require('bcrypt');
 const asyncHandler = require('express-async-handler');
 
