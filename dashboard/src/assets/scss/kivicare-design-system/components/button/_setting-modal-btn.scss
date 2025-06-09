@@ -1,0 +1,13 @@
+.setting-modal{
+    .btn.btn-primary{
+         background-color: transparent;
+         font-weight: 500;
+         color: var(--bs-body-color);
+         margin-top: 2px;
+    }
+}
+.setting-close-btn{
+    position: absolute;
+    right: -35px;
+    top: -35px;
+}

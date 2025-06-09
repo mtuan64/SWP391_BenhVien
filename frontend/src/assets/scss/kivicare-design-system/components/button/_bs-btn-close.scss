@@ -1,0 +1,14 @@
+.btn-close {
+    @include border-radius($border-radius-sm);
+}
+
+.btn-check:checked + .btn, 
+:not(.btn-check) + .btn:active, 
+.btn:first-child:active, 
+.btn.active, .btn.show {
+    border: none;
+}
+
+.btn-close:focus {
+    box-shadow: none;
+}

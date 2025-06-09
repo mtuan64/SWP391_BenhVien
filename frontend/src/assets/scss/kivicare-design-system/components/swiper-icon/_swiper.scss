@@ -1,0 +1,126 @@
+.swiper-pagination-bullets-dynamic .swiper-pagination-bullet-active-prev,
+.swiper-pagination-bullets-dynamic .swiper-pagination-bullet-active-prev-prev,
+.swiper-pagination-bullets-dynamic .swiper-pagination-bullet,
+.swiper-pagination-bullets-dynamic .swiper-pagination-bullet-active-next,
+.swiper-pagination-bullets-dynamic .swiper-pagination-bullet-active-next-next {
+  transform: scale(1) !important;
+}
+
+.swiper-pagination {
+  position: static !important;
+  width: 100% !important;
+  text-align: center !important;
+  margin-top: 1em !important;
+}
+
+// swiper arrow button
+.swiper-button-next,
+.swiper-button-prev {
+  background-color: var(--#{$variable-prefix}primary) !important;
+  color: $white !important;
+  height: 40px !important;
+  width: 40px !important;
+
+  &:after {
+    font-size: 12px !important;
+  }
+}
+
+.testimonial-section {
+
+  .swiper-button-next,
+  .swiper-button-prev {
+    background-color: var(--#{$variable-prefix}secondary) !important;
+  }
+}
+
+.arrow-joint {
+  width: 110px;
+  height: 45px;
+
+  .swiper-button-next {
+    right: 0 !important;
+  }
+
+  .swiper-button-prev {
+    left: 0 !important;
+  }
+}
+
+.bg-primary,
+.bg-secondary {
+
+  .swiper-button-next,
+  .swiper-button-prev {
+    background-color: $white !important;
+    color: var(--#{$variable-prefix}primary) !important;
+  }
+}
+
+
+// swiper pagination
+.swiper-pagination-bullet {
+  height: 10px !important;
+  width: 10px !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  border: 1px solid var(--#{$variable-prefix}primary) !important;
+  opacity: 1 !important;
+}
+
+.swiper-pagination-bullet-active {
+  background: var(--#{$variable-prefix}primary) !important;
+}
+
+.bg-primary,
+.bg-secondary {
+  .swiper-pagination-bullet {
+    border-color: $white !important;
+  }
+
+  .swiper-pagination-bullet-active {
+    background: $white !important;
+  }
+}
+
+#testimonial-one-slider {
+  position: relative;
+
+  .slider-circle-btn {
+    .swiper-button {
+      width: 30px;
+      height: 30px;
+      position: absolute;
+
+      &.swiper-button-next {
+        right: 0.2rem;
+        left: auto;
+        top: 45%;
+        background: var(--#{$variable-prefix}primary);
+        border-radius: 5rem;
+
+        &:after {
+          content: 'next';
+          font-size: 0.75rem;
+          ;
+          color: $white;
+        }
+      }
+
+      &.swiper-button-prev {
+        &:after {
+          content: 'prev';
+          font-size: 0.75rem;
+          ;
+          color: $white;
+        }
+
+        right:auto;
+        left: 0.2rem;
+        top: 45%;
+        background: var(--#{$variable-prefix}primary);
+        border-radius: 5rem;
+      }
+    }
+  }
+}

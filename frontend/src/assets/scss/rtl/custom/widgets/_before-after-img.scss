@@ -1,0 +1,25 @@
+.before-after-container {
+    .before-after-image {
+        object-position: right;
+    }
+
+    .before-after-slider-line {
+        left: auto;
+        right: var(--position);
+        transform: translateX(50%);
+    }
+
+    .before-after-slider-button {
+        left: auto;
+        right: var(--position);
+        transform: translate(50%, -50%);
+
+        &::before {
+            content: "\f054";
+        }
+
+        &::after {
+            content: "\f053";
+        }
+    }
+}

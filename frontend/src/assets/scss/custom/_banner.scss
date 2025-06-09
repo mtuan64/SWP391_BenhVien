@@ -1,0 +1,331 @@
+// general doctor banner start
+.banner-one-app {
+  padding: 1.875em 0 8.125em 0;
+  .scrolling-text {
+    .iq-title {
+      font-size: 180px;
+      color: #171c2614;
+    }
+  }
+
+  .banner-img {
+    z-index: 1;
+  }
+}
+// general doctor banner end
+
+// Dentist Banner  start
+.banner-dentist-page {
+  padding: 6.25rem 0;
+  .icon-box-right {
+    padding: 20px 15px 20px 15px;
+    background-color: #171c26;
+    border-radius: 3.125em 0 0 3.125em;
+    right: -6.25em;
+    bottom: 0;
+    width: 27.875rem;
+  }
+  .iq-icon-box {
+    &.column {
+      .icon-box-title {
+        font-size: 12px;
+        color: var(--bs-white);
+        letter-spacing: 2px;
+      }
+      .icon-box-desc {
+        font-size: 18px;
+        font-weight: 500;
+        line-height: 30px;
+        color: var(--bs-white);
+        margin-bottom: 0;
+      }
+    }
+  }
+}
+// Dentist Banner  end
+
+// skin-specialist banner start
+.skin-specialist-banner {
+  background-image: linear-gradient(90deg, #fbeef1 50%, #fcdee4 50%);
+  .banner-image {
+    img {
+      width: 90%;
+      margin-left: -150px;
+    }
+  }
+  .banner-right-text {
+    .scrolling-text {
+      top: 45%;
+      left: auto;
+      right: -120px;
+      transform: rotate(90deg) translateY(-45%) !important;
+      color: #fdeef1;
+      z-index: 0;
+    }
+  }
+}
+// skin-specialist banner end
+
+// fertility clinic banner start
+.frtility-clinic-banner {
+  .section-top {
+    padding: 70px 100px 100px 100px;
+    background-color: #151c24;
+  }
+  .banner-margin-top {
+    margin-top: -200px;
+  }
+}
+// fertility clinic banner end
+
+// ENT clinic banner start
+.ent-clinic-banner {
+  padding: 7.5rem 1rem;
+}
+
+.banner-info-details {
+  width: 443px;
+}
+
+@media (max-width: 1664px) {
+  .frtility-clinic-banner {
+    .banner-margin-top {
+      margin-top: -142px;
+    }
+  }
+}
+
+@media (max-width: 1519px) {
+  .frtility-clinic-banner {
+    .banner-margin-top {
+      margin-top: -120px;
+    }
+  }
+}
+
+@media (max-width: 1430px) {
+  .frtility-clinic-banner {
+    .banner-margin-top {
+      margin-top: -100px;
+    }
+  }
+}
+
+@include media-breakpoint-down(xxl) {
+  .frtility-clinic-banner {
+    .banner-margin-top {
+      margin-top: -60px;
+    }
+  }
+}
+
+@media (max-width: 1024px) {
+  .banner-one-app {
+    padding: 3.125em 0 6.125em 0;
+  }
+
+  .ent-clinic-banner {
+    padding: 6.125em 1em;
+  }
+}
+
+@media (max-width: 991px) {
+  .frtility-clinic-banner {
+    .section-top {
+      padding: 50px 30px 100px 30px;
+    }
+  }
+}
+
+@media (max-width: 767px) {
+  .frtility-clinic-banner {
+    .section-top {
+      padding: 50px 16px 100px 16px;
+    }
+  }
+
+  .banner-one-app {
+    padding: 3.125rem 0;
+  }
+
+  .banner-info-details {
+    width: 100%;
+  }
+
+  .ent-clinic-banner {
+    padding: 3.125em 0;
+  }
+}
+
+@include media-breakpoint-down(xl) {
+  .skin-specialist-banner {
+    .banner-image {
+      img {
+        margin-left: 0;
+      }
+    }
+
+    .banner-right-text {
+      display: none;
+    }
+  }
+}
+
+@include media-breakpoint-down(lg) {
+  .banner-dentist-page {
+    padding: 4.375rem 0;
+
+    .icon-box-right {
+      display: none;
+    }
+
+    .col-lg-2 {
+      display: none;
+    }
+  }
+
+  .skin-specialist-banner {
+    padding: 4rem 0 0;
+    text-align: center;
+    background-image: linear-gradient(90deg, #fbeef1 100%, #fcdee4 50%);
+
+    .banner-image {
+      text-align: center;
+    }
+  }
+
+  .product-home-banner {
+    background-size: 0 !important;
+  }
+}
+
+@include media-breakpoint-down(sm) {
+  .banner-dentist-page {
+    padding: 3.125rem 0;
+  }
+
+  .padding-top-60 {
+    padding-top: 2em;
+  }
+}
+
+// ent clinic
+.ent-titleslider {
+  width: 45%;
+  top: 50px;
+  right: 0;
+  .title-box-slider {
+    &::before {
+      border-color: rgba(0, 0, 0, 0) rgba(0, 0, 0, 0)
+        var(--#{$variable-prefix}secondary) rgba(0, 0, 0, 0);
+    }
+    .text-slider-content {
+      .iq-title {
+        color: var(--bs-white);
+      }
+      .iq-title-desc {
+        color: var(--bs-white);
+      }
+    }
+  }
+}
+
+//  psychiatrist Home Banner start
+.psychiatrist-banner-img {
+  left: 168px;
+}
+.p-50-100 {
+  padding: 50px 100px;
+}
+@media (max-width: 1024px) {
+  .p-50-100 {
+    padding: 30px;
+  }
+}
+@media (max-width: 767px) {
+  .img-w-100 {
+    width: 100%;
+  }
+}
+//  psychiatrist Home Banner end
+
+// paediatrician Home Banner Start
+.paediatrician-banner {
+  z-index: 1;
+}
+
+.background-overlay {
+  background-color: transparent;
+  background-image: linear-gradient(270deg, var(--bs-white) 13%, #ffffff00 60%);
+  opacity: 1;
+}
+
+.margin-bottom-165 {
+  margin-bottom: 165px;
+}
+
+@media (max-width: 1024px) {
+  .margin-bottom-165 {
+    margin-bottom: 50px;
+  }
+}
+
+@media (max-width: 1024px) {
+  .margin-bottom-165 {
+    margin-bottom: 30px;
+  }
+}
+
+.cardiac-banner {
+  .shape-deliver-truck {
+    border-radius: 0 50px 50px 0;
+  }
+
+  .banner-pattern-reverse {
+    transform: scale(-1);
+  }
+}
+
+.cardiac-title-slider {
+  width: 35%;
+}
+// paediatrician Home Banner End
+
+// Orthopedics Banner start
+.banner-orthopedics {
+  background: linear-gradient(
+    to right,
+    rgba(var(--bs-primary-rgb), 0.1) 60%,
+    var(--bs-secondary) 40%
+  );
+
+  .orth-scrolling-text {
+    font-size: 200px;
+    color: #0d548b;
+    transform: rotate(90deg) translate(-214%, 0%) !important;
+  }
+
+  .orth-scrolling-text {
+    .scrolling-text {
+      font-size: 200px;
+      color: rgba(var(--bs-primary-rgb), 0.1);
+    }
+  }
+
+  .opening-time{
+    right: 47%;
+  }
+}
+
+@media (max-width: 1600px){
+  .banner-orthopedics .opening-time{
+    display: none;
+  }
+}
+
+@media (max-width: 991px){
+  .banner-orthopedics{
+    background: rgba(var(--bs-primary-rgb), 0.1);
+  }
+}
+// Orthopedics Banner End

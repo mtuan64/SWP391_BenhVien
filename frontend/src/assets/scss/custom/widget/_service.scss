@@ -1,0 +1,228 @@
+/*==============
+service-menu
+==================*/
+.service-menu {
+  li {
+    a {
+      font-family: $font-family-monospace;
+      background-color: $white;
+      color: $headings-color;
+
+      .icon {
+        font-size: $font-size-sm;
+      }
+    }
+  }
+}
+
+.service-menu {
+  li {
+    a {
+
+      &:hover,
+      &.active {
+        background-color: var(--#{$variable-prefix}primary);
+        color: $white;
+      }
+    }
+  }
+}
+
+// service page
+.service-box-bg {
+  background: -webkit-gradient(linear, left top, right top, from(rgba(var(--bs-primary-rgb), 0.1)), color-stop(60%, rgba(var(--bs-primary-rgb), 0.1)), color-stop(60%, var(--#{$variable-prefix}primary)), to(var(--#{$variable-prefix}primary)));
+
+  &::after {
+    position: absolute;
+    content: "";
+    top: -10rem;
+    bottom: 0;
+    left: auto;
+    right: 3rem;
+    background: url("/assets/images/pages/service-vector.png") right center no-repeat;
+    width: 100%;
+    transition: all .5s ease 0s;
+  }
+}
+
+@media (max-width:991px) {
+  .service-box-bg {
+    background: rgba(var(--bs-primary-rgb), 0.1);
+
+    &::after {
+      content: none;
+    }
+  }
+}
+
+// service box style
+.service-blog {
+  .service-img {
+    transition: all .5s ease-in-out;
+  }
+
+  &:hover {
+    .service-img {
+      transform: scale(1.2);
+    }
+  }
+
+  .service-box-icon {
+    background-color: #111a31;
+    height: 80px;
+    line-height: 80px;
+    width: 80px;
+    right: 50px;
+    bottom: 40px;
+
+    img {
+      height: 40px;
+      width: 40px;
+    }
+  }
+}
+
+// service slider
+.iq-service-slide {
+  background: rgba(var(--bs-secondary-rgb), 0.1);
+  border-radius: 200px;
+  padding: 112px 32px;
+  position: relative;
+  transition: all 0.5s ease-in-out;
+  overflow: hidden;
+  text-align: center;
+
+  &::before {
+    content: ' ';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-repeat: no-repeat;
+    background-size: cover;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 0;
+    opacity: 0;
+    transition: all 0.5s ease-in-out;
+    background-image: url('/assets/images/service/service-bg.png');
+  }
+
+  .service-content {
+    z-index: 1;
+  }
+
+  .service-img {
+    img {
+      margin-bottom: 50px;
+      transition: all 0.5s ease-in-out;
+      width: 74.13px;
+      height: 95px;
+      display: inline-block;
+      opacity: 1;
+    }
+
+    .img-hover {
+      opacity: 0;
+      position: absolute;
+      left: 0;
+    }
+  }
+}
+
+.iq-service-slide:hover {
+  background: var(--bs-secondary);
+
+  .service-title,
+  .service-desc,
+  .iq-btn-link {
+    color: $white;
+  }
+
+  &::before {
+    opacity: 1;
+  }
+
+  .service-img {
+    img {
+      opacity: 0;
+    }
+
+    .img-hover {
+      opacity: 1;
+    }
+  }
+}
+
+.service-creative {
+  .service-cat {
+    font-size: .875rem;
+  }
+}
+/*============================
+Service Slider Side Content
+==================================*/
+@media (min-width: 1200px) {
+  .iq-service-slider {
+    .service-box-side-content {
+      .service-image {
+        width: 327px;
+        min-height: 360px;
+
+        .service-img {
+          object-fit: cover;
+        }
+      }
+
+      .service-content-wrapper {
+        display: none;
+        animation: animate-slide-out;
+        animation-duration: 1.5s;
+
+        .service-content-inner {
+          min-height: 100%;
+        }
+      }
+    }
+
+    .swiper-slide-active {
+      .service-box-side-content {
+        min-height: 100%;
+
+        .service-image {
+          width: 50%;
+          min-width: 50%;
+        }
+
+        .service-content-wrapper {
+          display: block;
+        }
+      }
+    }
+  }
+}
+
+/**********Animation***************/
+@keyframes animate-slide-out {
+  0% {
+    clip-path: inset(0 100% 0 0);
+    -webkit-clip-path: inset(0 100% 0 0);
+  }
+
+  100% {
+    clip-path: inset(0 0 0 0);
+    -webkit-clip-path: inset(0 0 0 0);
+  }
+}
+
+@keyframes animate-slide-in {
+  0% {
+    clip-path: inset(0 0 0 100%);
+    -webkit-clip-path: inset(0 0 0 100%);
+  }
+
+  100% {
+    clip-path: inset(0 0 0 0);
+    -webkit-clip-path: inset(0 0 0 0);
+  }
+}

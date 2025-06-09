@@ -1,0 +1,78 @@
+header {
+    .navbar {
+        .iq-nav-menu {
+            &.navbar-nav {
+                li {
+                    ul {
+                        &.sub-nav {
+                            li {
+                                a {
+                                    &.nav-link {
+                                        &::after {
+                                            left: auto;
+                                            right: 15px;
+                                        }
+
+                                        .menu-icon {
+                                            right: auto;
+                                            left: 15px;
+                                            transform: translateY(-50%)scale(-1);
+                                        }
+                                    }
+
+                                    &.active {
+                                        padding-left: 25px;
+                                        padding-right: 35px;
+                                    }
+                                }
+
+                                &:hover {
+                                    >a.nav-link {
+                                        padding-left: 25px;
+                                        padding-right: 35px;
+
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    a {
+                        &.nav-link {
+                            .menu-icon {
+                                margin-left: 0;
+                                margin-right: 2px;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    &.header-dentist {
+        .navbar {
+            .horizontal-nav {
+                .iq-nav-menu>{
+                    .nav-item{
+                        &:first-child {
+                            >.nav-link {
+                                padding-left: 20px;
+                                padding-right: 0;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+nav {
+    .nav-item {
+        .dropdown-search {
+            .input-group-text {
+                padding: $input-group-addon-padding-y 0 $input-group-addon-padding-y $input-group-addon-padding-x;
+            }
+        }
+    }
+}

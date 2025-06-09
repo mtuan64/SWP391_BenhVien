@@ -1,0 +1,165 @@
+#back-to-top{
+    .top{
+        right: auto;
+        left: 1.563rem;
+    }
+} 
+
+.section-service-box {
+    background: linear-gradient(to left,
+        #fef5f5 0%,
+        #fef5f5 60%,
+        var(--#{$variable-prefix}secondary) 60%,
+        var(--#{$variable-prefix}secondary) 100%);
+
+    &::after {
+        right: auto;
+        left: 3rem;
+    }
+
+    &.bg-light-dentist {
+        background: linear-gradient(to left,
+            rgba(var(--bs-primary-rgb), 0.1) 0%,
+            rgba(var(--bs-primary-rgb), 0.1) 60%,
+            var(--#{$variable-prefix}primary) 60%,
+            var(--#{$variable-prefix}primary) 100%);
+    }
+}
+
+.bg-dentist-light {
+    background: linear-gradient(to left,
+    var(--bs-white) 0%,
+    var(--bs-white) 50%,
+    rgba(var(--bs-primary-rgb), 0.1) 50%,
+    rgba(var(--bs-primary-rgb), 0.1) 100%);
+}
+
+.eyes-carebg-right {
+    background: linear-gradient(to left,
+            var(--bs-white) 0%,
+            var(--bs-white) 50%,
+            var(--bs-primary) 50%,
+            var(--bs-primary) 100%);
+}
+
+.iq-box-right-border {
+    border-left: var(--bs-border-width) var(--bs-border-style) var(--bs-border-color);
+    border-right: none;
+}
+
+.rtl-image-flip {
+    transform: scalex(-1);
+
+    .rtl-image-flip-container {
+        transform: scalex(-1);
+    }
+}
+
+.custom-border-right {
+    .box-custom-border {
+      &:nth-child(odd) {
+        &::before {
+          left: 30px;
+          right: auto;
+        }
+      }
+    }
+}
+
+input[type="tel"] {
+    direction: rtl;
+}
+
+.section-why-choose {
+    .container {
+        padding-left: calc(var(--bs-gutter-x)*.5);
+        padding-right: 180px;
+    }
+}
+
+.list-inline-item {
+    display: inline-block;
+
+    &:not(:last-child) {
+        margin-right: 0;
+        margin-left: $list-inline-padding;
+    }
+}
+
+.bg-dentist-dark {
+    background: linear-gradient(to right,
+        var(--bs-white) 0%,
+        var(--bs-white) 50%,
+        var(--#{$variable-prefix}primary) 50%,
+        var(--#{$variable-prefix}primary) 100%);
+}
+
+.ent-clinic-service {
+    &::after {
+        left: 3rem;
+        right: auto;
+        transform: rotate(0)scaleX(-1);
+    }
+
+    &:hover {
+        &::after {
+            transform: rotate(-5deg)scaleX(-1);
+        }
+    }
+}
+
+.paediatricin-service {
+    .service-bg {
+        left: 50px;
+        right: auto;
+    }
+}
+
+.iq-about-banner-image{
+    left: auto;
+    right: 200px;
+}
+
+@media (max-width: 1199px) {
+    .section-why-choose {
+        .container {
+            padding-right: calc(var(--bs-gutter-x)*.5);
+        }
+    }
+}
+
+@media (max-width: 991px) {
+    .iq-box-right-border {
+        border-left: none;
+    }
+}
+
+@include media-breakpoint-down(lg) {
+    .section-service-box {
+        background: linear-gradient(to left,
+            #fef5f5 0%,
+            #fef5f5 100%,
+            var(--#{$variable-prefix}secondary) 60%,
+            var(--#{$variable-prefix}secondary) 100%);
+
+        &.bg-light-dentist {
+            background: linear-gradient(to left,
+                rgba(var(--bs-primary-rgb), 0.1) 0%,
+                rgba(var(--bs-primary-rgb), 0.1) 100%,
+                var(--#{$variable-prefix}primary) 60%,
+                var(--#{$variable-prefix}primary) 100%);
+        }
+    }
+
+    .bg-dentist-dark {
+        background: var(--bs-primary);
+    }
+
+    .eyes-carebg-right {
+        background: linear-gradient(to left,
+                var(--bs-white) 0%,
+                var(--bs-white) 100%,
+                var(--bs-primary) 50%,
+                var(--bs-primary) 100%);
+    }
+}

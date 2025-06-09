@@ -1,0 +1,116 @@
+// form textarea.form-control {
+//     height: 92px !important;
+//     resize: none !important;
+// }
+
+// .custom-choicejs {
+
+.choices__inner,
+.choices[data-type*=select-one] .choices__inner {
+    padding: .782rem 3rem .782rem 1rem;
+    line-height: 1.5;
+}
+
+.choices[data-type*=select-one]::after {
+    right: 1rem;
+}
+
+// }
+
+[data-bs-theme=dark] {
+    .flatpickr-day:hover {
+        color: #393939;
+    }
+
+    .custom-text-dark {
+        color: #fff;
+    }
+
+    .list-group-item-action:hover {
+        background-color: #0000 !important;
+        color: #fff !important;
+    }
+}
+
+.sidebar-base .nav-item .nav-link.active {
+    color: var(--bs-primary);
+}
+
+.leaflet-right,
+.leaflet-left,
+.leaflet-top {
+    z-index: 400 !important;
+}
+
+.card-profile-progress .card-img {
+    top: 1.5rem !important;
+    right: unset !important;
+}
+
+nav[aria-label="breadcrumb"]._svgIcon_1bp37_4 {
+    .breadcrumb {
+        margin-bottom: unset !important;
+    }
+}
+
+[dir="rtl"] {
+    .breadcrumb-item+.breadcrumb-item::before {
+        float: right;
+        padding-right: var(--bs-breadcrumb-item-padding-x);
+        color: var(--bs-breadcrumb-divider-color);
+        content: var(--bs-breadcrumb-divider, "/");
+        margin-left: 4px;
+    }
+
+    .breadcrumb-item+.breadcrumb-item {
+        padding-left: unset !important;
+    }
+
+    .custom-rtl-dropdown {
+        flex-direction: row-reverse !important;
+    }
+
+    .card .card-body .iq-media-group-1 .iq-media-1:first-child {
+        margin-left: -1.25rem !important;
+    }
+
+    .choices[data-type*=select-one]::after {
+        right: unset;
+        left: 1rem;
+    }
+    .choices__inner, .choices[data-type*=select-one] .choices__inner {
+        padding: 0.782rem 1rem 0.782rem 3rem;
+    }
+
+    #datatable_filter {
+        float: left;
+    }
+
+    .sidebar .logo-main .logo-normal.dark-normal{
+        transform: translateX(130px) !important;
+    }
+
+    .sidebar.sidebar-mini .logo-main .logo-mini.dark-mini {
+    transform: translateX(86px) !important;
+
+    .sidebar.sidebar-mini .logo-main .logo-mini{
+        transform: translateX(61px) !important;
+    }
+}
+}
+
+.signup-rtl-space {
+    margin-right: 0.5rem !important;
+}
+
+[data-bs-theme=dark] .sidebar .logo-main .logo-normal.dark-normal{
+    transform: translateX(-130px);
+}
+
+[data-bs-theme=dark] .sidebar.sidebar-mini .logo-main .logo-mini.dark-mini {
+    transform: translateX(-141px);
+}
+
+.sidebar.sidebar-mini .logo-mini {
+    transform: translateX(-112px);
+}

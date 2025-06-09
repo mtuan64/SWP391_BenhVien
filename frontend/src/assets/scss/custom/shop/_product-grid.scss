@@ -1,0 +1,85 @@
+.iq-product-box {
+  margin: 0 0 64px;
+
+  .iq-button-holder {
+    position: absolute;
+    left: 50%;
+    top: auto;
+    bottom: 1rem;
+    transform: translate(-50%, -50%) scale(0);
+    opacity: 0;
+    transition: all 0.7s ease-in-out;
+
+    a {
+      color: $headings-color;
+
+      &:hover {
+        color: var(--bs-primary);
+      }
+    }
+  }
+
+  &:hover {
+    .iq-button-holder {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+    }
+  }
+
+  &.product-list {
+    .iq-button-holder {
+      left: auto;
+      right: 0;
+      top: 1rem;
+      bottom: auto;
+      transform: inherit;
+    }
+
+    .quick-view {
+      a {
+        height: 2.5em;
+        width: 2.5em;
+        line-height: 2.5em;
+        text-align: center;
+        display: inline-block;
+      }
+    }
+
+    .list-buttons {
+      .wish-list {
+        a {
+          width: 2.75em;
+          height: 2.75em;
+          line-height: 2.75em;
+          text-align: center;
+          display: inline-block;
+        }
+      }
+    }
+
+    &:hover {
+      .iq-button-holder {
+        transform: translateX(-41%);
+      }
+    }
+  }
+}
+
+.iq-on-new {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+}
+
+.iq-on-sale {
+  position: absolute;
+  top: 1rem;
+  left: auto;
+  right: 1rem;
+}
+
+@media (max-width:767px) {
+  .iq-product-box {
+    margin: 0 0 30px;
+  }
+}

@@ -1,0 +1,102 @@
+/* ------------------------
+Rtl Box & Color Customizer
+----------------------------- */
+.rtl-box {
+  position: fixed;
+  max-width: 250px;
+  top: 15rem;
+  right: 0;
+  z-index: 1000;
+
+
+
+
+  .modes {
+    margin: 0;
+  }
+
+  .modes {
+    .cutomizer-button {
+      cursor: pointer;
+      display: block;
+      border: 0.063em solid var(--bs-border-color);
+      color: var(--bs-body-color);
+      text-align: center;
+      font-weight: 500;
+      padding: .5em 1em;
+      transition: all 400ms ease;
+
+      &.active,
+      &:hover {
+        background: var(--bs-primary);
+        color: var(--bs-white);
+        border-color: var(--bs-primary);
+      }
+    }
+
+    .btn-check {
+      &:checked {
+        +.cutomizer-button {
+          background: var(--bs-primary);
+          color: var(--bs-white);
+          border-color: var(--bs-primary);
+        }
+      }
+    }
+  }
+
+}
+
+.offcanvas {
+  &.live-customizer {
+    background: var(--bs-white);
+    border-left: none;
+    height: auto;
+    top: 15rem;
+    bottom: auto;
+    width: 18rem;
+    box-shadow: $box-shadow;
+
+    .btn-close {
+      display: inline-block;
+      padding: 0;
+      background-image: none;
+      background-color: var(--bs-danger);
+      color: var(--bs-white);
+      width: 25px;
+      height: 25px;
+      line-height: 25px;
+      opacity: 1;
+      position: absolute;
+      left: -0.8em;
+      top: -0.1em;
+      filter: none !important;
+      font-size: .8125rem;
+  
+      &:active {
+        background-color: var(--bs-danger);
+        color: var(--bs-white);
+      }
+  
+      &:hover {
+        border-color: transparent;
+      }
+    }
+  
+    .rtl-btn {
+      &:focus {
+        outline: none;
+        box-shadow: none;
+      }
+    }
+  }
+}
+
+.reset-tooltip {
+  --bs-tooltip-bg: var(--bs-primary);
+  --bs-tooltip-color: var(--bs-white);
+}
+
+/* ------------------------
+  Rtl Box & Color Customizer
+  ----------------------------- */

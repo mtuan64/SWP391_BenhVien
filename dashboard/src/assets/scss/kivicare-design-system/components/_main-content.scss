@@ -1,0 +1,12 @@
+.content-inner {
+    padding: calc(var(--bs-gutter-x, 1rem) * 2);
+    .head-title{
+        line-height: 0;
+    }
+}
+
+@include media-breakpoint-down(md) {
+    .content-inner {
+        padding: calc(var(--bs-gutter-x, 1rem) * 2);
+    }
+}

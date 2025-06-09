@@ -1,0 +1,14 @@
+.iq-product-box {
+    &.product-list {
+        .iq-button-holder {
+            right: auto;
+            left: 0;
+        }
+
+        &:hover {
+            .iq-button-holder {
+                transform: translateX(41%);
+            }
+        }
+    }
+}

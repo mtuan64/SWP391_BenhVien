@@ -1,0 +1,10 @@
+.testimonial-standard-with-seprator-wrapper{
+    &.swiper-container-horizontal{
+        .swiper-pagination-bullets{
+            &.swiper-pagination-bullets-dynamic{
+                right: auto;
+                left: 0;
+            }
+        }
+    }
+} 

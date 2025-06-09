@@ -1,0 +1,101 @@
+.iq-price-box {
+    &.iq-price-box-standard {
+        .price-heading {
+            .iq-price-title {
+                letter-spacing: 0.063rem;
+                color: var(--bs-body-color);
+            }
+        }
+        .iq-price-body {
+            .iq-price-service {
+                li {
+                    i {
+                        color: var(--bs-primary);
+                    }
+                }
+            }
+        }
+        &.bg-primary {
+            .price-heading {
+                .iq-price-title {
+                   color: var(--bs-white);
+                }
+                .iq-price {
+                    color: var(--bs-white); 
+                }                
+            }
+            .iq-price-body {
+                .iq-price-service {
+                    li {
+                        i {
+                            color: var(--bs-white);
+                        }
+                    }
+                }
+            }
+            .iq-btn-container {
+                .iq-button {
+                    background-color: var(--bs-white);
+                    color: var(--bs-primary);
+                }
+            }
+        }
+    }
+
+    &.iq-price-box-tab {
+        .iq-price-header {
+            padding: 40px;
+            border-radius: 15px 15px 0 0;
+        }
+
+        .iq-price-body {
+            padding: 40px;
+            border-radius: 0 0 15px 15px;
+        }
+
+        .iq-price-footer {
+            padding: 0 40px 40px 60px;
+            border-radius: 0 0 15px 15px;
+        }
+    }
+}
+
+.iq-pricetable-tabs {
+    .nav {
+        min-width: 100px;
+        color: var(--bs-body-color);
+        padding: 0.25rem;
+
+        .nav-link{
+            color: var(--bs-body-color);
+            display: inline-block !important;
+
+            &:hover,&:focus{
+                color: var(--bs-primary);
+            }
+
+            &.active{
+                color: $white;
+            }
+        }
+    }
+
+    .nav-tunnel {
+        .nav-link {
+            padding: 0.25rem 1rem;
+            border-radius: 50px;
+        }
+    }
+}
+
+@media (max-width: 767px){
+    .iq-price-box {
+        &.iq-price-box-standard {
+            .price-heading {
+                .iq-price-title {
+                    font-size: 14px;
+                }
+            }
+        }
+    }
+}

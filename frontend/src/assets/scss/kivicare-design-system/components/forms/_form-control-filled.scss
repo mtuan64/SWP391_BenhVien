@@ -1,0 +1,23 @@
+.form-group-filled{
+    .input-group-text, .form-control {
+        background-color: var(--#{$variable-prefix}body-bg);
+    }
+}
+
+.input-group {
+    > .form-control {
+        &:focus {
+            z-index: inherit;
+        }
+    }
+    > .form-select {
+        &:focus {
+            z-index: inherit;
+        } 
+    }
+    > .form-floating {
+        &:focus-within {
+            z-index: inherit;
+        }
+    }
+}

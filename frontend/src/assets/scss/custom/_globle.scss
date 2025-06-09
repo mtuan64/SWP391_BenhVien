@@ -1,0 +1,965 @@
+.section-padding.spacing-ls-rs {
+  padding-left: 100px;
+  padding-right: 100px;
+}
+
+.section-why-choose {
+  .container {
+    padding-left: 180px;
+  }
+}
+
+.iq-social {
+  li {
+    a {
+      position: relative;
+      width: 38px;
+      height: 38px;
+      display: inline-block;
+      text-align: center;
+      line-height: 38px;
+      border-radius: 100%;
+      text-transform: uppercase;
+      font-size: 0.75rem;
+      color: $body-color;
+
+      svg.base-circle {
+        width: 38px;
+        height: 38px;
+        position: absolute;
+        z-index: 99;
+        left: 0;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        border: 1px solid var(--bs-border-color);
+        border-radius: 50%;
+        transition: .7s;
+
+        .c1 {
+          stroke-dasharray: 0 144;
+          -webkit-transition: 0.7s;
+          transition: 0.7s;
+          opacity: 0;
+          stroke: var(--#{$variable-prefix}primary);
+        }
+
+        &:hover {
+          border: 1px solid transparent;
+
+          .c1 {
+            stroke-dasharray: 144 144;
+            opacity: 1;
+            -webkit-transition-property: stroke-dasharray;
+            transition-property: stroke-dasharray;
+          }
+        }
+      }
+    }
+  }
+}
+
+.footer-paediatrician{
+  .iq-social {
+    li {
+      a {
+        color: var(--bs-white);
+        svg.base-circle{
+          &:hover{
+            border-color: var(--#{$variable-prefix}secondary);
+          }
+        }
+      }
+    }
+  }
+}
+
+.section-service-box {
+  background: linear-gradient(to right,
+    #fef5f5 0%,
+    #fef5f5 60%,
+    var(--#{$variable-prefix}secondary) 60%,
+    var(--#{$variable-prefix}secondary) 100%);
+  transition: all 0.5s ease 0s;
+
+  &::after {
+    position: absolute;
+    content: "";
+    top: -10rem;
+    bottom: 0;
+    left: auto;
+    right: 3rem;
+    background: url("/assets/images/general/service-vector.png");
+    width: 556px;
+    background-repeat: no-repeat;
+    background-position: right center;
+    transition: all 0.5s ease 0s;
+  }
+
+  &:hover::after {
+    transform: rotate(5deg);
+  }
+
+  .card {
+    z-index: 9;
+  }
+
+  .title-content {
+    z-index: 1;
+  }
+}
+
+.iq-about-banner-image {
+  position: absolute;
+  left: 200px;
+  top: auto;
+  bottom: -100px;
+  width: 340px;
+}
+
+// dentist-page
+.bg-dentist-dark {
+  background: linear-gradient(to left,
+    var(--bs-white) 0%,
+    var(--bs-white) 50%,
+    var(--#{$variable-prefix}primary) 50%,
+    var(--#{$variable-prefix}primary) 100%);
+
+  .iq-title-box {
+    .iq-subtitle {
+      padding-left: 0;
+
+      &::after {
+        display: none;
+      }
+    }
+  }
+}
+
+.bg-dentist-light {
+  background: linear-gradient(to right,
+      var(--bs-white) 0%,
+      var(--bs-white) 50%,
+      rgba(var(--bs-primary-rgb), 0.1) 50%,
+      rgba(var(--bs-primary-rgb), 0.1) 100%);
+}
+
+.section-service-box {
+  transition: all 0.5s ease 0s;
+  z-index: 5;
+
+  &.bg-light-dentist {
+    background: linear-gradient(to right,
+      rgba(var(--bs-primary-rgb), 0.1) 0%,
+      rgba(var(--bs-primary-rgb), 0.1) 60%,
+      var(--#{$variable-prefix}primary) 60%,
+      var(--#{$variable-prefix}primary) 100%);
+  }
+
+  &::after {
+    position: absolute;
+    content: "";
+    top: -10rem;
+    bottom: 0;
+    left: auto;
+    right: 3rem;
+    background: url("/assets/images/general/service-vector.png");
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: right center;
+    transition: all 0.5s ease 0s;
+    z-index: 0;
+  }
+
+  &:hover::after {
+    transform: rotate(5deg);
+  }
+
+  .card {
+    z-index: 9;
+  }
+}
+
+.video-popup .container {
+  background-repeat: no-repeat;
+  background-position: center;
+
+  .background-overlay {
+    height: 100%;
+    width: 100%;
+    top: 0;
+    left: 0;
+    position: absolute;
+    opacity: 0.5;
+    background: var(--#{$variable-prefix}primary);
+  }
+}
+
+.padding-200 {
+  padding: 12.5rem 0;
+}
+
+.margin-top-negative-100 {
+  margin-top: -6.25em;
+}
+
+// client
+.client-bg {
+  background: #f8f8f8;
+  padding: 70px 0;
+}
+
+// video section
+.video-section {
+  position: relative;
+  height: 730px;
+
+  .video-section-background {
+    height: 100%;
+    width: 100%;
+    top: 0;
+    left: 0;
+    position: absolute;
+    overflow: hidden;
+    z-index: 0;
+    direction: ltr;
+
+    video {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+  }
+}
+
+// eyecare
+.eyecare-banner {
+  .iq-title-box {
+    .iq-title {
+      .left-text {
+        color: var(--bs-primary);
+      }
+    }
+  }
+}
+
+.eyes-carebg-right {
+  background: linear-gradient(to right,
+      var(--bs-white) 0%,
+      var(--bs-white) 50%,
+      var(--bs-primary) 50%,
+      var(--bs-primary) 100%);
+}
+
+.eye-care-title .scrolling-text {
+  font-size: 400px;
+  color: #ffffff30;
+  z-index: 0;
+  transform: translate(0, -50%);
+  line-height: normal;
+  top: 50%;
+}
+
+.box-card-main {
+  padding: 45px;
+}
+
+.benefits-main {
+  margin-top: -118px;
+  background: var(--bs-white);
+}
+
+.care-service {
+  margin-top: -150px;
+}
+
+// fertility clinic
+.fertility-service {
+  padding: 80px 50px 80px 80px;
+}
+
+.contact-form-wrapper {
+  margin-top: -150px;
+}
+
+// Ent Clinic
+.ent-about-section {
+  .slider-block {
+    width: 12em;
+    position: absolute;
+    top: 4rem;
+    left: auto;
+    right: 0;
+  }
+}
+
+.service-top {
+  margin-top: -100px;
+}
+
+.ent-clinic-service {
+  position: relative;
+
+  &::after {
+    position: absolute;
+    content: "";
+    top: -10rem;
+    bottom: 0;
+    left: auto;
+    right: 3rem;
+    background: url("/assets/images/ent-clinic/doc-img-1.webp");
+    width: 694px;
+    background-repeat: no-repeat;
+    background-position: right center;
+    transition: all 0.5s ease 0s;
+    z-index: 0;
+  }
+
+  &:hover::after {
+    transform: rotate(5deg);
+  }
+}
+
+.margin-negative-400 {
+  padding: 25rem 1rem 1.875rem 1rem;
+  margin-top: -25rem;
+}
+
+.scrolling-top {
+  .scrolling-text {
+    bottom: 0;
+    top: auto;
+  }
+}
+
+.tab-bottom-bordered {
+  .nav-tabs {
+    .nav-link {
+      margin: 0 25px 30px;
+      transition: all 0.3s;
+      position: relative;
+      padding: 0 0 2px;
+      letter-spacing: 0.094rem;
+      text-transform: uppercase;
+      color: $headings-color;
+      font-weight: 500;
+      font-size: 14px;
+    }
+  }
+}
+
+.iq-box-right-border {
+  border-right: var(--bs-border-width) var(--bs-border-style) var(--bs-border-color);
+}
+
+// custom gallery
+.custom-gallery {
+  .gallery-overlay {
+    .gallery-overlay-box {
+      display: block;
+      overflow: hidden;
+      position: relative;
+
+      img {
+        width: 100%;
+      }
+
+      .view-image {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -30%);
+        width: 32px;
+        height: 32px;
+        line-height: 32px;
+        border-radius: 50%;
+        text-align: center;
+        opacity: 0;
+        transition: all 0.6s ease-in-out;
+      }
+
+      &::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        background: var(--bs-primary);
+        width: 100%;
+        height: 100%;
+        opacity: 0;
+        transition: opacity 0.3s ease-in-out;
+      }
+
+      &:hover::before {
+        opacity: 0.5;
+      }
+
+      &:hover .view-image {
+        opacity: 1;
+        transform: translate(-50%, -50%);
+      }
+    }
+  }
+}
+
+//Back-To-Top
+#back-to-top {
+  display: inline !important;
+
+  .top {
+    bottom: 1.563rem;
+    right: 1.563rem;
+    z-index: 999;
+
+    svg {
+      height: 50px;
+      line-height: 50px;
+      width: 50px;
+      text-align: center;
+      padding: 16px;
+    }
+  }
+  .btn {
+    background-color: var(--#{$prefix}secondary);
+    transition: all .3s ease-in-out;
+    &:hover {
+      background-color: var(--#{$prefix}primary);
+    }
+  }
+}
+
+.custom-border-right{
+  .box-custom-border{
+    &:nth-child(odd){
+      position: relative;
+
+      &::before{
+        content: "";
+        height: 100%;
+        width: 1px;
+        background: var(--bs-border-color);
+        position: absolute;
+        top: 50%;
+        right: 30px;
+        transform: translateY(-50%);
+      }
+    }
+  }
+}
+
+@media (max-width: 1366px) {
+  .iq-about-banner-image {
+    left: 150px;
+  }
+}
+
+@media (max-width: 1024px) {
+  .margin-top-negative-100 {
+    margin-top: auto;
+  }
+
+  .eye-care-title {
+    .scrolling-text {
+      font-size: 140px;
+    }
+  }
+
+  .service-top {
+    margin-top: -50px;
+  }
+}
+
+@media (max-width: 991px) {
+  .benefits-main {
+    margin-top: -114px;
+  }
+}
+
+@include media-breakpoint-down(xxl) {
+  .custom-border-right {
+    .box-custom-border {
+      &:nth-child(odd) {
+        &::before {
+          right: 0;
+        }
+      }
+    }
+  }
+}
+
+@include media-breakpoint-down(xl){
+  .custom-border-right {
+    .box-custom-border {
+      &:nth-child(odd) {
+        &::before {
+          display: none;
+        }
+      }
+    }
+  }
+}
+
+@include media-breakpoint-down(lg) {
+  .section-service-box {
+    background: linear-gradient(to right,
+      #fef5f5 0%,
+      #fef5f5 100%,
+      var(--#{$variable-prefix}secondary) 60%,
+      var(--#{$variable-prefix}secondary) 100%);
+
+    &.bg-light-dentist {
+      background: linear-gradient(to right,
+        rgba(var(--bs-primary-rgb), 0.1) 0%,
+        rgba(var(--bs-primary-rgb), 0.1) 100%,
+        var(--#{$variable-prefix}primary) 60%,
+        var(--#{$variable-prefix}primary) 100%);
+    }
+  }
+
+  .bg-dentist-light {
+    background: linear-gradient(to right,
+        var(--bs-white) 0%,
+        var(--bs-white) 100%,
+        rgba(var(--bs-primary-rgb), 0.1) 50%,
+        rgba(var(--bs-primary-rgb), 0.1) 100%);
+  }
+
+  .eyes-carebg-right {
+    background: linear-gradient(to right,
+        var(--bs-white) 0%,
+        var(--bs-white) 100%,
+        var(--bs-primary) 50%,
+        var(--bs-primary) 100%);
+  }
+}
+
+@media (max-width: 699px) {
+  .benefits-main {
+    margin-top: -90px;
+  }
+}
+
+@media (max-width: 550px) {
+  .benefits-main {
+    margin-top: -85px;
+  }
+}
+
+@media (max-width: 449px) {
+  .benefits-main {
+    margin-top: -75px;
+  }
+}
+
+@media (max-width: 349px) {
+  .benefits-main {
+    margin-top: -65px;
+  }
+}
+
+@media (max-width: 1199px) {
+  .section-why-choose {
+    background-image: none !important;
+
+    .container {
+      padding-left: calc(var(--bs-gutter-x)*.5);
+    }
+  }
+
+  .section-service-box {
+    &::after {
+      display: none;
+    }
+  }
+}
+
+@media (max-width: 991px) {
+  .section-padding.spacing-ls-rs {
+    padding-left: 30px;
+    padding-right: 30px;
+  }
+
+  .care-service {
+    margin-top: -70px;
+  }
+
+  .eye-care-title .scrolling-text {
+    font-size: 100px;
+  }
+
+  .video-section {
+    height: 500px;
+
+    .video-section-background {
+      height: 500px;
+    }
+  }
+
+  .bg-dentist-dark {
+    background: var(--#{$variable-prefix}primary);
+  }
+
+  .contact-form-wrapper {
+    margin-top: -100px;
+  }
+
+  .iq-box-right-border {
+    border-right: none;
+  }
+}
+
+@media (max-width: 767px) {
+  .contact-form-wrapper {
+    margin-top: -50px;
+  }
+
+  .fertility-service {
+    padding: 1rem;
+  }
+
+  .box-card-main {
+    padding: 30px 0;
+  }
+
+  .section-padding.spacing-ls-rs {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  .box-card-main {
+    padding-bottom: 0;
+  }
+
+  .skin-specialist-services {
+    .col-lg-8 {
+      &.border-start {
+        border-left: 0 !important;
+      }
+    }
+  }
+
+  .scrolling-top {
+    .border-start {
+      border-left: 0 !important;
+    }
+  }
+
+  .ent-clinic-service {
+    .card-body {
+      .border-end {
+        border-right: 0 !important;
+      }
+    }
+  }
+
+  .ortho-service {
+    .card-body {
+      .border-end {
+        border-right: 0 !important;
+      }
+    }
+  }
+
+  .margin-negative-400 {
+    padding-top: 0;
+    margin-top: 0;
+  }
+
+  .video-section {
+    height: 300px;
+
+    .video-section-background {
+      height: 300px;
+    }
+  }
+
+  .service-top {
+    margin-top: 32px;
+  }
+}
+
+// sign in page
+.sign-in-page {
+  background: url("/assets/images/pages/sign-in.webp") no-repeat scroll 0 0;
+  background-size: cover;
+  height: 100vh;
+
+  .height-self-center {
+    height: 100vh !important;
+  }
+}
+
+.sign-user_card {
+  padding: 50px;
+
+  .forgot-pwd {
+    color: var(--#{$variable-prefix}secondary);
+
+    &:hover {
+      color: var(--#{$variable-prefix}primary);
+    }
+  }
+
+  .sign_up_btn {
+    .btn-link-icon {
+      display: none;
+    }
+
+    .text-uppercase {
+      text-transform: capitalize !important;
+      font-size: 1rem;
+      letter-spacing: 2px;
+    }
+  }
+}
+
+#woosq-popup {
+  &.modal-dialog {
+    max-width: 57.5em;
+    max-height: 28.75em;
+  }
+  .modal-dialog {
+    max-width: 57.5em;
+    max-height: 28.75em;
+
+    img {
+      max-height: 28.75em;
+      width: 28.75em;
+    }
+
+    .btn-close {
+      height: 30px;
+      width: 30px;
+      font-size: 12px;
+    }
+
+    .row {
+      >div {
+        max-height: 28.75em;
+      }
+    }
+  }
+}
+
+// authentication logo
+.logo-img {
+  .icon-30 {
+    height: 3.125rem;
+    width: 3.125rem;
+  }
+
+  .logo-title {
+    font-size: 2.1875rem;
+  }
+}
+
+.checkmark-animated {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  display: block;
+  stroke-width: 2;
+  stroke: var(--bs-success);
+  stroke-miterlimit: 10;
+  box-shadow: inset 0px 0px 0px var(--bs-success);
+  animation: fill .4s ease-in-out .4s forwards, scale .3s ease-in-out .9s both;
+  position: relative;
+  top: 5px;
+  right: 5px;
+  margin: 0 auto;
+
+  .checkmark__circle {
+    stroke-dasharray: 166;
+    stroke-dashoffset: 166;
+    stroke-width: 2;
+    stroke-miterlimit: 10;
+    stroke: var(--bs-success);
+    fill: var(--bs-white);
+    animation: stroke 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards;
+  }
+
+  .checkmark__check {
+    transform-origin: 50% 50%;
+    stroke-dasharray: 48;
+    stroke-dashoffset: 48;
+    animation: stroke 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.8s forwards;
+  }
+}
+
+@keyframes stroke {
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes scale {
+
+  0%,
+  100% {
+    transform: none;
+  }
+
+  50% {
+    transform: scale3d(1.1, 1.1, 1);
+  }
+}
+
+@keyframes fill {
+  100% {
+    box-shadow: inset 0px 0px 0px 30px var(--bs-success);
+  }
+}
+
+// paediatricin choose us
+.zindex {
+  z-index: 1;
+}
+
+.paediatricin-service {
+  .service-bg {
+    right: 50px;
+  }
+
+  .scrolling-text {
+    color: #faf6f60a;
+  }
+
+  .iq-title-box .iq-subtitle,
+  h2.iq-heading-title,
+  .iq-title-desc {
+    color: var(--bs-white) !important;
+  }
+}
+
+.footer-top-padding {
+  padding: 76px 0;
+}
+
+.primary-soft-dark{
+  background-color: rgba(var(--bs-primary-rgb), 0.1);
+}
+
+@media (max-width: 1200px) {
+  .paediatricin-service {
+    .service-bg {
+      display: none;
+    }
+  }
+}
+
+.background-overlay-img {
+  padding: 80px 0;
+
+  .order-wrapper {
+    li {
+      width: 20%;
+      display: inline-block;
+      text-align: center;
+      border-right: 0.0625em dashed $border-color;
+
+      &:last-child {
+        border-right: 0;
+      }
+    }
+  }
+}
+
+// List
+.iq-list{
+  .counter-numbers{
+    height: 32px;
+    width: 32px;
+    line-height: 30px;
+    border-radius: 50%;
+    border: 2px dashed var(--#{$variable-prefix}primary);
+    text-align: center;
+  }
+}
+
+@media (max-width:1200px) {
+  .ent-clinic-service {
+    &::after {
+      content: none;
+    }
+  }
+}
+
+@media (max-width: 767px) {
+  .order-wrapper {
+    li {
+      width: 100%;
+      margin-bottom: 1em;
+      border-right: none;
+      border-bottom: 0.0625em dashed $border-color;
+      padding: 0 0 1em;
+      text-align: left;
+    }
+  }
+
+  .sign-user_card {
+    padding: 30px;
+  }
+
+  #woosq-popup {
+    .modal-dialog {
+      img{
+        width: 100%;
+      }
+    }
+  }
+}
+
+.iq-list{
+  &.two-column {
+    column-count: 2;
+    li{
+      font-family: var(--#{$variable-prefix}font-monospace) ;
+      font-size: 21px;
+      &::marker{
+        color: var(--bs-primary);
+      }
+    }
+  }
+}
+
+.line-count-1 {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;
+}
+
+.line-count-2 {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.line-count-3 {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+}
+
+.line-count-4 {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 4;
+}
+
+@media (max-width: 767px) {
+  .iq-list{
+    &.two-column {
+      column-count: 1;
+    }
+  }
+}

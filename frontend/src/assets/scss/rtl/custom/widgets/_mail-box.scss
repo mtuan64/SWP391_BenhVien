@@ -1,0 +1,19 @@
+form{
+    &.mail-box{
+        button{
+            &.btn-submit{
+                right: auto;
+                left: 0;
+            }
+        }
+    }
+}
+
+.mail-box {
+    button {
+      &.btn-submit {
+        right: auto;
+        left: 0;
+      }
+    }
+  }

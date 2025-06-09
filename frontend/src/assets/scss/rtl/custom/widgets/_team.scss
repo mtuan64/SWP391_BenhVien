@@ -1,0 +1,33 @@
+.iq-team-block{
+    &.team-overdetail{
+        .iq-team-info{
+            .iq-team-main-detail{
+                -webkit-clip-path: inset(0 0 0 100%);
+                clip-path: inset(0 0 0 100%);
+            }
+
+            &::after{
+                left: auto;
+                right: 0;
+            }
+        }
+
+        &:hover{
+            .iq-team-info {
+                .iq-team-main-detail {
+                    -webkit-clip-path: inset(0 0 0 0);
+                    clip-path: inset(0 0 0 0);
+                }
+            }
+        }
+    }
+}
+
+.team-content-aside-wrapper{
+    .team-content-aside{
+        .team-content{
+            left: auto;
+            right: -230px;
+        }
+    }
+}

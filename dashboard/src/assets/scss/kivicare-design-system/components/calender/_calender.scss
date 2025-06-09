@@ -1,0 +1,75 @@
+.fc .fc-event{
+	background-color: rgba(var(--bs-primary-rgb), 0.1);
+}
+.fc-event-time{
+	text-transform: uppercase;
+}
+.fc-event-title{
+	padding-left: 15px;
+    margin-left: 15px;
+    border-left: 1px solid var(--bs-border-color);
+}
+.fc-daygrid-event-dot{
+	display: none;
+}
+.fc .fc-daygrid-day-number{
+	padding: 20px;
+}
+.fc .fc-daygrid-day-top{
+	flex-direction: row;
+}
+.fc .fc-daygrid-day.fc-day-today{
+	background-color: transparent;
+	.fc-daygrid-day-number{
+		background: var(--bs-secondary);
+    	color: var(--bs-white);
+    	padding: 5px;
+		margin: 20px;
+	}
+}
+
+.fc-daygrid-day a.fc-daygrid-day-number {
+    color: var(--bs-heading-color);
+	font-weight: 600;
+}
+.fc .fc-button{
+	text-transform: capitalize;
+}
+.fc .fc-button-primary:not(:disabled).fc-button-active, .fc .fc-button-primary:not(:disabled):active {
+    background-color: transparent !important;
+    border-color: transparent !important;
+    color: var(--bs-secondary) !important;
+}
+.fc .fc-toolbar .fc-button.fc-button-primary {
+    background-color: transparent !important;
+    color: #6e7990;
+    border: 0;
+    border-radius: 0;
+	font-weight: 500;
+}
+.fc .fc-button-primary:focus {
+    box-shadow: none;
+}
+.fc .fc-button-primary:not(:disabled).fc-button-active:focus, .fc .fc-button-primary:not(:disabled):active:focus {
+    box-shadow: none;
+}
+.fc .fc-col-header-cell-cushion {
+	color: var(--bs-body-color);
+    padding: 18px;
+}
+@include media-breakpoint-down(md) {
+	.fc-toolbar{
+		flex-wrap: wrap;
+        .fc-left{
+            margin-bottom: 1rem;
+        }
+		.fc-right{
+			.fc-button-group{
+				margin-top: 1rem;
+			}
+		}
+	}
+	.fc-daygrid-day-events{
+		display: none;
+	}
+}

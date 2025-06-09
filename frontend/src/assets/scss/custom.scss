@@ -1,0 +1,45 @@
+/*!
+* Version: 1.4.1
+* Template: kiviCare - Medical Clinic & Patient Management Html Template
+* Author: iqonic.design
+* Design and Developed by: iqonic.design
+* NOTE: This file contains the styling for Template.
+*
+*/
+
+// Configuration
+@import "./bootstrap/functions";
+// Variables
+@import "./kivicare-design-system/variables";
+@import "./kivicare-design-system/variables-dark";
+@import "./bootstrap/variables";
+@import "./bootstrap/variables-dark";
+@import "./bootstrap/maps";
+@import "./bootstrap/mixins";
+@import "./bootstrap/utilities";
+
+
+// KiviCare Design System Mixin And Helper
+@import "./kivicare-design-system/helper/mixins";
+@import "./kivicare-design-system/helper/reboot";
+
+// ui kit
+@import "./custom/ui-kit/ui-kit";
+
+// pages
+@import "./custom/banner";
+@import "./custom/globle";
+@import "./custom/root";
+@import "./custom/appointment";
+@import "./custom/customizer";
+@import "./custom/choicejs";
+
+// widget
+@import "./custom/widget/index";
+
+// shop
+@import "./custom/shop/shop";
+
+// Custom
+@import "./custom/custom-scss.scss"
+

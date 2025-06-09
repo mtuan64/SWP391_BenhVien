@@ -1,0 +1,107 @@
+.iq-title-box {
+  margin-bottom: 35px;
+  color: $headings-color;
+
+  .iq-subtitle {
+    position: relative;
+    color: $body-color;
+    padding-left: 40px;
+    font-size: 14px;
+    font-weight: $font-weight-semibold;
+    letter-spacing: 0.125rem;
+
+    &::after {
+      content: "";
+      position: absolute;
+      background: var(--#{$variable-prefix}primary);
+      width: 30px;
+      height: 2px;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+  }
+
+  .iq-title-desc {
+    font-family: $font-family-monospace;
+  }
+}
+
+.text-center {
+  .iq-title-box {
+    margin-bottom: 70px;
+  }
+}
+
+.no-sub-title {
+  .iq-title-box .iq-subtitle {
+    display: none;
+  }
+}
+
+.hide-sub-title-line {
+  .iq-title-box {
+    .iq-subtitle {
+      padding-left: 0;
+
+      &::after {
+        display: none;
+      }
+    }
+  }
+}
+
+.big-font {
+  .iq-title-box {
+    .iq-title {
+      &.iq-heading-title {
+        font-size: 3.875rem;
+        line-height: 1.2;
+      }
+    }
+  }
+}
+
+.bg-primary {
+  .iq-title-box {
+
+    .iq-subtitle,
+    .iq-title,
+    .iq-title-desc {
+      color: $white;
+    }
+
+    .iq-subtitle::after {
+      background-color: $white;
+    }
+  }
+}
+
+@include media-breakpoint-down(xl) {
+  .iq-title-box {
+    br {
+      display: none;
+    }
+  }
+}
+
+@media (max-width: 767px) {
+  .iq-title-box {
+    margin-bottom: 32px;
+
+    .text-center & {
+      margin-bottom: 32px;
+    }
+  }
+
+  .big-font {
+    .iq-title-box {
+      .iq-title {
+        &.iq-heading-title {
+          font-size: 3rem;
+          line-height: 1.1;
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,88 @@
+.banner-dentist-page {
+    .icon-box-right {
+        right: auto;
+        left: -6.25em;
+        border-radius: 0 3.125em 3.125em 0;
+    }
+}
+
+.skin-specialist-banner {
+    background-image: linear-gradient(90deg, #fcdee4 50%, #fbeef1 50%);
+
+    .banner-right-text {
+        .scrolling-text {
+            right: auto;
+            left: -120px;
+            transform: rotate(90deg) translateY(45%);
+        }
+    }
+}
+
+.ent-titleslider {
+    left: 0;
+    right: auto;
+}
+
+.psychiatrist-banner-img {
+    left: auto;
+    right: 168px;
+}
+
+.background-overlay {
+    background-image: linear-gradient(-270deg, var(--bs-white) 13%, #ffffff00 60%);
+}
+
+.cardiac-banner {
+    .shape-deliver-truck {
+        border-radius: 50px 0 0 50px;
+    }
+}
+
+.banner-orthopedics {
+    background: linear-gradient(to left, rgba(var(--bs-primary-rgb), 0.1) 60%, var(--bs-secondary) 40%);
+
+    .opening-time{
+        right: auto;
+        left: 47%;
+    }
+}
+
+@include media-breakpoint-up(xl) {
+    .cardiac-banner {
+        .container-fluid {
+            &.pe-xl-0 {
+                padding-right: 6.25em !important;
+            }
+        }
+    }
+}
+
+@media (max-width: 1367px) {
+    .cardiac-banner {
+        .container-fluid {
+            &.pe-xl-0 {
+                padding-right: 2em !important;
+            }
+        }
+    }
+}
+
+@include media-breakpoint-down(lg) {
+    .skin-specialist-banner {
+        background-image: linear-gradient(90deg, #fbeef1 100%, #fcdee4 50%);
+    }
+
+    .banner-orthopedics{
+        background: var(--bs-primary-bg-subtle);
+    }
+}
+
+@include media-breakpoint-down(md) {
+    .cardiac-banner {
+        .container-fluid {
+            &.pe-xl-0 {
+                padding-right: 1em !important;
+            }
+        }
+    }
+}

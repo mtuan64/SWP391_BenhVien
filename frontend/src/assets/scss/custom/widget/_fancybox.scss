@@ -1,0 +1,25 @@
+.iq-fancy-box {
+    padding: 0 30px 40px 30px;
+    transition: all .5s ease-in-out;
+
+    .iq-img-area {
+        height: 100px;
+        width: 100px;
+        line-height: 100px;
+        transform: translateY(-15px);
+
+        img {
+            width: 50px;
+        }
+    }
+
+    &:hover {
+        margin-top: -5px;
+    }
+}
+
+@media (max-width:767px){
+    .iq-fancy-box {
+        padding: 0 16px 16px 16px;
+    }
+}

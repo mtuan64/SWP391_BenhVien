@@ -1,0 +1,227 @@
+h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
+    a {
+        color: $headings-color;
+    }
+}
+
+.cursor-pointer{
+    cursor: pointer;
+}
+
+.main-content {
+    overflow-x: hidden;
+}
+
+.section-padding {
+    padding: 9.375rem 1rem 9.375rem 1rem;
+}
+
+.section-padding-top {
+    padding: 9.375rem 1rem 0 1rem
+}
+
+.section-padding-bottom {
+    padding: 0 1rem 9.375rem 1rem
+}
+
+.box-shadow {
+    box-shadow: 0 0 87.3px 2.7px rgba(0, 0, 0, .06);
+}
+
+.container{
+    max-width: 1400px;
+}
+
+.container-fluid {
+    padding: 0 6.25rem;
+}
+
+.padding-80 {
+    padding: 80px;
+}
+
+.padding-70 {
+    padding: 70px;
+}
+
+.padding-top-25 {
+    padding-top: 3.75em;
+}
+
+.padding-top-80 {
+    padding-top: 5em;
+}
+
+.font-size-24 {
+    font-size: 1.5rem !important;
+}
+
+.font-size-21 {
+    font-size: 1.313rem;
+}
+
+.font-size-16 {
+    font-size: 1rem;
+}
+
+.font-size-14 {
+    font-size: .875rem;
+}
+
+.font-size-60{
+    font-size:3.75em ;
+}
+
+.fw-500{
+    font-weight: 500;
+}
+
+.letter-spacing-1 {
+    letter-spacing: 1px;
+}
+
+.letter-spacing-2 {
+    letter-spacing: 2px;
+}
+
+.letter-spacing-3 {
+    letter-spacing: 3px;
+}
+
+.letter-spacing-4 {
+    letter-spacing: 4px;
+}
+
+.inner-box {
+    padding: 5rem 0rem 5rem 0rem;
+}
+
+.title-top {
+    margin-top: 64px;
+}
+
+.client-img {
+    width: 60%;
+}
+
+.wh-80{
+    width: 80px;
+    height: 80px;
+    line-height: 80px;
+}
+
+@media (max-width:1367px){
+    .container-fluid {
+        padding: 0 2rem;
+    }
+}
+
+@media screen and (max-width: 1024px) {
+    br{
+        display: none;
+    }
+    
+    .section-padding {
+        padding-top: 52px;
+        padding-right: 16px;
+        padding-bottom: 52px;
+        padding-left: 16px;
+    }
+
+    .inner-box {
+        padding-top: 50px;
+        padding-right: 16px;
+        padding-bottom: 50px;
+        padding-left: 16px;
+    }
+}
+
+@media (max-width: 991px) {
+    :root {
+        --bs-heading-1: 3rem;
+        --bs-heading-2: 2rem;
+        --bs-heading-3: 1.827rem;
+		--bs-heading-4: 1.700rem;
+    }
+
+    .section-padding {
+        padding: 4.375rem 1rem;
+    }
+
+    .section-padding-top {
+        padding: 4.375rem 1rem 0 1rem
+    }
+
+    .section-padding-bottom {
+        padding: 0 1rem 4.375rem 1rem
+    }
+
+    .padding-70 {
+        padding: 3.125rem;
+    }
+
+    .padding-80 {
+        padding: 30px;
+    }
+}
+
+@media screen and (max-width: 768px) {
+    .section-padding {
+        padding: 6.125rem 1rem;
+    }
+
+    .section-padding-top {
+        padding: 6.125rem 1rem 0 1rem
+    }
+
+    .section-padding-bottom {
+        padding: 0 1rem 6.125rem 1rem
+    }
+
+    .title-top {
+        margin-top: 24px;
+    }
+}
+
+@include media-breakpoint-down(md){
+    .padding-80 {
+        padding: 0;
+    }
+}
+
+@media (max-width: 767px){
+    .section-padding{
+        padding: 3.125rem 0;
+    }
+
+    .section-padding-top {
+        padding: 3.125rem 0 0
+    }
+
+    .section-padding-bottom {
+        padding: 0 0 3.125rem
+    }
+
+    .container-fluid{
+        padding: 0 1rem;
+    }
+
+    .section-padding {
+        padding-right: 0;
+        padding-left: 0;
+    }
+
+    .inner-box {
+        padding-right: 0;
+        padding-left: 0;
+        padding-top: 20px;
+        padding-bottom: 20px;
+    }
+    
+    .padding-70 {
+        padding: 1rem;
+    }
+    .padding-top-80{
+        padding-top: 2rem;
+    }
+}

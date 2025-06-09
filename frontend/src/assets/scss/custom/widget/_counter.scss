@@ -1,0 +1,43 @@
+.counter-box-bottom {
+  margin-bottom: -150px;
+
+  &.bg-secondary {
+    .counter {
+      color: $white;
+    }
+  }
+}
+
+.counter-white {
+  i {
+    color: $white !important;
+  }
+
+  .counter-content {
+    color: $white;
+
+    .counter {
+      color: $white;
+      font-weight: 900;
+      font-size: 2.625rem;
+    }
+  }
+}
+
+// additional
+@media (max-width: 767px) {
+  .counter-box-bottom {
+    margin-bottom: 0;
+  }
+
+  .counter-white {
+    .counter-content {
+      .counter {
+        font-size: 1.8rem;
+      }
+      p {
+        font-size: .85rem;
+      }
+    }
+  }
+}

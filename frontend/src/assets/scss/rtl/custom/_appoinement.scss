@@ -1,0 +1,10 @@
+.appointment-tab-form{
+    #appointment-tab-list{
+        .tab-position{
+            &::after{
+                left: 1;
+                right: auto;
+            }
+        }
+    }
+}  

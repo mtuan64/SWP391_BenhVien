@@ -1,0 +1,300 @@
+.iq-icon-box {
+  transition: all 0.5s ease-in-out;
+
+  &.standard {
+    padding: 50px 30px 50px 30px;
+  }
+
+  &.transprent {
+    padding: 50px;
+
+    .iq-img-area {
+      height: 100px;
+      width: 100px;
+      line-height: 100px;
+      text-align: center;
+      transition: all 0.5s ease-in-out;
+
+      img {
+        width: 55px;
+      }
+
+      &:hover {
+        animation: pulse-shrink-on-hover 0.5s infinite alternate;
+      }
+    }
+  }
+
+  &.iconbox-border {
+    padding: 1.875rem;
+
+    .iq-img-area {
+      img {
+        height: 50px;
+        width: 50px;
+      }
+    }
+
+    .icon-box-content {
+      .icon-title {
+        transition: all 0.3s ease 0s;
+      }
+    }
+
+    &::before {
+      width: 0;
+      transition: all 0.3s ease-in-out;
+      height: 4px;
+      background: var(--#{$variable-prefix}primary);
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      border-radius: 10px;
+    }
+
+    &:hover {
+      .icon-box-content {
+        .icon-title {
+          color: var(--#{$variable-prefix}secondary);
+        }
+      }
+
+      &::before {
+        width: 100%;
+      }
+    }
+  }
+
+  &.iconbox-list {
+    transition: all 0.5s ease 0s;
+
+    &:hover {
+      background-color: rgba(var(--bs-primary-rgb), 0.05);
+    }
+  }
+
+  &.iq-icon-box-bg {
+    background-color: $white;
+
+    .icon-box-title,
+    .icon-box-desc {
+      transition: all 0.5s ease 0s;
+    }
+
+    .icon-box-icon {
+      i {
+        color: var(--#{$variable-prefix}primary);
+        transition: all 0.5s ease 0s;
+      }
+    }
+
+    &:hover {
+      background-color: var(--#{$variable-prefix}primary);
+
+      .icon-box-content {
+        .icon-box-title,
+        .icon-box-desc,
+        .iq-button.iq-btn-link {
+          color: $white;
+        }
+      }
+
+      i {
+        color: $white;
+      }
+    }
+  }
+}
+
+.active {
+  .iq-icon-box {
+    &.iconbox-list {
+      background-color: rgba(var(--bs-primary-rgb), 0.05);
+    }
+  }
+}
+
+@-webkit-keyframes pulse-shrink-on-hover {
+  to {
+    -webkit-transform: scale(0.9);
+    transform: scale(0.9);
+  }
+}
+
+@keyframes pulse-shrink-on-hover {
+  to {
+    -webkit-transform: scale(0.9);
+    transform: scale(0.9);
+  }
+}
+
+// Icon Box Column
+.no-img-bg {
+  &.box-padding {
+    padding: 50px 40px 50px 40px;
+  }
+
+  &.fertility-clinic {
+    .iq-icon-box {
+      .iq-img-area {
+        img {
+          width: 55px;
+        }
+      }
+    }
+
+    .iconbox-button {
+      display: none;
+    }
+  }
+
+  .iq-icon-box {
+    padding: 0;
+
+    .iq-img-area {
+      background: transparent;
+      width: auto;
+      height: auto;
+      line-height: normal;
+    }
+  }
+}
+
+// icon box bottom border
+.iconbox-bottom-border {
+  .iq-icon-box {
+    .icon-box-icon {
+      padding-bottom: 14px;
+
+      img {
+        height: 50px;
+        width: 50px;
+      }
+    }
+
+    &::before {
+      width: 0;
+      transition: all 0.3s ease-in-out;
+      height: 4px;
+      background: var(--#{$variable-prefix}primary);
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      border-radius: 10px;
+    }
+
+    &:hover {
+      background-color: $white;
+
+      .icon-box-content {
+        .icon-box-title {
+          color: $headings-color;
+        }
+
+        .icon-box-desc {
+          color: #6e7990;
+        }
+
+        .iq-button.iq-btn-link {
+          color: var(--#{$variable-prefix}primary);
+        }
+      }
+
+      i {
+        color: var(--#{$variable-prefix}primary);
+      }
+
+      &::before {
+        width: 100%;
+      }
+    }
+  }
+}
+
+// iconbox borer hover
+.iconbox-border-hover {
+  .iq-icon-box {
+    border: 1px solid transparent;
+    padding: 1.875rem;
+
+    .iq-img-area {
+      padding-bottom: 0;
+    }
+
+    &:hover {
+      border-color: $gray-200;
+      background: $white;
+
+      .icon-box-content {
+        .icon-title {
+          color: $headings-color;
+        }
+      }
+    }
+
+    &.iconbox-border {
+      &::before {
+        content: none;
+      }
+
+      .iq-img-area {
+        img {
+          width: auto;
+          height: auto;
+        }
+      }
+    }
+  }
+}
+
+// cardiac-service
+.cardiac-service{
+  .iq-icon-box{
+    &.transprent{
+      .iq-img-area{
+        img{
+          width: auto;
+        }
+      }
+    }
+  }  
+}
+
+@media (max-width: 767px) {
+  .iq-icon-box {
+    &.standard,
+    &.transprent {
+      padding: 2rem 1rem;
+    }
+    &.iconbox-has-border {
+      border-bottom: var(--bs-border-width) var(--bs-border-style)
+        rgba(0, 0, 0, 0.06);
+    }
+  }
+  .no-img-bg {
+    &.box-padding {
+      padding: 32px;
+    }
+  }
+  .iconbox-border-hover {
+    .iq-icon-box {
+      padding: 1rem;
+    }
+  }
+  .iq-icon-box {
+    &.iconbox-border {
+      padding: 1rem;
+    }
+  }
+}
+
+.hover-box-shadow {
+  transition: all 0.5s ease-in-out;
+  &:hover {
+    box-shadow: $box-shadow;
+  }
+}

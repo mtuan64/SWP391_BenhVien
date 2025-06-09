@@ -1,7 +1,17 @@
-import { defineConfig } from 'vite'
+import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
 
-// https://vite.dev/config/
-export default defineConfig({
-  plugins: [react()],
-})
+// https://vitejs.dev/config/
+export default defineConfig(({ mode }) => {
+  const env = loadEnv(mode, process.cwd(), "");
+  const baseUrl = mode == "production" ? env.BASE_URL : "/";
+
+  return {
+    base: baseUrl,
+    plugins: [react()],
+    build: {
+      outDir: "build",
+      minify: true,
+    },
+  };
+});

@@ -1,0 +1,7 @@
+div:where(.swal2-container) button:where(.swal2-styled).swal2-confirm {
+    background: var(--bs-primary) !important;
+}
+
+div:where(.swal2-container) button:where(.swal2-styled).swal2-confirm:focus{
+    box-shadow: none !important;
+}

@@ -1,0 +1,10 @@
+img.iq-client-img {
+	opacity: .4;
+	filter: grayscale(100%);
+	transition: all .5s ease-in-out;
+
+	&:hover {
+		opacity: 1;
+		filter: none;
+	}
+}

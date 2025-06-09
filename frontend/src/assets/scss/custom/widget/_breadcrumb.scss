@@ -1,0 +1,15 @@
+.iq-breadcrumb {
+    padding: 100px 0;
+
+    .breadcrumb {
+        li {
+            color: var(--#{$variable-prefix}primary);
+        }
+    }
+}
+
+@media (max-width: 767px){
+    .iq-breadcrumb{
+        padding: 70px 0;
+    }
+}

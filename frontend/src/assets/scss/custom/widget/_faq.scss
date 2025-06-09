@@ -1,0 +1,44 @@
+.accordion-item.custom-accordion {
+    border: 1px solid $border-color;
+        .accordion-button {
+            background-color: $white;
+            color: $headings-color;
+            font-size: inherit;
+            text-transform: capitalize;
+            font-weight: inherit;
+            font-family: $headings-font-family;
+
+            &:not(.collapsed) {
+                background-color: var(--#{$variable-prefix}primary);
+                color: $white;
+
+                &::after {
+                    filter: brightness(10);
+                    -webkit-filter: brightness(10);
+                    -moz-filter: brightness(10);
+                }
+            }
+        }
+
+    &:first-of-type {
+        .accordion-button {
+            border-radius: 0;
+        }
+    }
+
+    &:last-of-type {
+        .accordion-button.collapsed {
+            border-radius: 0;
+        }
+    }
+}
+
+@media (max-width:767px){
+    .accordion-item{
+        &.custom-accordion{
+            .accordion-button{
+                font-size: 1rem;
+            }
+        }
+    }
+}

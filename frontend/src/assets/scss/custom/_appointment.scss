@@ -1,0 +1,302 @@
+/*======================
+appointment-tab-form
+============================*/
+.appointment-tab-form {
+    .tab-widget-inner-data {
+        height: calc(100% - 174px);
+        overflow-y: auto;
+        overflow-x: hidden;
+
+        &::-webkit-scrollbar{
+            display: none;
+        }
+
+        .box-checked {
+            .form-check-input {
+                display: none;
+                position: absolute;
+                top: -12px;
+                right: -6px;
+                background-image: none;
+
+                &::after {
+                    content: "";
+                    position: absolute;
+                    left: 4px;
+                    top: 1px;
+                    width: 6px;
+                    height: 10px;
+                    border: solid $white;
+                    border-width: 0 3px 3px 0;
+                    -webkit-transform: rotate(45deg);
+                    -ms-transform: rotate(45deg);
+                    transform: rotate(45deg);
+                }
+
+                &:checked {
+                    display: block;
+                    z-index: 1;
+
+                    +.form-check-label {
+                        border-color: $primary;
+                    }
+                }
+            }
+
+            .form-check-label {
+                border: var(--bs-border-width) var(--bs-border-style) var(--bs-border-color);
+                cursor: pointer;
+            }
+        }
+
+        .flatpickr-calendar {
+            width: 100%;
+            box-shadow: none;
+            background: transparent;
+
+            .flatpickr-day {
+                max-width: 100%;
+                height: 100%;
+                line-height: 48px;
+            }
+
+            .flatpickr-days {
+                width: 100%;
+
+                .dayContainer {
+                    width: 100%;
+                    max-width: 100%;
+                    min-width: 100%;
+                }
+            }
+        }
+
+        .nav-tabs {
+            .nav-link {
+                position: relative;
+                overflow: hidden;
+                background-color: transparent;
+                padding: 13px 40px 10px;
+                border-top-left-radius: 8px;
+                border-top-right-radius: 8px;
+                border-bottom-left-radius: 0;
+                border-bottom-right-radius: 0;
+                transition: background-color 0.2s ease-in-out;
+
+                &.active {
+                    background-color: rgba(var(--bs-primary-rgb), 0.1);
+                    color: $primary;
+
+                    &::after {
+                        opacity: 1;
+                    }
+                }
+
+                &::after {
+                    content: "";
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    height: 3px;
+                    width: 100%;
+                    background-color: var(--#{$variable-prefix}primary);
+                    opacity: 0;
+                    transition: all 0.5s ease-in-out;
+                }
+            }
+        }
+    }
+
+    #appointment-tab-list {
+        .tab-position {
+            position: relative;
+
+            &::after {
+                content: "";
+                position: absolute;
+                top: 35px;
+                left: 50%;
+                height: calc(100% - 35px);
+                width: 1px;
+                background-color: $white;
+                transform: translateX(-50%);
+            }
+        }
+
+        .active-circle {
+            height: 24px;
+            width: 24px;
+            text-align: center;
+            border-radius: 50%;
+            border: var(--bs-border-width) var(--bs-border-style) var(--bs-border-color);
+            position: relative;
+            transition: all 0.5s ease-in-out;
+
+            &::before {
+                content: "";
+                height: 5px;
+                width: 5px;
+                border-radius: 50%;
+                background-color: $white;
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+            }
+        }
+
+        .tab-title {
+            font-size: 18px;
+            font-family: $headings-font-family;
+            color: $light;
+        }
+
+        .tab-desc {
+            color: $light;
+        }
+
+        // active tab
+        .active {
+            .active-circle {
+                background-color: $white;
+
+                &::before {
+                    background-color: $primary;
+                }
+            }
+
+            .tab-title {
+                color: $white;
+            }
+
+            .tab-desc {
+                color: $white;
+            }
+
+            &.done {
+                .active-circle {
+                    background-color: $success;
+
+                    &::before {
+                        background-color: $white;
+                    }
+                }
+            }
+        }
+    }
+}
+
+@media (max-width: 991px) {
+    .appointment-tab-form {
+        #appointment-tab-list {
+            li {
+                line-height: 0;
+
+                &:last-child {
+                    .tab-position {
+                        &::after {
+                            content: none;
+                        }
+                    }
+                }
+            }
+
+            .tab-position {
+                &::after {
+                    width: calc(100% - 35px);
+                    height: 1px;
+                    top: 50%;
+                    left: auto;
+                    right: 0;
+                    -webkit-transform: translateX(0) translateY(-50%);
+                    -ms-transform: translateX(0) translateY(-50%);
+                    transform: translateX(0) translateY(-50%);
+                }
+            }
+        }
+    }
+}
+
+@media (max-width: 575px) {
+    .appointment-tab-form {
+        #appointment-tab-list {
+            .tab-position {
+                .active-circle {
+                    height: 18px;
+                    width: 18px;
+                }
+
+                &::after {
+                    width: 10px;
+                }
+            }
+        }
+    }
+}
+
+@media (max-width: 442px) {
+    .appointment-tab-form {
+        .tab-widget-inner-data {
+            height: calc(100% - 207px);
+
+            .nav-tabs{
+
+                .nav-item{
+                    width: 50%;
+                }
+
+                .nav-link{
+                    padding: 13px 15px 10px;
+                    width: 100%;
+                }
+            }
+        }
+    }
+
+    .tab-widget-inner {
+        .iq-button {
+            font-size: 12px;
+            padding: 1em 1.5em;
+        }
+    }
+}
+
+
+.inline-flatpickr:has(.flatpickr-calendar.inline) {
+    .flatpickr-input {
+        display: none;
+    }
+}
+.flatpickr-calendar {
+    .flatpickr-innerContainer {
+        background: transparent;
+    }
+    .flatpickr-weekdays {
+        background: transparent;
+        color: var(--bs-heading-color);
+    }
+    .flatpickr-months {
+        .flatpickr-month {
+            background: transparent;
+            color: var(--bs-heading-color);
+        }
+    }
+    span.flatpickr-weekday {
+        background: transparent;
+        color: var(--bs-heading-color);
+    }
+    .flatpickr-current-month {
+        .flatpickr-monthDropdown-months {
+            background: transparent;
+            color: var(--bs-heading-color);
+        }
+    }
+    .flatpickr-months {
+        .flatpickr-prev-month {
+            fill: var(--bs-heading-color);
+        }
+        .flatpickr-next-month {
+            fill: var(--bs-heading-color);
+        }
+    }
+}

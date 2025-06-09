@@ -1,0 +1,7 @@
+.payment-box{
+    &::before{
+        right: 0;
+        left: auto;
+        margin: -1em 2em 0 0;
+    }
+}

@@ -1,0 +1,14 @@
+.arrow-joint {
+    left: 0 !important;
+    right: auto !important;
+
+    .swiper-button-next{
+        left: 0 !important;
+        right: auto !important;
+    }
+
+    .swiper-button-left{
+        right: 0 !important;
+        left: auto !important;
+    }
+}

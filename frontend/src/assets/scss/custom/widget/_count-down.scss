@@ -1,0 +1,80 @@
+.count-down {
+    li {
+        margin: 0 45px;
+
+        &:first-child {
+            margin-left: 0;
+        }
+
+        &::after {
+            content: ":";
+            position: absolute;
+            right: -45px;
+            top: 15%;
+            color: var(--#{$variable-prefix}secondary);
+            font-size: 50px;
+            font-weight: $font-weight-bold;
+        }
+
+        &:last-child {
+            &::after {
+                content: none;
+            }
+        }
+
+        .numberDisplay {
+            color: $headings-color;
+            font-size: 67px;
+            display: block;
+        }
+
+        span {
+            font-size: $font-size-base;
+        }
+    }
+}
+
+.mail-box-width {
+    .mail-box {
+        width: 30%;
+    }
+}
+
+@media (max-width:1024px) {
+    .mail-box-width {
+        .mail-box {
+            width: 80%;
+        }
+    }
+
+    .count-down {
+        .displaySection {
+            .numberDisplay {
+                font-size: 52px;
+            }
+        }
+    }
+}
+
+@media (max-width:767px) {
+    .count-down {
+        li {
+            margin: 0 0 10px;
+            text-align: center;
+            min-width: 4rem;
+
+            .numberDisplay {
+                text-align: center;
+                font-size: 26px;
+            }
+            &::after {
+                font-size: 20px;
+                right: -5px;
+                top: 8%;
+            }
+            span {
+                font-size: .8rem;
+            }
+        }
+    }
+}

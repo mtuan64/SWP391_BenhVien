@@ -1,0 +1,90 @@
+.iq-button {
+  display: inline-block;
+  background-color: var(--#{$variable-prefix}secondary);
+  color: $white;
+  font-size: 0.875rem;
+  font-weight: 700;
+  line-height: 20px;
+  letter-spacing: .0375em;
+  padding: 1em 2em;
+  transition: all 0.5s ease-in-out;
+
+  .iq-btn-text-holder {
+    display: inline-block;
+    padding: 0 0.5em 0 0;
+    margin-right: 0.5em;
+    vertical-align: middle;
+
+    &::after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      right: -1px;
+      transform: translateY(-50%);
+      height: 12px;
+      width: 1px;
+      background-color: #dbdfe7;
+    }
+  }
+
+  &.iq-btn-link {
+    background: transparent;
+    padding: 0;
+    color: var(--#{$variable-prefix}primary);
+    letter-spacing: 0.08em;
+
+    svg {
+      transition: all 0.5s ease-out;
+      margin-left: 0.3125em;
+    }
+
+    &:hover {
+      color: var(--#{$variable-prefix}secondary);
+
+      svg {
+        transform: rotate(90deg);
+      }
+    }
+  }
+
+  .iq-btn-icon-holder {
+    line-height: 16px;
+
+    svg {
+      transition: all 0.5s ease-in-out;
+    }
+  }
+
+  &:hover {
+    color: $white;
+
+    .iq-btn-icon-holder {
+      svg {
+        transform: rotate(90deg);
+      }
+    }
+  }
+}
+
+.button-white {
+  .iq-button {
+    background: $white;
+    color: var(--#{$variable-prefix}primary);
+
+    .iq-btn-text-holder {
+      &::after {
+        background-color: var(--#{$variable-prefix}primary);
+      }
+    }
+  }
+}
+
+.button-primary {
+  .iq-button {
+    background-color: var(--#{$variable-prefix}primary);
+  }
+}
+
+button.iq-button {
+  border: none;
+}

@@ -1,0 +1,152 @@
+.navbar-nav {
+    padding-right: 0;
+}
+
+header {
+    .navbar {
+        .horizontal-nav {
+            padding-left: 0;
+            padding-right: 5em;
+        }
+    }
+
+    &.skin-specialist{
+        .right-panel {
+            .navbar-nav {
+                li {
+                    &::after{
+                        right: auto;
+                        left: 0;
+                    }
+                }
+            }
+        }
+    }
+}
+
+@include media-breakpoint-up(xl) {
+    .iq-nav-menu {
+        li {
+            >ul {
+                ul {
+                    left: auto;
+                    right: 100%;
+                }
+            }
+        }
+    }
+    header {
+        &.header-dentist{
+            .navbar {
+                .horizontal-nav {
+                    padding-left: 0;
+                    padding-right: 0;
+                }
+            }
+        }
+    }
+}
+
+@media (max-width: 1599px) {
+    header {
+        .navbar {
+            .horizontal-nav {
+                padding-right: 3rem;
+            }
+        }
+    }
+}
+
+@media (max-width: 1499px) {
+    header {
+        .navbar {
+            .horizontal-nav {
+                padding-right: 2rem;
+            }
+        }
+    }
+}
+
+@include media-breakpoint-down(xl) {
+    header {
+        .navbar {
+            .horizontal-nav {
+                padding-left: 1rem;
+                padding-right: 1rem;
+            }
+
+            .iq-nav-menu {
+                &.navbar-nav {
+                    li {
+                        ul {
+                            &.sub-nav {
+                                ul {
+                                    &.sub-nav {
+                                        margin-right: 1rem;
+                                        margin-left: 0;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            &.iq-navbar{
+                .navbar-collapse{
+                    &:not(.offcanvas-collapse){
+                        .navbar-nav{
+                            float: left;
+                            li{
+                                padding: .5rem 0 0 1rem;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    .horizontal-nav{
+        &.mobile-offcanvas{
+            left: auto;
+            right: 0;
+            -ms-transform: translateX(100%);
+                transform: translateX(100%);
+
+             &.show{
+                -ms-transform: translateX(0);
+                transform: translateX(0);
+             }
+        }
+    }
+}
+
+@include media-breakpoint-down(lg) {
+    header {
+        .navbar {
+            .horizontal-nav {
+                padding-left: 0;
+                padding-right: 0;
+            }
+        }
+    }
+}
+
+@include media-breakpoint-down(sm){
+    header{
+        .navbar{
+            &.iq-navbar{
+                .navbar-collapse{
+                    &:not(.offcanvas-collapse){
+                        .navbar-nav{
+                            li{
+                                padding: .5rem 0 0 .5rem;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

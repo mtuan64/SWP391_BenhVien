@@ -1,0 +1,42 @@
+.scrolling-text {
+    top: -40px;
+    z-index: 0;
+    font-size: 130px;
+    line-height: 94px;
+    color: #171C2605;
+    font-weight: 700;
+}
+
+.text-center {
+    .scrolling-text {
+        left: 0;
+        right: 0;
+    }
+}
+
+.text-right {
+    .scrolling-text {
+        left: auto;
+        right: 0;
+    }
+}
+
+.bg-primary {
+    .scrolling-text {
+        color: rgb(255 255 255 / 12%);
+    }
+}
+
+@media (max-width: 767px) {
+    .scrolling-text {
+        font-size: 40px;
+        line-height: 50px;
+    }
+}
+
+@media (max-width:1024px) {
+    .scrolling-text {
+        top: -30px;
+        font-size: 60px;
+    }
+}

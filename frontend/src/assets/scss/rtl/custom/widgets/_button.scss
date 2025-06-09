@@ -1,0 +1,34 @@
+.iq-button {
+    .iq-btn-text-holder {
+        padding: 0 0 0 .5em;
+        margin-right: 0;
+        margin-left: .5em;
+
+        &::after {
+            right: auto;
+            left: -2px;
+        }
+    }
+
+    &:hover {
+        .iq-btn-icon-holder {
+            svg {
+                transform: rotate(-90deg);
+            }
+        }
+    }
+
+    &.iq-btn-link {
+        svg {
+            margin-left: 0;
+            margin-right: 0.3125em;
+        }
+
+        &:hover {
+            svg {
+                transform: rotate(-90deg);
+            }
+        }
+    }
+
+}
