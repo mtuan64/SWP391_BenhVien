@@ -199,7 +199,7 @@ const DoctorPage = () => {
         </Container>
       </div>
 
-      <FooterComponent />
+      
     </>
   );
 };

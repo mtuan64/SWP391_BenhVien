@@ -14,6 +14,7 @@ import Header from "./components/HeaderComponent";
 import MenuComponent from "./components/MenuComponent";
 import FooterComponent from "./components/FooterComponent";
 import "antd/dist/reset.css"; // hoặc 'antd/dist/antd.css' nếu bạn dùng antd v4
+import DetailPatientRecordPage from "./pages/DetailPatientRecord";
 
 const DRAWER_WIDTH = 240;
 
@@ -60,6 +61,7 @@ const App = () => {
           <Route path="/myprofile" element={<ProfilePage />} />
           <Route path="/appointment" element={<AppointmentPage />} />
           <Route path="/doctor/:doctorId" element={<DoctorDetail />} />
+          <Route path="/doctor/patient-records/:recordId" element={<DetailPatientRecordPage />} />
         </Routes>
       </div>
 

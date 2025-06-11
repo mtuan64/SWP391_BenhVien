@@ -77,7 +77,7 @@ const DoctorDetail = () => {
         </Row>
       </div>
 
-      
+
 
       {/* Hero Carousel */}
       <div id="heroCarousel" className="carousel slide carousel-fade" data-bs-ride="carousel">
@@ -140,7 +140,6 @@ const DoctorDetail = () => {
         </Container>
       </div>
 
-      <FooterComponent />
     </>
   );
 };
