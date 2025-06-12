@@ -1,21 +1,62 @@
 const User = require("../../models/User");
+const jwt = require("jsonwebtoken");
+const mongoose = require('mongoose');
 
-//[POST] /api/login
-module.exports.Login = async (req, res) => {
+const Login = async (req, res) => {
+  const { userEmail, userPassword } = req.body;
+  try{
+    //tim ng dung trong db
+    console.log(req.body);
+    const user = await User.findOne({email :userEmail});
+    if(!user) {
+      return res.status(400).json({message: "invalid email"});
+    }
+    if(userPassword !== user.password){
+      return res.status(400).json({message: "invalid password"});
+    }
+
+    const payLoad = {
+      id: user._id,
+      email: user.email,
+      name: user.name
+    };
+
+    const token = jwt.sign(payLoad,"3ubgunbguisgy47ni7rynvgtkuenkjdsfnhrvbyr7tvbkuynv",{expiresIn: '1h'});
+    res.status(200).json({message: "OK"});
+  } catch(error){
+    res.status(500).json({message: "loi server"});
+  }
+}
+
+
+
+const Signup = async (req, res) => {
+   if (!req.body) {
+    return res.status(400).json({ error: "Missing request body" });
+  }
+  const { email, password, name, phone } = req.body;
   try {
-    const { username, password } = req.body;
-    if (!username || !password) {
-      return res
-        .status(400)
-        .json({ message: "Username and password are required" });
+    const emailExist = await User.findOne({ email });
+    if (emailExist) {
+      return res.status(400).json({ message: 'Email da ton tai'});
     }
-    const user = await User.findOne({ username });
-    if (!user || user.password !== password) {
-      return res.status(401).json({ message: "Invalid username or password" });
-    }
-    return res.status(200).json({ message: "Login successful" });
+
+    const newUser = new User({
+      email,
+      password,
+      name,
+      phone,
+      status: 'active'
+    });
+    await newUser.save();
+
+    res.status(200).json({message: "Dang ky thanh cong"});
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: "Internal server error" });
+    
+    res.status(500).json({message: "Lỗi máy chủ"});
   }
 };
+
+module.exports = {
+  Login,Signup
+}
