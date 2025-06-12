@@ -6,7 +6,10 @@ const userSchema = new mongoose.Schema({
   name: { type: String, required: true },
   phone: { type: String },
   status: { type: String, enum: ['active', 'inactive'], default: 'active' },
-  profiles: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Profile' }]
+  profiles: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Profile' }],
+  isAdmin: {
+    type: Boolean, default: false
+  }
 }, { timestamps: true });
 
 module.exports = mongoose.model('User', userSchema);
