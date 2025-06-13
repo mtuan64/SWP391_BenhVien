@@ -22,7 +22,7 @@ const Login = async (req, res) => {
     };
 
     const token = jwt.sign(payLoad,"3ubgunbguisgy47ni7rynvgtkuenkjdsfnhrvbyr7tvbkuynv",{expiresIn: '1h'});
-    res.status(200).json({message: "OK"});
+    res.status(200).json({message: "OK", token:token, user : user});
   } catch(error){
     res.status(500).json({message: "loi server"});
   }
@@ -56,7 +56,14 @@ const Signup = async (req, res) => {
     res.status(500).json({message: "Lỗi máy chủ"});
   }
 };
+const check = async (req, res) => {
+  
+
+    res.status(200).json({message: "API hoat dong"});
+  
+};
 
 module.exports = {
-  Login,Signup
+  Login,Signup,check
 }
+

@@ -12,12 +12,12 @@ const LoginPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch("http://localhost:9999/api/login", {
+      const response = await fetch("http://localhost:9999/api/auth/Login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ userEmail:email, userPassword:password }),
       });
 
       const data = await response.json();
@@ -63,7 +63,7 @@ const LoginPage = () => {
           <form onSubmit={handleSubmit} className="loginForm">
             <div className="formGroup">
               <label htmlFor="email" className="label">
-                Tên Người Dùng
+                Email
               </label>
               <input
                 type="text"
