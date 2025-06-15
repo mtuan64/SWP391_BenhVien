@@ -13,6 +13,7 @@ import AppointmentPage from "./pages/AppointmentPage";
 import Header from "./components/HeaderComponent";
 import MenuComponent from "./components/MenuComponent";
 import FooterComponent from "./components/FooterComponent";
+import Changepass from "./pages/ChangePassword";
 import "antd/dist/reset.css"; // hoặc 'antd/dist/antd.css' nếu bạn dùng antd v4
 
 const DRAWER_WIDTH = 240;
@@ -60,6 +61,8 @@ const App = () => {
           <Route path="/myprofile" element={<ProfilePage />} />
           <Route path="/appointment" element={<AppointmentPage />} />
           <Route path="/doctor/:doctorId" element={<DoctorDetail />} />
+                    <Route path="/changepass" element={<Changepass />} />
+
         </Routes>
       </div>
 

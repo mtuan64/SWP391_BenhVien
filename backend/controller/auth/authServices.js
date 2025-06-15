@@ -16,6 +16,7 @@ const Login = async (req, res) => {
     }
 
     const payLoad = {
+      
       id: user._id,
       email: user.email,
       name: user.name
@@ -57,13 +58,96 @@ const Signup = async (req, res) => {
   }
 };
 const check = async (req, res) => {
-  
-
     res.status(200).json({message: "API hoat dong"});
-  
+};
+
+const changePassword = async (req, res) => {
+    try {
+        const { email, newPassword } = req.body;
+
+        // Kiểm tra thông tin đầu vào
+        if (!email) {
+            return res.status(400).json({ message: "email and new password are required" });
+        }
+
+        // Kiểm tra xem email là email hay số điện thoại hợp lệ
+        // const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+        // const isPhone = /^\+?[1-9]\d{1,14}$/.test(email);
+
+        // if (!isEmail && !isPhone) {
+        //     return res.status(400).json({ message: "Invalid email or phone number format" });
+        // }
+
+        // Tìm người dùng trong cơ sở dữ liệu
+        const user = await User.findOne({ email: email } );
+
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        // const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+        // // Cập nhật mật khẩu mới và xóa OTP
+        user.password = newPassword;
+        // user.emailVerificationCode = null;
+        // user.phoneVerificationCode = null;
+        // user.isEmailVerified = false; // Reset trạng thái xác minh
+        // user.isPhoneVerified = false;
+        await user.save();
+
+        return res.status(200).json({ message: "Password changed successfully" });
+    } catch (error) {
+        console.error("Error in changePassword:", error);
+        res.status(500).json({ message: "Server error", error: error.message });
+    }
+};
+ const forgotPassword = async (req, res) => {
+    try {
+        const { email } = req.body;
+
+        // Kiểm tra nếu là email hợp lệ
+
+        if (!email) {
+            return res.status(400).json({ message: "Invalid email format" });
+        }
+
+        // Tìm người dùng theo email 
+        const user = await User.findOne({ email: email });
+
+        if (!user) {
+            return res.status(404).json({ message: "Email not registered" });
+        }
+
+        // Generate OTP
+        const otp = generateVerificationCode();
+        const expirationTime = new Date(Date.now() + 15 * 60 * 1000); // OTP hết hạn sau 15 phút
+
+        // Cập nhật OTP vào người dùng
+        if (email) {
+            user.emailVerificationCode = otp;
+        } else {
+            user.phoneVerificationCode = otp;
+        }
+        user.verificationExpires = expirationTime;
+
+        // Lưu lại thay đổi trên cơ sở dữ liệu
+        await user.save();
+
+        // Gửi OTP qua email hoặc SMS
+        if (email) {
+            await email.sendVerificationEmail(contact, otp);
+        } else {
+            await sendVerificationSMS(contact, otp); // Sử dụng dịch vụ SMS
+        }
+
+        return res.status(200).json({ message: "OTP sent successfully" });
+    } catch (error) {
+        console.error("Error in forgotPassword: ", error);
+        res.status(500).json({ message: "Server error", error: error.message });
+    }
 };
 
 module.exports = {
-  Login,Signup,check
+  Login,Signup,check,changePassword,forgotPassword
 }
 
