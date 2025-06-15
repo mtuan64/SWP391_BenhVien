@@ -3,35 +3,35 @@ import { useNavigate } from "react-router-dom";
 import "../assets/css/Register.css";
 
 const RegisterPage = () => {
-  const [username, setUsername] = useState("");
+  const [name, setName] = useState("");
   const [password, setPassword] = useState("");
-  const [fullname, setFullname] = useState("");
+  // const [fullname, setFullname] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
-  const [address, setAddress] = useState("");
-  const [dob, setDob] = useState("");
-  const [gender, setGender] = useState("");
-  const roleid = 1;
+  // const [address, setAddress] = useState("");
+  // const [dob, setDob] = useState("");
+  // const [gender, setGender] = useState("");
+  // const roleid = 1;
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch("http://localhost:9999/api/register", {
+      const response = await fetch("http://localhost:9999/api/auth/signup", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          username,
-          password,
-          fullname,
-          email,
-          phone,
-          address,
-          dob,
-          gender,
-          roleid,
+          name:name,
+          password:password,
+          // fullname,
+          email:email,
+          phone:phone,
+          // address,
+          // dob,
+          // gender,
+          // roleid:roleid,
         }),
       });
       const data = await response.json();
@@ -65,14 +65,14 @@ const RegisterPage = () => {
           <h2 className="registerTitle">ĐĂNG KÝ</h2>
           <form onSubmit={handleSubmit} className="registerForm">
             <div className="formGroup">
-              <label htmlFor="username" className="label">
-                Tên Người Dùng
+              <label htmlFor="name" className="label">
+                Họ và tên
               </label>
               <input
                 type="text"
-                id="username"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                id="name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
                 className="input"
                 required
               />
@@ -91,17 +91,17 @@ const RegisterPage = () => {
               />
             </div>
             <div className="formGroup">
-              <label htmlFor="fullname" className="label">
+              {/* <label htmlFor="fullname" className="label">
                 Họ và Tên
-              </label>
-              <input
+              </label> */}
+              {/* <input
                 type="text"
                 id="fullname"
                 value={fullname}
                 onChange={(e) => setFullname(e.target.value)}
                 className="input"
                 required
-              />
+              /> */}
             </div>
             <div className="formGroup">
               <label htmlFor="email" className="label">
@@ -130,36 +130,36 @@ const RegisterPage = () => {
               />
             </div>
             <div className="formGroup">
-              <label htmlFor="address" className="label">
+              {/* <label htmlFor="address" className="label">
                 Địa Chỉ
-              </label>
-              <input
+              </label> */}
+              {/* <input
                 type="text"
                 id="address"
                 value={address}
                 onChange={(e) => setAddress(e.target.value)}
                 className="input"
                 required
-              />
+              /> */}
             </div>
             <div className="formGroup">
-              <label htmlFor="dob" className="label">
+              {/* <label htmlFor="dob" className="label">
                 Ngày Sinh
-              </label>
-              <input
+              </label> */}
+              {/* <input
                 type="date"
                 id="dob"
                 value={dob}
                 onChange={(e) => setDob(e.target.value)}
                 className="input"
                 required
-              />
+              /> */}
             </div>
             <div className="formGroup">
-              <label htmlFor="gender" className="label">
+              {/* <label htmlFor="gender" className="label">
                 Giới Tính
-              </label>
-              <select
+              </label> */}
+              {/* <select
                 id="gender"
                 value={gender}
                 onChange={(e) => setGender(e.target.value)}
@@ -170,7 +170,7 @@ const RegisterPage = () => {
                 <option value="male">Nam</option>
                 <option value="female">Nữ</option>
                 <option value="other">Khác</option>
-              </select>
+              </select> */}
             </div>
             <button type="submit" className="registerButton">
               Đăng Ký
