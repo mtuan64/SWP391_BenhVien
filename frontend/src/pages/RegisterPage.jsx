@@ -17,7 +17,7 @@ const RegisterPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch("http://localhost:9999/api/auth/Signup", {
+      const response = await fetch("http://localhost:9999/api/auth/signup", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
