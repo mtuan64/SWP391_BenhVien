@@ -697,3 +697,9 @@ p {
 .footer .social-icons a:hover {
     color: var(--primary);
 }
+.modal-update-appointment {
+    position: fixed;
+    top: 5%;
+    transform: translate(-50%, -50%);
+    z-index: 1100; /* lớn hơn navbar */
+}
