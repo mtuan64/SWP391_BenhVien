@@ -10,6 +10,7 @@ import AboutPage from "./pages/AboutPage";
 import ProfilePage from "./pages/ProfilePage";
 import HomePage from "./pages/Homepage";
 import AppointmentPage from "./pages/AppointmentPage";
+import AppointmentSchedule from "./pages/AppointmentSchedule";
 import Header from "./components/HeaderComponent";
 import MenuComponent from "./components/MenuComponent";
 import FooterComponent from "./components/FooterComponent";
@@ -59,6 +60,7 @@ const App = () => {
           <Route path="/about" element={<AboutPage />} />
           <Route path="/myprofile" element={<ProfilePage />} />
           <Route path="/appointment" element={<AppointmentPage />} />
+          <Route path="/appointmentschedule" element={<AppointmentSchedule />} />
           <Route path="/doctor/:doctorId" element={<DoctorDetail />} />
         </Routes>
       </div>
