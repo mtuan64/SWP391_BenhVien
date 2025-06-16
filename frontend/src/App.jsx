@@ -13,7 +13,10 @@ import AppointmentPage from "./pages/AppointmentPage";
 import Header from "./components/HeaderComponent";
 import MenuComponent from "./components/MenuComponent";
 import FooterComponent from "./components/FooterComponent";
-import "antd/dist/reset.css"; // hoặc 'antd/dist/antd.css' nếu bạn dùng antd v4
+import "antd/dist/reset.css";
+import MedicalLabPage from "./pages/BlogTestPage.jsx";
+import TestPageDetails from "./pages/TestPageDetails.jsx";
+import WorkSchedulePage from "./pages/WorkSchedulePage.jsx"; // hoặc 'antd/dist/antd.css' nếu bạn dùng antd v4
 
 const DRAWER_WIDTH = 240;
 
@@ -60,6 +63,9 @@ const App = () => {
           <Route path="/myprofile" element={<ProfilePage />} />
           <Route path="/appointment" element={<AppointmentPage />} />
           <Route path="/doctor/:doctorId" element={<DoctorDetail />} />
+            <Route path={'/lab-test'} element={<MedicalLabPage />}/>
+            <Route path={'/lab-test/:testId'} element={<TestPageDetails />}/>
+            <Route path={'/work-schedule'} element={<WorkSchedulePage />}/>
         </Routes>
       </div>
 
