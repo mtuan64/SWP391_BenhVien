@@ -8,7 +8,11 @@ const employeeSchema = new mongoose.Schema({
   department: { type: String },
   specialization: { type: String },
   phone: { type: String },
-  status: { type: String, enum: ['active', 'inactive'], default: 'active' }
+  status: { type: String, enum: ['active', 'inactive'], default: 'active' },
+  schedule: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Schedule' }], 
+  services: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Services' }],
 }, { timestamps: true });
+
+employeeSchema.index({ role: 1, status: 1 }); // Index for doctor queries
 
 module.exports = mongoose.model('Employee', employeeSchema);
