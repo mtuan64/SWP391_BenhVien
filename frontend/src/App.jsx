@@ -14,7 +14,12 @@ import Header from "./components/HeaderComponent";
 import MenuComponent from "./components/MenuComponent";
 import FooterComponent from "./components/FooterComponent";
 import "antd/dist/reset.css"; // hoặc 'antd/dist/antd.css' nếu bạn dùng antd v4
-
+import AddMedicalRecord from "./components/AddMedicalRecord";
+import ViewMedicalRecords from "./components/ViewMedicalRecord";
+import InvoiceList from "./components/InvoiceList";
+import PaymentSuccess from "./components/PaymentSuccess";
+import PaymentFail from "./components/PaymentFail";
+import LabtestResult from "./components/LabTestResult";
 const DRAWER_WIDTH = 240;
 
 const App = () => {
@@ -60,6 +65,13 @@ const App = () => {
           <Route path="/myprofile" element={<ProfilePage />} />
           <Route path="/appointment" element={<AppointmentPage />} />
           <Route path="/doctor/:doctorId" element={<DoctorDetail />} />
+          <Route path="/medicalrecord" element={<AddMedicalRecord />} />
+          <Route path="/medicalrecords" element={<ViewMedicalRecords />} />
+          <Route path="/payment" element={<InvoiceList />} />
+          <Route path="/payment/success" element={<PaymentSuccess />} />
+          <Route path="/payment/fail" element={<PaymentFail />} />
+          <Route path="/labtests" element={<LabtestResult />} />
+
         </Routes>
       </div>
 

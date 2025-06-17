@@ -10,6 +10,6 @@ const paymentSchema = new mongoose.Schema({
   paymentDate: { type: Date, required: true }
 }, { timestamps: true });
 
-paymentSchema.index({ invoiceId: 1 });
+// paymentSchema.index({ invoiceId: 1 });
 
 module.exports = mongoose.model('Payment', paymentSchema);

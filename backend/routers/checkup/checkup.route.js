@@ -1,7 +1,16 @@
 const express = require('express');
-const { createCheckup } = require('../../controller/checkup/checkUpServices');
+const { createCheckup, LabTestbyProfileId } = require('../../controller/checkup/checkUpServices');
+const { createMedicalRecord, allMedicalRecord, editMedicalRecord } = require('../../controller/checkup/medicalRecordController');
 const checkupRouter = express.Router();
-
-checkupRouter.post('/create', createCheckup);
-
+const paymentController = require('../../controller/checkup/PaymentController');
+const invoiceController = require('../../controller/checkup/InvoiceController');
+checkupRouter.post('/create-payment-link', paymentController.createPaymentLink);
+checkupRouter.post('/webhook', paymentController.handleWebhook);
+checkupRouter.get('/success/:paymentId', paymentController.paymentSuccess);
+checkupRouter.get('/cancel', paymentController.paymentCancel);
+checkupRouter.get('/medical-records', allMedicalRecord);
+checkupRouter.post('/medical-record', createMedicalRecord);
+checkupRouter.put('/medical-records/:id', editMedicalRecord);
+checkupRouter.get('/invoices', invoiceController.getAllInvoices);
+checkupRouter.get('/labtestresult/:profileId', LabTestbyProfileId);
 module.exports = checkupRouter;
