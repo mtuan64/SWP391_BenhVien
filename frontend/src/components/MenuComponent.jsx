@@ -17,7 +17,6 @@ const menuByRole = {
         { title: "Manage BlogList", path: "/bloglist", icon: <FileTextOutlined /> },
         { title: "Manage Doctor Account", path: "/doctoraccount", icon: <FileTextOutlined /> },
         { title: "Settings", path: "/settings", icon: <SettingOutlined /> },
-        { title: "Appointment Schedule", path: "/appointmentSchedule", icon: <FileTextOutlined /> },
     ],
     doctor: [
         { title: "Home", path: "/", icon: <HomeOutlined /> },
@@ -26,13 +25,11 @@ const menuByRole = {
         { title: "Message Management", path: "/message-management", icon: <LockOutlined /> },
         { title: "Attendance Management", path: "/attendance-management", icon: <LockOutlined /> },
         { title: "Recruitment Management", path: "/recruitment-management-mentor", icon: <LockOutlined /> },
-        { title: "Appointment Schedule", path: "/appointmentSchedule", icon: <FileTextOutlined /> },
     ],
     staff: [
         { title: "Home", path: "/", icon: <HomeOutlined /> },
         { title: "Addresses", path: "/addresses", icon: <UserOutlined /> },
         { title: "Change Password", path: "/change-password", icon: <LockOutlined /> },
-        { title: "Appointment Schedule", path: "/appointmentSchedule", icon: <FileTextOutlined /> },
     ],
     patient: [
         { title: "Home", path: "/", icon: <HomeOutlined /> },
@@ -41,7 +38,6 @@ const menuByRole = {
         { title: "Schedule", path: "/schedule", icon: <FileTextOutlined /> },
         { title: "Attendance", path: "/attendance", icon: <FileTextOutlined /> },
         { title: "Mark Report", path: "/attendance", icon: <FileTextOutlined /> },
-        { title: "Appointment Schedule", path: "/appointmentSchedule", icon: <FileTextOutlined /> },
     ],
 };
 
