@@ -12,6 +12,10 @@ import AppointmentPage from "./pages/AppointmentPage";
 import Header from "./components/HeaderComponent";
 import MenuComponent from "./components/MenuComponent";
 import FooterComponent from "./components/FooterComponent";
+import Changepass from "./pages/ChangePassword";
+import ResetPassword from "./pages/ResetPassword";
+import ForgotPassword from "./pages/ForgotPassword";
+import "antd/dist/reset.css"; // hoặc 'antd/dist/antd.css' nếu bạn dùng antd v4
 
 import "antd/dist/reset.css";
 import AdminLayout from "./components/admin/AdminLayout";
@@ -75,6 +79,30 @@ const App = () => {
           }
         />
       </Routes>
+
+      {/* Main content, dịch sang phải khi menu mở */}
+      <div
+        style={{
+          marginTop: 84,
+          marginLeft: menuOpen ? DRAWER_WIDTH : 0,
+          transition: "margin-left 0.3s cubic-bezier(.4,0,.2,1)",
+        }}
+      >
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/service" element={<ServicePage />} />
+          <Route path="/doctor" element={<DoctorPage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+          <Route path="/about" element={<AboutPage />} />
+          <Route path="/myprofile" element={<ProfilePage />} />
+          <Route path="/appointment" element={<AppointmentPage />} />
+          <Route path="/doctor/:doctorId" element={<DoctorDetail />} />
+          <Route path="/changepass" element={<Changepass />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
+        </Routes>
+      </div>
     </Router>
   );
 };
