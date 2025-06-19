@@ -18,10 +18,11 @@ app.use(cors(corsOptions));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-app.use("/api/checkup", require("./routers/checkup/checkup.route"));
-app.use("/api/apm", require("./routers/appointment/appointment.routes"));
+app.use("/api/user", require("./routers/User/user.route"));
+app.use("/api/admin", require("./routers/Admin/admin.route"));
 app.use("/api/auth", require("./routers/auth/auth.route"));
-app.use("/api/med", require("./routers/medicine/medicine.route"));
+app.use("/api/doctor", require("./routers/Doctor/doctor.route"));
+app.use("/api/staff", require("./routers/Staff/staff.route"));
 
 const PORT = process.env.PORT || 9999;
 app.listen(PORT, () => {
