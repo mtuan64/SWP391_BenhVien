@@ -1,7 +1,10 @@
 const express = require('express');
-const medicineRouter = express.Router();
+const router = express.Router();
 
-const {getAllInvoice} = require("../controller/medicine/medService")
+const {getAllInvoices, createInvoice} = require('../../controller/medicine/medServices');
 
-router
-module.exports = medicineRouter;
+// Route xử lý GET /invoices
+router.get('/invoices', getAllInvoices);
+router.post('/invoices', createInvoice);
+
+module.exports = router;

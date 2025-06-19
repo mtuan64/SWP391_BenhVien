@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-
 import ServicePage from "./pages/ServicePage";
 import DoctorPage from "./pages/DoctorPage";
 import LoginPage from "./pages/LoginPage";
@@ -13,58 +12,78 @@ import AppointmentPage from "./pages/AppointmentPage";
 import Header from "./components/HeaderComponent";
 import MenuComponent from "./components/MenuComponent";
 import FooterComponent from "./components/FooterComponent";
-import "antd/dist/reset.css"; // hoặc 'antd/dist/antd.css' nếu bạn dùng antd v4
+import StaffLayout from "./components/Staff/StaffLayout"; 
+import BlogManagement from "./pages/staff/BlogManagement";
+import ServiceManagement from "./pages/staff/ServiceManagement";
+import SpecialtyManagement from "./pages/staff/SpecialtyManagement";
+import InvoiceManagement from "./pages/staff/InvoiceManagement";
+import PaymentView from "./pages/staff/PaymentView";
+import NewsManagement from "./pages/staff/NewsManagement";
+import FeedbackManagement from "./pages/staff/FeedbackManagement";
+import QnAView from "./pages/staff/QnAView";
 
-const DRAWER_WIDTH = 240;
+import "antd/dist/reset.css";
 
 const App = () => {
-  // State mở/đóng menu
   const [menuOpen, setMenuOpen] = useState(false);
-
-  // Lấy user và role (có thể lấy từ context hoặc localStorage)
   const user = JSON.parse(localStorage.getItem("user"));
   const role = user?.role || "patient";
 
-  // Hàm toggle menu
   const toggleMenu = () => setMenuOpen((open) => !open);
 
   return (
     <Router>
-      {/* Header luôn hiện trên mọi trang */}
-      <Header onMenuClick={toggleMenu} menuOpen={menuOpen} />
+      <Routes>
+        {/* Staff Layout Routes */}
+        <Route path="/staff/*" element={<StaffLayout />}>
+          <Route index element={<BlogManagement />} />
+          <Route path="blogs" element={<BlogManagement />} />
+          <Route path="services" element={<ServiceManagement />} />
+          <Route path="specialties" element={<SpecialtyManagement />} />
+          <Route path="invoices" element={<InvoiceManagement />} />
+          <Route path="payments" element={<PaymentView />} />
+          <Route path="news" element={<NewsManagement />} />
+          <Route path="feedback" element={<FeedbackManagement />} />
+          <Route path="qna" element={<QnAView />} />
+        </Route>
 
-      {/* Menu Drawer luôn hiện trên mọi trang khi đã đăng nhập */}
-      {user && (
-        <MenuComponent
-          isOpen={menuOpen}
-          onClose={() => setMenuOpen(false)}
-          role={role}
+        {/* Public Site Layout */}
+        <Route
+          path="/*"
+          element={
+            <div>
+              <Header onMenuClick={toggleMenu} menuOpen={menuOpen} />
+              {user && (
+                <MenuComponent
+                  isOpen={menuOpen}
+                  onClose={() => setMenuOpen(false)}
+                  role={role}
+                />
+              )}
+              <div
+                style={{
+                  marginTop: 84,
+                  marginLeft: menuOpen ? 240 : 0,
+                  transition: "margin-left 0.3s ease",
+                }}
+              >
+                <Routes>
+                  <Route path="/" element={<HomePage />} />
+                  <Route path="/service" element={<ServicePage />} />
+                  <Route path="/doctor" element={<DoctorPage />} />
+                  <Route path="/login" element={<LoginPage />} />
+                  <Route path="/register" element={<RegisterPage />} />
+                  <Route path="/about" element={<AboutPage />} />
+                  <Route path="/myprofile" element={<ProfilePage />} />
+                  <Route path="/appointment" element={<AppointmentPage />} />
+                  <Route path="/doctor/:doctorId" element={<DoctorDetail />} />
+                </Routes>
+              </div>
+              <FooterComponent />
+            </div>
+          }
         />
-      )}
-
-      {/* Main content, dịch sang phải khi menu mở */}
-      <div
-        style={{
-          marginTop: 84,
-          marginLeft: menuOpen ? DRAWER_WIDTH : 0,
-          transition: "margin-left 0.3s cubic-bezier(.4,0,.2,1)",
-        }}
-      >
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/service" element={<ServicePage />} />
-          <Route path="/doctor" element={<DoctorPage />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
-          <Route path="/about" element={<AboutPage />} />
-          <Route path="/myprofile" element={<ProfilePage />} />
-          <Route path="/appointment" element={<AppointmentPage />} />
-          <Route path="/doctor/:doctorId" element={<DoctorDetail />} />
-        </Routes>
-      </div>
-
-      {/* Footer luôn hiện trên mọi trang */}
-      <FooterComponent />
+      </Routes>
     </Router>
   );
 };

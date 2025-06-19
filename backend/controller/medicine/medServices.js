@@ -1,37 +1,76 @@
-const mongoose = require('mongoose');
-const Invoice = require('./models/Invoice'); // Đường dẫn tới model Invoice
+const Invoice = require('../../models/Invoice');
+const User = require('../../models/User');
+const Profile = require('../../models/Profile');
+const Service = require('../../models/Service');
 
-// Get all invoices
+// Sử dụng exports.<tên_hàm>
 exports.getAllInvoices = async (req, res) => {
   try {
-    // Lấy tất cả hóa đơn và populate các trường liên quan
     const invoices = await Invoice.find()
-      .populate('userId', 'email name') // Populate email và name từ User
-      .populate('profileId', 'name') // Populate name từ Profile
-      .populate('services', 'name price') // Populate name và price từ Services
-      .lean(); // Chuyển đổi sang plain JavaScript object để tối ưu hiệu suất
+      .populate('userId')        // Populate user info
+      .populate('profileId')     // Populate profile info
+      .populate('services');     // Populate services info
 
-    // Kiểm tra nếu không có hóa đơn nào
-    if (!invoices || invoices.length === 0) {
-      return res.status(404).json({ message: 'No invoices found' });
+    res.status(200).json(invoices);
+  } catch (error) {
+    console.error('Error fetching invoices:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+// Hàm tạo invoice mới
+exports.createInvoice = async (req, res) => {
+  try {
+    const { userId, profileId, services, totalAmount, status, invoiceNumber } = req.body;
+
+    // Kiểm tra dữ liệu đầu vào
+    if (!userId || !profileId || !services || !totalAmount || !invoiceNumber) {
+      return res.status(400).json({ message: 'Missing required fields' });
     }
 
-    // Trả về danh sách hóa đơn
-    res.status(200).json({
-      message: 'Invoices retrieved successfully',
-      invoices: invoices.map(invoice => ({
-        id: invoice._id,
-        invoiceNumber: invoice.invoiceNumber,
-        user: invoice.userId, // Dữ liệu đã populate từ User
-        profile: invoice.profileId, // Dữ liệu đã populate từ Profile
-        services: invoice.services, // Dữ liệu đã populate từ Services
-        totalAmount: invoice.totalAmount,
-        status: invoice.status,
-        createdAt: invoice.createdAt,
-        updatedAt: invoice.updatedAt
-      }))
+    // Kiểm tra xem userId, profileId, và services có tồn tại
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    const profile = await Profile.findById(profileId);
+    if (!profile) {
+      return res.status(404).json({ message: 'Profile not found' });
+    }
+
+    // Kiểm tra danh sách services
+    const validServices = await Service.find({ '_id': { $in: services } });
+    if (validServices.length !== services.length) {
+      return res.status(404).json({ message: 'One or more services not found' });
+    }
+
+    // Tạo invoice mới
+    const newInvoice = new Invoice({
+      userId,
+      profileId,
+      services,
+      totalAmount,
+      invoiceNumber,
+      status: status || 'pending', // Mặc định là 'pending' nếu không cung cấp
+      createdAt: new Date(),
+    });
+
+    // Lưu invoice vào cơ sở dữ liệu
+    const savedInvoice = await newInvoice.save();
+
+    // Populate thông tin liên quan
+    const populatedInvoice = await Invoice.findById(savedInvoice._id)
+      .populate('userId')
+      .populate('profileId')
+      .populate('services');
+
+    res.status(201).json({
+      message: 'Invoice created successfully',
+      invoice: populatedInvoice,
     });
   } catch (error) {
+    console.error('Error creating invoice:', error);
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
