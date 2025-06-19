@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Layout, Menu } from "antd";
 import {
   FileTextOutlined,
-  AppstoreOutlined, // Replaced ServiceOutlined with AppstoreOutlined
+  AppstoreOutlined,
   MedicineBoxOutlined,
   DollarOutlined,
   CommentOutlined,
@@ -11,6 +11,10 @@ import {
   LogoutOutlined,
   MenuFoldOutlined,
   MenuUnfoldOutlined,
+  CalendarOutlined,
+  BellOutlined,
+  UserOutlined,
+  PlusCircleOutlined,
 } from "@ant-design/icons";
 import { Link, Outlet, useNavigate } from "react-router-dom";
 
@@ -51,6 +55,18 @@ const StaffLayout = () => {
           <Menu.Item key="3" icon={<MedicineBoxOutlined />}>
             <Link to="/staff/specialties">Manage Specialty</Link>
           </Menu.Item>
+          <Menu.Item key="9" icon={<CalendarOutlined />}>
+            <Link to="/staff/appointments">Appointment Schedule</Link>
+          </Menu.Item>
+          <Menu.Item key="10" icon={<BellOutlined />}>
+            <Link to="/staff/notifications">Manage Notifications</Link>
+          </Menu.Item>
+          <Menu.Item key="11" icon={<UserOutlined />}>
+            <Link to="/staff/users">Manage Users</Link>
+          </Menu.Item>
+          <Menu.Item key="12" icon={<PlusCircleOutlined />}>
+            <Link to="/staff/medicines">Manage Medicines</Link>
+          </Menu.Item>
           <Menu.Item key="4" icon={<DollarOutlined />}>
             <Link to="/staff/invoices">Manage Invoices</Link>
           </Menu.Item>
@@ -66,7 +82,8 @@ const StaffLayout = () => {
           <Menu.Item key="8" icon={<QuestionCircleOutlined />}>
             <Link to="/staff/qna">View Q&A</Link>
           </Menu.Item>
-          <Menu.Item key="9" icon={<LogoutOutlined />} onClick={handleLogout}>
+          
+          <Menu.Item key="13" icon={<LogoutOutlined />} onClick={handleLogout}>
             Logout
           </Menu.Item>
         </Menu>

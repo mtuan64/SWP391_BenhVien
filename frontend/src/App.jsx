@@ -12,7 +12,7 @@ import AppointmentPage from "./pages/AppointmentPage";
 import Header from "./components/HeaderComponent";
 import MenuComponent from "./components/MenuComponent";
 import FooterComponent from "./components/FooterComponent";
-import StaffLayout from "./components/Staff/StaffLayout"; 
+import StaffLayout from "./components/Staff/StaffLayout";
 import BlogManagement from "./pages/staff/BlogManagement";
 import ServiceManagement from "./pages/staff/ServiceManagement";
 import SpecialtyManagement from "./pages/staff/SpecialtyManagement";
@@ -21,6 +21,10 @@ import PaymentView from "./pages/staff/PaymentView";
 import NewsManagement from "./pages/staff/NewsManagement";
 import FeedbackManagement from "./pages/staff/FeedbackManagement";
 import QnAView from "./pages/staff/QnAView";
+import AppointmentScheduleManagement from "./pages/staff/AppointmentScheduleManagement";
+import NotificationManagement from "./pages/staff/NotificationManagement";
+import UserManagement from "./pages/staff/UserManagement";
+import MedicineManagement from "./pages/staff/MedicineManagement";
 
 import "antd/dist/reset.css";
 
@@ -45,6 +49,10 @@ const App = () => {
           <Route path="news" element={<NewsManagement />} />
           <Route path="feedback" element={<FeedbackManagement />} />
           <Route path="qna" element={<QnAView />} />
+          <Route path="appointments" element={<AppointmentScheduleManagement />} />
+          <Route path="notifications" element={<NotificationManagement />} />
+          <Route path="users" element={<UserManagement />} />
+          <Route path="medicines" element={<MedicineManagement />} />
         </Route>
 
         {/* Public Site Layout */}
