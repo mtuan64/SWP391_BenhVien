@@ -251,3 +251,200 @@ exports.deleteInvoice = async (req, res) => {
         res.status(500).json({ message: "Server error", error: error.message });
     }
 };
+
+
+
+// exports.getAllPayment = async (req, res) => {
+//     try {
+//         const page = parseInt(req.query.page) || 1; // Trang hiện tại
+//         const limit = parseInt(req.query.limit) || 10; // Số mục/trang
+//         const skip = (page - 1) * limit;
+
+//         const [payments, total] = await Promise.all([
+//             Payment.find()
+//                 .populate('invoiceId', 'invoiceNumber totalAmount status')
+//                 .populate('userId', 'name email')
+//                 .populate('profileId', 'name')
+//                 .sort({ createdAt: -1 })
+//                 .skip(skip)
+//                 .limit(limit),
+//             Payment.countDocuments()
+//         ]);
+
+//         res.status(200).json({
+//             success: true,
+//             data: payments,
+//             pagination: {
+//                 total,
+//                 page,
+//                 limit,
+//                 totalPages: Math.ceil(total / limit)
+//             }
+//         });
+//     } catch (error) {
+//         console.error("Get All Payments Error:", error);
+//         res.status(500).json({ message: "Server error", error: error.message });
+//     }
+// };
+const moment = require("moment");
+exports.getPaymentSummary = async (req, res) => {
+    try {
+        const todayStart = moment().startOf("day").toDate();
+        const monthStart = moment().startOf("month").toDate();
+
+        const [
+            todayCount,
+            monthTotalAgg,
+            pendingCount,
+            totalPayments,
+            completedPayments
+        ] = await Promise.all([
+            Payment.countDocuments({ paymentDate: { $gte: todayStart } }),
+            Payment.aggregate([
+                {
+                    $match: {
+                        paymentDate: { $gte: monthStart },
+                        status: "Completed",
+                    },
+                },
+                {
+                    $group: {
+                        _id: null,
+                        total: { $sum: "$amount" },
+                    },
+                },
+            ]),
+            Payment.countDocuments({ status: "Pending" }),
+            Payment.countDocuments(),
+            Payment.countDocuments({ status: "Completed" }),
+        ]);
+
+        const monthTotal = monthTotalAgg.length > 0 ? monthTotalAgg[0].total : 0;
+        const successRate =
+            totalPayments > 0
+                ? parseFloat(((completedPayments / totalPayments) * 100).toFixed(1))
+                : 0;
+
+        return res.status(200).json({
+            todayCount,
+            monthTotal,
+            pendingCount,
+            successRate,
+        });
+    } catch (error) {
+        console.error("Lỗi khi lấy thống kê:", error);
+        return res.status(500).json({ message: "Lỗi server khi lấy thống kê" });
+    }
+};
+exports.getPayments = async (req, res) => {
+    try {
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const skip = (page - 1) * limit;
+
+        const { search = "", status, method, sortField = "amount", sortOrder = "desc" } = req.query;
+
+        // Build match condition for Payment fields
+        const matchConditions = {};
+        if (status) matchConditions.status = status;
+        if (method) matchConditions.method = method;
+
+        // Build the aggregation pipeline
+        const pipeline = [
+            {
+                $lookup: {
+                    from: "invoices",
+                    localField: "invoiceId",
+                    foreignField: "_id",
+                    as: "invoice",
+                },
+            },
+            { $unwind: "$invoice" },
+            // Filter stage
+            {
+                $match: {
+                    ...matchConditions,
+                    ...(search
+                        ? { "invoice.invoiceNumber": { $regex: search, $options: "i" } }
+                        : {}),
+                },
+            },
+            // Sort stage
+            {
+                $sort: {
+                    [sortField]: sortOrder === "asc" ? 1 : -1,
+                },
+            },
+            { $skip: skip },
+            { $limit: limit },
+            // Populate user info
+            {
+                $lookup: {
+                    from: "users",
+                    localField: "userId",
+                    foreignField: "_id",
+                    as: "user",
+                },
+            },
+            { $unwind: "$user" },
+            // Populate profile info
+            {
+                $lookup: {
+                    from: "profiles",
+                    localField: "profileId",
+                    foreignField: "_id",
+                    as: "profile",
+                },
+            },
+            { $unwind: "$profile" },
+            // Project fields you want to return
+            {
+                $project: {
+                    _id: 1,
+                    amount: 1,
+                    method: 1,
+                    status: 1,
+                    paymentDate: 1,
+                    invoiceId: 1,
+                    invoice: {
+                        invoiceNumber: 1,
+                        totalAmount: 1,
+                    },
+                    user: {
+                        name: 1,
+                        email: 1,
+                    },
+                    profile: {
+                        name: 1,
+                    },
+                },
+            },
+        ];
+
+        // Get total count for pagination
+        const countPipeline = [...pipeline];
+        countPipeline.push({
+            $count: "total",
+        });
+        const countResult = await Payment.aggregate(countPipeline);
+        const total = countResult[0]?.total || 0;
+
+        // Get paginated data
+        const data = await Payment.aggregate(pipeline);
+
+        return res.json({
+            data,
+            pagination: {
+                totalPages: Math.ceil(total / limit),
+                totalItems: total,
+                page,
+                limit,
+            },
+        });
+    } catch (error) {
+        console.error("Lỗi khi lấy danh sách payments:", error);
+        return res.status(500).json({ message: "Lỗi server" });
+    }
+};
+
+

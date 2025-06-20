@@ -15,7 +15,9 @@ staffRouter.get('/invoices', invoiceController.getAllInvoices);
 staffRouter.get('/services/:invoiceId', invoiceController.getServices);
 staffRouter.post('/invoices', invoiceController.CreateInvoices);
 staffRouter.put('/services/paid/:invoiceId', paymentController.paidServices);
-staffRouter.delete('services/delete/:invoiceId', paymentController.deleteInvoice);
+staffRouter.delete('/services/delete/:invoiceId', paymentController.deleteInvoice);
+staffRouter.get('/payments', paymentController.getPayments);
+staffRouter.get("/payments/summary", paymentController.getPaymentSummary);
 
 // staffRouter.get('/labtestresult/:profileId', LabTestbyProfileId);
 module.exports = staffRouter;
