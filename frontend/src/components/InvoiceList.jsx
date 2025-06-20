@@ -56,7 +56,7 @@ const InvoiceList = () => {
             setError(null);
 
             try {
-                const response = await axios.get('http://localhost:9999/api/checkup/invoices');
+                const response = await axios.get('http://localhost:9999/api/staff/invoices');
                 setInvoices(response.data?.data || []);
                 setLoading(false);
             } catch (err) {
@@ -80,7 +80,7 @@ const InvoiceList = () => {
         try {
             const token = localStorage.getItem('token');
             const response = await axios.post(
-                'http://localhost:9999/api/checkup/create-payment-link',
+                'http://localhost:9999/api/staff/create-payment-link',
                 { invoiceId, method: 'Credit Card' },
                 { headers: { Authorization: `Bearer ${token}` } }
             );
@@ -158,9 +158,9 @@ const InvoiceList = () => {
                         <h1 className="text-3xl font-bold text-slate-800">Danh sách hóa đơn</h1>
                     </div>
                     <p className="text-slate-600">Theo dõi và quản lý tất cả hóa đơn của bạn</p>
-                    <p className="text-pink-600 text-xl font-bold underline">
+                    {/* <p className="text-pink-600 text-xl font-bold underline">
                         TEST TAILWIND
-                    </p>
+                    </p> */}
                 </div>
                 {/* thang lou thu xoa invoice css xem dc k */}
                 {/* Stats Cards */}
@@ -210,7 +210,7 @@ const InvoiceList = () => {
                             <div>
                                 <p className="text-sm font-medium text-slate-600">Tổng giá trị</p>
                                 <p className="text-2xl font-bold text-blue-600">
-                                    {(stats.totalAmount / 1000000).toFixed(1)}M
+                                    {(stats.totalAmount / 1000).toFixed(1)}K
                                 </p>
                             </div>
                             <CreditCard className="w-8 h-8 text-blue-400" />
@@ -297,7 +297,7 @@ const InvoiceList = () => {
                                                         <FileText className="w-5 h-5 text-blue-600" />
                                                     </div>
                                                     <div>
-                                                        <p className="font-semibold text-slate-800">{invoice.invoiceNumber}</p>
+                                                        <p className="text-nowrap font-semibold text-slate-800">{invoice.invoiceNumber}</p>
                                                         <p className="text-sm text-slate-500">
                                                             {new Date(invoice.createdAt).toLocaleDateString('vi-VN')}
                                                         </p>
@@ -310,29 +310,29 @@ const InvoiceList = () => {
                                                         <User className="w-4 h-4 text-slate-600" />
                                                     </div>
                                                     <div>
-                                                        <p className="font-medium text-slate-800">{invoice.userId?.name || 'N/A'}</p>
-                                                        <p className="text-sm text-slate-500">{invoice.userId?.email || ''}</p>
+                                                        <p className="text-nowrap font-medium text-slate-800">{invoice.userId?.name || 'N/A'}</p>
+                                                        <p className="text-nowrap text-sm text-slate-500">{invoice.userId?.email || ''}</p>
                                                     </div>
                                                 </div>
                                             </td>
                                             <td className="py-4 px-6">
-                                                <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-slate-100 text-slate-700">
+                                                <span className="text-nowrap inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-slate-100 text-slate-700">
                                                     {invoice.profileId?.name || 'N/A'}
                                                 </span>
                                             </td>
                                             <td className="py-4 px-6">
-                                                <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-700">
+                                                <span className="text-nowrap inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-700">
                                                     {invoice.services?.length || 0} dịch vụ
                                                 </span>
                                             </td>
                                             <td className="py-4 px-6">
-                                                <p className="font-bold text-slate-800 text-lg">
+                                                <p className="text-nowrap font-bold text-slate-800 text-lg">
                                                     {invoice.totalAmount.toLocaleString('vi-VN')} VNĐ
                                                 </p>
                                             </td>
                                             <td className="py-4 px-6">
-                                                <span className={`inline-flex items-center gap-2 px-3 py-2 rounded-full text-sm font-medium border ${statusConfig[invoice.status]?.class || 'bg-gray-50 text-gray-700 border-gray-200'}`}>
-                                                    <span className={`w-2 h-2 rounded-full ${statusConfig[invoice.status]?.dot || 'bg-gray-500'}`}></span>
+                                                <span className={`text-nowrap inline-flex items-center gap-2 px-3 py-2 rounded-full text-sm font-medium border ${statusConfig[invoice.status]?.class || 'bg-gray-50 text-gray-700 border-gray-200'}`}>
+                                                    <span className={`text-nowrap w-2 h-2 rounded-full ${statusConfig[invoice.status]?.dot || 'bg-gray-500'}`}></span>
                                                     {statusText[invoice.status] || invoice.status}
                                                 </span>
                                             </td>
@@ -341,7 +341,7 @@ const InvoiceList = () => {
                                                     <button
                                                         onClick={() => handlePayInvoice(invoice._id)}
                                                         disabled={paymentLoading === invoice._id}
-                                                        className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-medium rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                                                        className="text-nowrap inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-medium rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
                                                     >
                                                         {paymentLoading === invoice._id ? (
                                                             <Loader2 className="w-4 h-4 animate-spin" />
@@ -351,7 +351,7 @@ const InvoiceList = () => {
                                                         Thanh toán
                                                     </button>
                                                 ) : (
-                                                    <span className="text-slate-400 text-sm font-medium">Đã xử lý</span>
+                                                    <span className="text-nowrap text-slate-400 text-sm font-medium">Đã xử lý</span>
                                                 )}
                                             </td>
                                         </tr>

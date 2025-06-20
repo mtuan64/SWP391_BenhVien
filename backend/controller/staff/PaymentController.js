@@ -22,6 +22,7 @@ exports.createPaymentLink = async (req, res) => {
             });
         }
 
+
         if (!['Credit Card', 'Mobile App'].includes(method)) {
             return res.status(400).json({
                 success: false,
@@ -185,6 +186,13 @@ exports.paymentSuccess = async (req, res) => {
         }
         payment.status = 'Completed';
         await payment.save();
+        const invoice = payment.invoiceId;
+        if (invoice) {
+            invoice.status = 'Paid';
+            await invoice.save();
+        } else {
+            return res.status(400).json({ success: false, message: 'Hóa đơn không tồn tại' });
+        }
         res.status(200).json({ success: true, message: 'Thanh toán thành công', data: payment });
     } catch (error) {
         res.status(500).json({ success: false, message: 'Lỗi server', error: error.message });

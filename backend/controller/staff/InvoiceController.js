@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const Invoice = require('../../models/Invoice');
-
+const Payment = require('../../models/Payment');
 exports.getAllInvoices = async (req, res) => {
   try {
     const { page = 1, limit = 10 } = req.query;
@@ -16,7 +16,7 @@ exports.getAllInvoices = async (req, res) => {
     // }
 
     // const invoices = await Invoice.find({ userId: req.user.id })
-    const invoices = await Invoice.find({ userId: "684e7597c7efedc32ca55271" })
+    const invoices = await Invoice.find()
       .populate('userId', 'name email')
       .populate('profileId', 'name')
       .sort({ createdAt: -1 })
@@ -24,7 +24,7 @@ exports.getAllInvoices = async (req, res) => {
       .limit(limitNum);
 
     // const total = await Invoice.countDocuments({ userId: req.user.id });
-    const total = await Invoice.countDocuments({ userId: "684e7597c7efedc32ca55271" })
+    const total = await Invoice.countDocuments()
     res.status(200).json({
       success: true,
       count: invoices.length,

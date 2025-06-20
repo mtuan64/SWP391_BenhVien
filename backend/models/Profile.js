@@ -1,16 +1,6 @@
 const mongoose = require("mongoose");
 
-<<<<<<< HEAD
-const profileSchema = new mongoose.Schema({
-  name: { type: String, required: true },
-  dateOfBirth: { type: Date, required: true },
-  gender: { type: String, enum: ['Male', 'Female', 'Other'], required: true },
-  //diagnose: { type: String },
-  //note: { type: String },
-  //issues: { type: String },
-  doctorId: { type: mongoose.Schema.Types.ObjectId, ref: 'Employee' }
-}, { timestamps: true });
-=======
+
 const profileSchema = new mongoose.Schema(
   {
     name: { type: String, required: true },
@@ -27,7 +17,7 @@ const profileSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
->>>>>>> origin/tuancmhe172238
+
 
 profileSchema.index({ name: 1 });
 
