@@ -12,11 +12,19 @@ import AppointmentPage from "./pages/AppointmentPage";
 import Header from "./components/HeaderComponent";
 import MenuComponent from "./components/MenuComponent";
 import FooterComponent from "./components/FooterComponent";
-import Changepass from "./pages/ChangePassword";
-import ResetPassword from "./pages/ResetPassword";
-import ForgotPassword from "./pages/ForgotPassword";
-import "antd/dist/reset.css"; // hoặc 'antd/dist/antd.css' nếu bạn dùng antd v4
-
+import StaffLayout from "./components/Staff/StaffLayout";
+import BlogManagement from "./pages/staff/BlogManagement";
+import ServiceManagement from "./pages/staff/ServiceManagement";
+import SpecialtyManagement from "./pages/staff/SpecialtyManagement";
+import InvoiceManagement from "./pages/staff/InvoiceManagement";
+import PaymentView from "./pages/staff/PaymentView";
+import NewsManagement from "./pages/staff/NewsManagement";
+import FeedbackManagement from "./pages/staff/FeedbackManagement";
+import QnAView from "./pages/staff/QnAView";
+import AppointmentScheduleManagement from "./pages/staff/AppointmentScheduleManagement";
+import NotificationManagement from "./pages/staff/NotificationManagement";
+import UserManagement from "./pages/staff/UserManagement";
+import MedicineManagement from "./pages/staff/MedicineManagement";
 import AddMedicalRecord from "./components/AddMedicalRecord";
 import ViewMedicalRecords from "./components/ViewMedicalRecord";
 import InvoiceList from "./components/InvoiceList";
@@ -24,7 +32,6 @@ import PaymentSuccess from "./components/PaymentSuccess";
 import PaymentFail from "./components/PaymentFail";
 import LabtestResult from "./components/LabTestResult";
 const DRAWER_WIDTH = 240;
-
 import "antd/dist/reset.css";
 import AdminLayout from "./components/admin/AdminLayout";
 import Dashboard from "./pages/admin/Dashboard";
@@ -42,13 +49,31 @@ const App = () => {
   return (
     <Router>
       <Routes>
+
         {/* Admin Layout Routes */}
-        <Route>
-          <Route path="/admin/*" element={<AdminLayout />}>
-            <Route index element={<Dashboard />} />
-            <Route path="users" element={<UserManagement />} />
-            <Route path="employees" element={<EmployeeManagement />} />
-          </Route>
+
+        <Route path="/admin/*" element={<AdminLayout />}>
+          <Route index element={<Dashboard />} />
+          <Route path="users" element={<UserManagement />} />
+          <Route path="employees" element={<EmployeeManagement />} />
+        </Route>
+
+        {/* Staff Layout Routes */}
+        <Route path="/staff/*" element={<StaffLayout />}>
+          <Route index element={<BlogManagement />} />
+          <Route path="blogs" element={<BlogManagement />} />
+          <Route path="services" element={<ServiceManagement />} />
+          <Route path="specialties" element={<SpecialtyManagement />} />
+          <Route path="invoices" element={<InvoiceManagement />} />
+          <Route path="payments" element={<PaymentView />} />
+          <Route path="news" element={<NewsManagement />} />
+          <Route path="feedback" element={<FeedbackManagement />} />
+          <Route path="qna" element={<QnAView />} />
+          <Route path="appointments" element={<AppointmentScheduleManagement />} />
+          <Route path="notifications" element={<NotificationManagement />} />
+          <Route path="users" element={<UserManagement />} />
+          <Route path="medicines" element={<MedicineManagement />} />
+
         </Route>
 
         {/* Public Site Layout */}

@@ -62,7 +62,6 @@ const Signup = async (req, res) => {
 
     res.status(500).json({ message: "Lỗi máy chủ" });
   }
-
 };
 const check = async (req, res) => {
   res.status(200).json({ message: "API hoat dong" });
@@ -252,5 +251,3 @@ const resetPassword = async (req, res) => {
 module.exports = {
   Login, Signup, check, changePassword, forgotPassword, resetPassword
 }
-
-
