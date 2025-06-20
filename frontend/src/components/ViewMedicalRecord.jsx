@@ -67,12 +67,14 @@ const ViewMedicalRecords = ({ profileId }) => {
             }
         };
 
-        if (user?._id && !authLoading) {
-            fetchData();
-        } else if (!authLoading) {
-            setError('Vui lòng đăng nhập để tải dữ liệu');
-            setLoading(false);
-        }
+        // if (user?._id && !authLoading) {
+        //     fetchData();
+        // } 
+        // else if (!authLoading) {
+        //     setError('Vui lòng đăng nhập để tải dữ liệu');
+        //     setLoading(false);
+        // }
+        fetchData();
     }, [user?._id, selectedProfileId, authLoading]);
 
     const formatDate = (date) => (date ? new Date(date).toLocaleDateString('vi-VN') : 'N/A');

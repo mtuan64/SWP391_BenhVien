@@ -31,12 +31,13 @@ const InvoiceList = () => {
             }
         };
 
-        if (user?._id && !authLoading) {
-            fetchInvoices();
-        } else if (!authLoading) {
-            setError('Vui lòng đăng nhập để tải dữ liệu');
-            setLoading(false);
-        }
+        // if (user?._id && !authLoading) {
+        //     fetchInvoices();
+        // } else if (!authLoading) {
+        //     setError('Vui lòng đăng nhập để tải dữ liệu');
+        //     setLoading(false);
+        // }
+        fetchInvoices();
     }, [user?._id, authLoading]);
 
     const handlePayInvoice = async (invoiceId) => {
