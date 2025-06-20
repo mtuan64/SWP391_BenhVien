@@ -1,3 +1,5 @@
+import React, { useState } from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import React, { useState, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, useNavigate } from "react-router-dom";
 
@@ -18,7 +20,11 @@ import ResetPassword from "./pages/ResetPassword";
 import ForgotPassword from "./pages/ForgotPassword";
 import "antd/dist/reset.css";
 
-const DRAWER_WIDTH = 240;
+import "antd/dist/reset.css";
+import AdminLayout from "./components/admin/AdminLayout";
+import Dashboard from "./pages/admin/Dashboard";
+import UserManagement from "./pages/admin/UserManagement";
+import EmployeeManagement from "./pages/admin/EmployessManagement";
 
 // 👉 A proper AppRoutes component, inside <Router> so we can use useNavigate()
 const AppRoutes = ({ menuOpen, setMenuOpen }) => {
@@ -58,11 +64,60 @@ const AppRoutes = ({ menuOpen, setMenuOpen }) => {
 const App = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const user = JSON.parse(localStorage.getItem("user"));
+  const role = user?.role || "patient";
+
   const toggleMenu = () => setMenuOpen((open) => !open);
   const role = user?.role ?? "patient";
 
   return (
     <Router>
+      <Routes>
+        {/* Admin Layout Routes */}
+        <Route>
+          <Route path="/admin/*" element={<AdminLayout />}>
+            <Route index element={<Dashboard />} />
+            <Route path="users" element={<UserManagement />} />
+            <Route path="employees" element={<EmployeeManagement />} />
+          </Route>
+        </Route>
+
+        {/* Public Site Layout */}
+        <Route
+          path="/*"
+          element={
+            <div>
+              <Header onMenuClick={toggleMenu} menuOpen={menuOpen} />
+              {user && (
+                <MenuComponent
+                  isOpen={menuOpen}
+                  onClose={() => setMenuOpen(false)}
+                  role={role}
+                />
+              )}
+              <div
+                style={{
+                  marginTop: 84,
+                  marginLeft: menuOpen ? 240 : 0,
+                  transition: "margin-left 0.3s ease",
+                }}
+              >
+                <Routes>
+                  <Route path="/" element={<HomePage />} />
+                  <Route path="/service" element={<ServicePage />} />
+                  <Route path="/doctor" element={<DoctorPage />} />
+                  <Route path="/login" element={<LoginPage />} />
+                  <Route path="/register" element={<RegisterPage />} />
+                  <Route path="/about" element={<AboutPage />} />
+                  <Route path="/myprofile" element={<ProfilePage />} />
+                  <Route path="/appointment" element={<AppointmentPage />} />
+                  <Route path="/doctor/:doctorId" element={<DoctorDetail />} />
+                </Routes>
+              </div>
+              <FooterComponent />
+            </div>
+          }
+        />
+      </Routes>
       <Header onMenuClick={toggleMenu} menuOpen={menuOpen} />
 
       {user && (
@@ -80,6 +135,20 @@ const App = () => {
           transition: "margin-left 0.3s cubic-bezier(.4,0,.2,1)",
         }}
       >
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/service" element={<ServicePage />} />
+          <Route path="/doctor" element={<DoctorPage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+          <Route path="/about" element={<AboutPage />} />
+          <Route path="/myprofile" element={<ProfilePage />} />
+          <Route path="/appointment" element={<AppointmentPage />} />
+          <Route path="/doctor/:doctorId" element={<DoctorDetail />} />
+          <Route path="/changepass" element={<Changepass />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
+        </Routes>
         <AppRoutes menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
       </div>
 
@@ -89,3 +158,4 @@ const App = () => {
 };
 
 export default App;
+
