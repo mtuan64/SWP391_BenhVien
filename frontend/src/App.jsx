@@ -37,7 +37,8 @@ import AdminLayout from "./components/admin/AdminLayout";
 import Dashboard from "./pages/admin/Dashboard";
 import EmployeeManagement from "./pages/admin/EmployessManagement";
 import Changepass from "./pages/ChangePassword";
-import { forgotPassword } from "../../backend/controller/auth/authServices";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 const App = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const user = JSON.parse(localStorage.getItem("user"));
@@ -63,7 +64,8 @@ const App = () => {
           <Route path="blogs" element={<BlogManagement />} />
           <Route path="services" element={<ServiceManagement />} />
           <Route path="specialties" element={<SpecialtyManagement />} />
-          <Route path="invoices" element={<InvoiceManagement />} />
+          {/* <Route path="invoices" element={<InvoiceManagement />} /> */}
+          <Route path="invoices" element={<InvoiceList />} />
           <Route path="payments" element={<PaymentView />} />
           <Route path="news" element={<NewsManagement />} />
           <Route path="feedback" element={<FeedbackManagement />} />

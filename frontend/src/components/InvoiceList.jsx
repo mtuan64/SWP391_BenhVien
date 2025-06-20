@@ -1,18 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useAuth } from '../context/authContext';
-import {
-    FileText,
-    User,
-    CreditCard,
-    Clock,
-    CheckCircle,
-    XCircle,
-    Search,
-    Filter,
-    AlertTriangle,
-    Loader2
-} from 'lucide-react';
+import { ChevronDown, ChevronRight, FileText, Calendar, DollarSign, User, Loader2, Search, Filter, CheckCircle, Clock, XCircle, CreditCard } from 'lucide-react';
 
 const statusText = {
     Paid: 'Đã thanh toán',
@@ -50,6 +39,44 @@ const InvoiceList = () => {
     const [statusFilter, setStatusFilter] = useState('all');
     const [paymentLoading, setPaymentLoading] = useState(null);
 
+    const [openInvoiceId, setOpenInvoiceId] = useState(null);
+    const [serviceData, setServiceData] = useState({});
+    const [loadingInvoiceId, setLoadingInvoiceId] = useState(null);
+
+    const toggleServices = async (invoiceId) => {
+        if (openInvoiceId === invoiceId) {
+            setOpenInvoiceId(null); // Đóng nếu đã mở
+            return;
+        }
+
+        if (serviceData[invoiceId]) {
+            setOpenInvoiceId(invoiceId); // Mở nếu đã có dữ liệu
+            return;
+        }
+
+        try {
+            setLoadingInvoiceId(invoiceId);
+            const token = localStorage.getItem("token");
+            const response = await axios.get(
+                `http://localhost:9999/api/staff/services/${invoiceId}`,
+                {},
+                {
+                    headers: { Authorization: `Bearer ${token}` }
+                }
+            );
+
+            setServiceData(prev => ({
+                ...prev,
+                [invoiceId]: response.data.services || []
+            }));
+            setOpenInvoiceId(invoiceId);
+        } catch (err) {
+            alert("Không lấy được thông tin dịch vụ.");
+            console.error(err);
+        } finally {
+            setLoadingInvoiceId(null);
+        }
+    };
     useEffect(() => {
         const fetchInvoices = async () => {
             setLoading(true);
@@ -122,6 +149,27 @@ const InvoiceList = () => {
             </div>
         );
     }
+    const handleService = async (invoiceId) => {
+        try {
+            const token = localStorage.getItem('token');
+            const response = await axios.post(
+                `http://localhost:9999/api/staff/services/${invoiceId}`,
+                {}, // Gửi rỗng body để tránh lỗi
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+
+            if (response.status === 200) {
+                const services = response.data.services;
+                console.log("Danh sách dịch vụ:", services);
+                // Tùy bạn xử lý dữ liệu services tại đây
+            } else {
+                alert(response.data.message || "Không lấy được dịch vụ");
+            }
+        } catch (err) {
+            console.error('Lỗi khi lấy danh sách dịch vụ:', err);
+            alert(err.response?.data?.message || 'Lỗi khi lấy danh sách dịch vụ');
+        }
+    };
 
     if (error) {
         return (
@@ -147,7 +195,6 @@ const InvoiceList = () => {
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
-
             <div className="container mx-auto py-8 px-4 max-w-7xl">
                 {/* Header */}
                 <div className="mb-8">
@@ -158,11 +205,8 @@ const InvoiceList = () => {
                         <h1 className="text-3xl font-bold text-slate-800">Danh sách hóa đơn</h1>
                     </div>
                     <p className="text-slate-600">Theo dõi và quản lý tất cả hóa đơn của bạn</p>
-                    {/* <p className="text-pink-600 text-xl font-bold underline">
-                        TEST TAILWIND
-                    </p> */}
                 </div>
-                {/* thang lou thu xoa invoice css xem dc k */}
+
                 {/* Stats Cards */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
                     <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-100 hover:shadow-md transition-shadow">
@@ -282,79 +326,145 @@ const InvoiceList = () => {
                                 {filteredInvoices.map((invoice, index) => {
                                     const StatusIcon = statusConfig[invoice.status]?.icon || Clock;
                                     return (
-                                        <tr
-                                            key={invoice._id}
-                                            className="hover:bg-slate-50 transition-colors duration-200 group"
-                                            style={{
-                                                animation: `fadeInUp 0.4s ease forwards ${index * 0.05}s`,
-                                                opacity: 0,
-                                                transform: 'translateY(10px)'
-                                            }}
-                                        >
-                                            <td className="py-4 px-6">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="p-2 bg-blue-50 rounded-lg group-hover:bg-blue-100 transition-colors">
-                                                        <FileText className="w-5 h-5 text-blue-600" />
+                                        <React.Fragment key={invoice._id}>
+                                            <tr
+                                                className="hover:bg-slate-50 transition-colors duration-200 group"
+                                                style={{
+                                                    animation: `fadeInUp 0.4s ease forwards ${index * 0.05}s`,
+                                                    opacity: 0,
+                                                    transform: 'translateY(10px)'
+                                                }}
+                                            >
+                                                <td className="py-4 px-6">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="p-2 bg-blue-50 rounded-lg group-hover:bg-blue-100 transition-colors">
+                                                            <FileText className="w-5 h-5 text-blue-600" />
+                                                        </div>
+                                                        <div>
+                                                            <p className="text-nowrap font-semibold text-slate-800">{invoice.invoiceNumber}</p>
+                                                            <p className="text-sm text-slate-500">
+                                                                {new Date(invoice.createdAt).toLocaleDateString('vi-VN')}
+                                                            </p>
+                                                        </div>
                                                     </div>
-                                                    <div>
-                                                        <p className="text-nowrap font-semibold text-slate-800">{invoice.invoiceNumber}</p>
-                                                        <p className="text-sm text-slate-500">
-                                                            {new Date(invoice.createdAt).toLocaleDateString('vi-VN')}
-                                                        </p>
+                                                </td>
+                                                <td className="py-4 px-6">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="p-2 bg-slate-100 rounded-full">
+                                                            <User className="w-4 h-4 text-slate-600" />
+                                                        </div>
+                                                        <div>
+                                                            <p className="text-nowrap font-medium text-slate-800">{invoice.userId?.name || 'N/A'}</p>
+                                                            <p className="text-nowrap text-sm text-slate-500">{invoice.userId?.email || ''}</p>
+                                                        </div>
                                                     </div>
-                                                </div>
-                                            </td>
-                                            <td className="py-4 px-6">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="p-2 bg-slate-100 rounded-full">
-                                                        <User className="w-4 h-4 text-slate-600" />
-                                                    </div>
-                                                    <div>
-                                                        <p className="text-nowrap font-medium text-slate-800">{invoice.userId?.name || 'N/A'}</p>
-                                                        <p className="text-nowrap text-sm text-slate-500">{invoice.userId?.email || ''}</p>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td className="py-4 px-6">
-                                                <span className="text-nowrap inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-slate-100 text-slate-700">
-                                                    {invoice.profileId?.name || 'N/A'}
-                                                </span>
-                                            </td>
-                                            <td className="py-4 px-6">
-                                                <span className="text-nowrap inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-700">
-                                                    {invoice.services?.length || 0} dịch vụ
-                                                </span>
-                                            </td>
-                                            <td className="py-4 px-6">
-                                                <p className="text-nowrap font-bold text-slate-800 text-lg">
-                                                    {invoice.totalAmount.toLocaleString('vi-VN')} VNĐ
-                                                </p>
-                                            </td>
-                                            <td className="py-4 px-6">
-                                                <span className={`text-nowrap inline-flex items-center gap-2 px-3 py-2 rounded-full text-sm font-medium border ${statusConfig[invoice.status]?.class || 'bg-gray-50 text-gray-700 border-gray-200'}`}>
-                                                    <span className={`text-nowrap w-2 h-2 rounded-full ${statusConfig[invoice.status]?.dot || 'bg-gray-500'}`}></span>
-                                                    {statusText[invoice.status] || invoice.status}
-                                                </span>
-                                            </td>
-                                            <td className="py-4 px-6">
-                                                {invoice.status === 'Pending' ? (
+                                                </td>
+                                                <td className="py-4 px-6">
+                                                    <span className="text-nowrap inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-slate-100 text-slate-700">
+                                                        {invoice.profileId?.name || 'N/A'}
+                                                    </span>
+                                                </td>
+                                                <td className="py-4 px-6">
                                                     <button
-                                                        onClick={() => handlePayInvoice(invoice._id)}
-                                                        disabled={paymentLoading === invoice._id}
-                                                        className="text-nowrap inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-medium rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                                                        onClick={() => toggleServices(invoice._id)}
+                                                        className="group/btn inline-flex items-center space-x-2 px-4 py-2 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 font-medium transition-all duration-200 hover:shadow-sm border border-blue-200 hover:border-blue-300"
                                                     >
-                                                        {paymentLoading === invoice._id ? (
-                                                            <Loader2 className="w-4 h-4 animate-spin" />
-                                                        ) : (
-                                                            <CreditCard className="w-4 h-4" />
-                                                        )}
-                                                        Thanh toán
+                                                        <span className="text-nowrap text-sm">
+                                                            {invoice.services?.length || 0} dịch vụ
+                                                        </span>
+                                                        <div className="transform transition-transform duration-200 ease-in-out">
+                                                            {openInvoiceId === invoice._id ? (
+                                                                <ChevronDown className="h-4 w-4 group-hover/btn:scale-110" />
+                                                            ) : (
+                                                                <ChevronRight className="h-4 w-4 group-hover/btn:scale-110" />
+                                                            )}
+                                                        </div>
                                                     </button>
-                                                ) : (
-                                                    <span className="text-nowrap text-slate-400 text-sm font-medium">Đã xử lý</span>
-                                                )}
-                                            </td>
-                                        </tr>
+                                                </td>
+
+                                                <td className="py-4 px-6">
+                                                    <p className="text-nowrap font-bold text-slate-800 text-lg">
+                                                        {invoice.totalAmount.toLocaleString('vi-VN')} VNĐ
+                                                    </p>
+                                                </td>
+                                                <td className="py-4 px-6">
+                                                    <span className={`text-nowrap inline-flex items-center gap-2 px-3 py-2 rounded-full text-sm font-medium border ${statusConfig[invoice.status]?.class || 'bg-gray-50 text-gray-700 border-gray-200'}`}>
+                                                        <span className={`text-nowrap w-2 h-2 rounded-full ${statusConfig[invoice.status]?.dot || 'bg-gray-500'}`}></span>
+                                                        {statusText[invoice.status] || invoice.status}
+                                                    </span>
+                                                </td>
+                                                <td className="py-4 px-6">
+                                                    {invoice.status === 'Pending' ? (
+                                                        <button
+                                                            onClick={() => handlePayInvoice(invoice._id)}
+                                                            disabled={paymentLoading === invoice._id}
+                                                            className="text-nowrap inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-medium rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                                                        >
+                                                            {paymentLoading === invoice._id ? (
+                                                                <Loader2 className="w-4 h-4 animate-spin" />
+                                                            ) : (
+                                                                <CreditCard className="w-4 h-4" />
+                                                            )}
+                                                            Thanh toán
+                                                        </button>
+                                                    ) : (
+                                                        <span className="text-nowrap text-slate-400 text-sm font-medium">Đã xử lý</span>
+                                                    )}
+                                                </td>
+                                            </tr>
+
+                                            {/* Enhanced Services Expansion Row */}
+                                            {openInvoiceId === invoice._id && (
+                                                <tr className="bg-gradient-to-r from-blue-50 to-indigo-50">
+                                                    <td colSpan={7} className="px-6 py-6 border-l-4 border-blue-400">
+                                                        <div className="transition-all duration-300 ease-in-out">
+                                                            {loadingInvoiceId === invoice._id ? (
+                                                                <div className="flex items-center justify-center py-8">
+                                                                    <div className="flex items-center space-x-3">
+                                                                        <Loader2 className="h-5 w-5 animate-spin text-blue-600" />
+                                                                        <span className="text-slate-600 font-medium">Đang tải thông tin dịch vụ...</span>
+                                                                    </div>
+                                                                </div>
+                                                            ) : (
+                                                                <div className="space-y-4">
+                                                                    <h4 className="font-semibold text-slate-800 flex items-center space-x-2">
+                                                                        <FileText className="h-4 w-4" />
+                                                                        <span>Chi tiết dịch vụ</span>
+                                                                    </h4>
+                                                                    <div className="grid gap-3">
+                                                                        {(serviceData[invoice._id] || []).map((service, serviceIndex) => (
+                                                                            <div
+                                                                                key={service._id}
+                                                                                className="flex items-center justify-between p-4 bg-white rounded-lg shadow-sm border border-slate-200 hover:shadow-md transition-all duration-200 hover:border-blue-200"
+                                                                                style={{
+                                                                                    animationDelay: `${serviceIndex * 100}ms`,
+                                                                                    animation: 'slideInUp 0.3s ease-out forwards'
+                                                                                }}
+                                                                            >
+                                                                                <div className="flex-1">
+                                                                                    <div className="flex items-start space-x-3">
+                                                                                        <div className="flex-shrink-0 w-2 h-2 bg-blue-400 rounded-full mt-2"></div>
+                                                                                        <div>
+                                                                                            <h5 className="font-semibold text-slate-900">{service.name}</h5>
+                                                                                            <p className="text-slate-600 text-sm mt-1">{service.description}</p>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                </div>
+                                                                                <div className="flex-shrink-0 ml-4">
+                                                                                    <span className="font-bold text-lg text-slate-900">
+                                                                                        {service.price.toLocaleString('vi-VN')} VNĐ
+                                                                                    </span>
+                                                                                </div>
+                                                                            </div>
+                                                                        ))}
+                                                                    </div>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            )}
+                                        </React.Fragment>
                                     );
                                 })}
                             </tbody>
@@ -372,13 +482,24 @@ const InvoiceList = () => {
             </div>
 
             <style jsx>{`
-                @keyframes fadeInUp {
-                    to {
-                        opacity: 1;
-                        transform: translateY(0);
-                    }
-                }
-            `}</style>
+        @keyframes fadeInUp {
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        
+        @keyframes slideInUp {
+          from {
+            opacity: 0;
+            transform: translateY(10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+      `}</style>
         </div>
     );
 };

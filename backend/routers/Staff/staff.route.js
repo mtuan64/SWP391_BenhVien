@@ -12,5 +12,7 @@ staffRouter.get('/medical-records', allMedicalRecord);
 staffRouter.post('/medical-record', createMedicalRecord);
 staffRouter.put('/medical-records/:id', editMedicalRecord);
 staffRouter.get('/invoices', invoiceController.getAllInvoices);
+staffRouter.get('/services/:invoiceId', invoiceController.getServices);
+staffRouter.post('/invoices', invoiceController.CreateInvoices);
 // staffRouter.get('/labtestresult/:profileId', LabTestbyProfileId);
 module.exports = staffRouter;
