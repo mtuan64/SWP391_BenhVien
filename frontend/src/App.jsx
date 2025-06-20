@@ -67,7 +67,7 @@ const App = () => {
   const role = user?.role || "patient";
 
   const toggleMenu = () => setMenuOpen((open) => !open);
-  const role = user?.role ?? "patient";
+  
 
   return (
     <Router>
