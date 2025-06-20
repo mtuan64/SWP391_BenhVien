@@ -71,6 +71,9 @@ const Header = ({ onMenuClick }) => {
                   <Link to="/myprofile" className="dropdown-item">Profile</Link>
                 </li>
                 <li>
+                  <Link to="/changepass" className="dropdown-item">Change password</Link>
+                </li>
+                <li>
                   <hr className="dropdown-divider" />
                 </li>
                 <li>

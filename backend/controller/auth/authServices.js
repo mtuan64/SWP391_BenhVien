@@ -1,21 +1,256 @@
 const User = require("../../models/User");
-
-//[POST] /api/login
-module.exports.Login = async (req, res) => {
+const jwt = require("jsonwebtoken");
+const mongoose = require('mongoose');
+const nodemailer = require('nodemailer');
+require('dotenv').config();
+const Login = async (req, res) => {
+  const { userEmail, userPassword } = req.body;
   try {
-    const { username, password } = req.body;
-    if (!username || !password) {
-      return res
-        .status(400)
-        .json({ message: "Username and password are required" });
+    //tim ng dung trong db
+    console.log(req.body);
+    const user = await User.findOne({ email: userEmail });
+    if (!user) {
+      return res.status(400).json({ message: "invalid email" });
     }
-    const user = await User.findOne({ username });
-    if (!user || user.password !== password) {
-      return res.status(401).json({ message: "Invalid username or password" });
+    if (userPassword !== user.password) {
+      return res.status(400).json({ message: "invalid password" });
     }
-    return res.status(200).json({ message: "Login successful" });
+
+    const payLoad = {
+
+      id: user._id,
+      email: user.email,
+      name: user.name
+    };
+
+    const token = jwt.sign(payLoad, "3ubgunbguisgy47ni7rynvgtkuenkjdsfnhrvbyr7tvbkuynv", { expiresIn: '1h' });
+    res.status(200).json({ message: "OK", token: token, user: user });
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: "Internal server error" });
+    res.status(500).json({ message: "loi server" });
+  }
+}
+
+
+
+const Signup = async (req, res) => {
+
+  if (!req.body) {
+    return res.status(400).json({ error: "Missing request body" });
+  }
+  const { email, password, name, phone } = req.body;
+  try {
+    const emailExist = await User.findOne({ email });
+    if (emailExist) {
+      return res.status(400).json({ message: 'Email da ton tai' });
+    }
+
+    const newUser = new User({
+      email,
+      password,
+      name,
+      phone,
+      status: 'active',
+      emailVerificationCode: null, // Lưu code reset
+      verificationExpires: null, // Thời gian hết hạn
+    });
+    console.log(newUser);
+    await newUser.save();
+    console.log("User saved:", await User.findOne({ email }));
+
+    res.status(200).json({ message: "Dang ky thanh cong" });
+  } catch (error) {
+
+    res.status(500).json({ message: "Lỗi máy chủ" });
+  }
+
+};
+const check = async (req, res) => {
+  res.status(200).json({ message: "API hoat dong" });
+};
+
+const changePassword = async (req, res) => {
+  try {
+    const { email, newPassword } = req.body;
+
+    // Kiểm tra thông tin đầu vào
+    if (!email) {
+      return res.status(400).json({ message: "email and new password are required" });
+    }
+
+    // Kiểm tra xem email là email hay số điện thoại hợp lệ
+    // const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    // const isPhone = /^\+?[1-9]\d{1,14}$/.test(email);
+
+    // if (!isEmail && !isPhone) {
+    //     return res.status(400).json({ message: "Invalid email or phone number format" });
+    // }
+
+    // Tìm người dùng trong cơ sở dữ liệu
+    const user = await User.findOne({ email: email });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    // // Cập nhật mật khẩu mới và xóa OTP
+    user.password = newPassword;
+    // user.emailVerificationCode = null;
+    // user.phoneVerificationCode = null;
+    // user.isEmailVerified = false; // Reset trạng thái xác minh
+    // user.isPhoneVerified = false;
+    await user.save();
+
+    return res.status(200).json({ message: "Password changed successfully" });
+  } catch (error) {
+    console.error("Error in changePassword:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 };
+//  const forgotPassword = async (req, res) => {
+//     try {
+//         const { email } = req.body;
+
+//         // Kiểm tra nếu là email hợp lệ
+
+//         if (!email) {
+//             return res.status(400).json({ message: "Invalid email format" });
+//         }
+
+//         // Tìm người dùng theo email 
+//         const user = await User.findOne({ email: email });
+
+//         if (!user) {
+//             return res.status(404).json({ message: "Email not registered" });
+//         }
+
+//         // Generate OTP
+//         const otp = generateVerificationCode();
+//         const expirationTime = new Date(Date.now() + 15 * 60 * 1000); // OTP hết hạn sau 15 phút
+
+//         // Cập nhật OTP vào người dùng
+//         if (email) {
+//             user.emailVerificationCode = otp;
+//         } else {
+//             user.phoneVerificationCode = otp;
+//         }
+//         user.verificationExpires = expirationTime;
+
+//         // Lưu lại thay đổi trên cơ sở dữ liệu
+//         await user.save();
+
+//         // Gửi OTP qua email hoặc SMS
+//         if (email) {
+//             await email.sendVerificationEmail(contact, otp);
+//         } else {
+//             await sendVerificationSMS(contact, otp); // Sử dụng dịch vụ SMS
+//         }
+
+//         return res.status(200).json({ message: "OTP sent successfully" });
+//     } catch (error) {
+//         console.error("Error in forgotPassword: ", error);
+//         res.status(500).json({ message: "Server error", error: error.message });
+//     }
+// };
+// Cấu hình Nodemailer
+const transporter = nodemailer.createTransport({
+  host: process.env.EMAIL_HOST,
+  port: process.env.EMAIL_PORT,
+  secure: false,
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
+  },
+});
+
+// Hàm tạo OTP (từ câu hỏi trước)
+const generateVerificationCode = () => {
+  return Math.floor(100000 + Math.random() * 900000).toString();
+};
+
+const forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    // Validate email
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return res.status(400).json({ message: 'Invalid email format' });
+    }
+
+    // Tìm user
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: 'Email not registered' });
+    }
+
+    // Tạo OTP
+    const otp = generateVerificationCode();
+    const expirationTime = new Date(Date.now() + 15 * 60 * 1000);
+
+    // Lưu OTP
+    user.emailVerificationCode = otp;
+    user.verificationExpires = expirationTime;
+    await user.save();
+
+    // Gửi email
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: 'Mã xác minh đặt lại mật khẩu',
+      html: `
+        <h3>Mã xác minh</h3>
+        <p>Mã xác minh của bạn là: <strong>${otp}</strong></p>
+        <p>Mã này có hiệu lực trong 15 phút.</p>
+        <p>Nếu bạn không yêu cầu, hãy bỏ qua email này.</p>
+      `,
+    };
+
+    await transporter.sendMail(mailOptions);
+    return res.status(200).json({ message: 'OTP sent successfully' });
+  } catch (error) {
+    console.error('Error in forgotPassword:', error);
+    return res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+const resetPassword = async (req, res) => {
+  try {
+    const { email, code, newPassword } = req.body;
+
+    if (!email || !code || !newPassword) {
+      return res.status(400).json({ message: 'Email, code, and new password are required' });
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return res.status(400).json({ message: 'Invalid email format' });
+    }
+
+    const user = await User.findOne({
+      email,
+      emailVerificationCode: code,
+      verificationExpires: { $gt: Date.now() },
+    });
+
+    if (!user) {
+      return res.status(400).json({ message: 'Invalid or expired OTP' });
+    }
+
+    // const hashedPassword = await bcrypt.hash(newPassword, 10);
+    user.password = newPassword;
+    user.emailVerificationCode = null;
+    user.verificationExpires = null;
+    await user.save();
+
+    return res.status(200).json({ message: 'Password reset successfully' });
+  } catch (error) {
+    console.error('Error in resetPassword:', error);
+    return res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+
+module.exports = {
+  Login, Signup, check, changePassword, forgotPassword, resetPassword
+}
+
+
