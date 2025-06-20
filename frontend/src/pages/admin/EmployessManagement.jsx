@@ -33,7 +33,7 @@ function EmployeeManagement() {
 
   const fetchEmployees = async () => {
     try {
-      const res = await axios.get("/api/apm/employees");
+      const res = await axios.get("/api/admin/employees");
       setEmployees(res.data);
     } catch (err) {
       message.error("Failed to fetch employees");
@@ -46,7 +46,7 @@ function EmployeeManagement() {
 
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`/api/apm/delEmp/${id}`);
+      await axios.delete(`/api/admin/delEmp/${id}`);
       message.success("Employee deleted");
       setEmployees((prev) => prev.filter((emp) => emp._id !== id));
     } catch (err) {
@@ -64,7 +64,7 @@ function EmployeeManagement() {
   const handleEditSubmit = async () => {
     try {
       const values = await form.validateFields();
-      await axios.put(`/api/apm/updEmp/${editingEmployee._id}`, values);
+      await axios.put(`/api/admin/updEmp/${editingEmployee._id}`, values);
       notification.success({ message: "Employee updated" });
       setEditingEmployee(null);
       fetchEmployees();
@@ -76,7 +76,7 @@ function EmployeeManagement() {
   const handleCreate = async () => {
     try {
       const values = await createForm.validateFields();
-      await axios.post("/api/apm/createEmp", values);
+      await axios.post("/api/admin/createEmp", values);
       notification.success({ message: "Employee created" });
       setCreateModalVisible(false);
       createForm.resetFields();

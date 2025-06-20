@@ -26,7 +26,7 @@ function UserManagement() {
 
   const fetchUsers = async () => {
     try {
-      const response = await axios.get("/api/apm/users");
+      const response = await axios.get("/api/admin/users");
       setUsers(response.data);
     } catch (err) {
       console.error(err);
@@ -36,7 +36,7 @@ function UserManagement() {
 
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`/api/apm/delUser/${id}`);
+      await axios.delete(`/api/admin/delUser/${id}`);
       message.success("User deleted");
       setUsers((prev) => prev.filter((user) => user._id !== id));
     } catch (err) {
@@ -47,7 +47,7 @@ function UserManagement() {
 
   const handleChangeStatus = async (id) => {
     try {
-      await axios.put(`/api/apm/changeStatus/${id}`);
+      await axios.put(`/api/admin/changeStatus/${id}`);
       notification.success({
         message: "Success",
         description: "User status updated successfully.",

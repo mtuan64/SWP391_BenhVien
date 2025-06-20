@@ -1,4 +1,4 @@
-const express = require('express');
+const express = require("express");
 const adminRouter = express.Router();
 
 const {
@@ -13,15 +13,15 @@ const {
 } = require("../../controller/admin/adminService");
 
 // Admin - user manage
-apmRouter.get("/users", getUserAccs);
-apmRouter.put("/updUser/:id", editUsers);
-apmRouter.put("/changeStatus/:id", changeStatus); // Assuming this is for changing user status
-apmRouter.delete("/delUser/:id", delUsers);
+adminRouter.get("/users", getUserAccs);
+adminRouter.put("/updUser/:id", editUsers);
+adminRouter.put("/changeStatus/:id", changeStatus); // Assuming this is for changing user status
+adminRouter.delete("/delUser/:id", delUsers);
 
 // Admin - employee manage
-apmRouter.get("/employees", getEmployees);
-apmRouter.put("/updEmp/:id", editEmployees);
-apmRouter.delete("/delEmp/:id", delEmployees);
-apmRouter.post("/createEmp", createEmployees);
+adminRouter.get("/employees", getEmployees);
+adminRouter.put("/updEmp/:id", editEmployees);
+adminRouter.delete("/delEmp/:id", delEmployees);
+adminRouter.post("/createEmp", createEmployees);
 
 module.exports = adminRouter;
