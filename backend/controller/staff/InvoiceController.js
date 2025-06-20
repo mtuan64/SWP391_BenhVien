@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const Invoice = require('../../models/Invoice');
 const Payment = require('../../models/Payment');
 const Service = require('../../models/Service');
-
+const User = require('../../models/User');
 exports.getAllInvoices = async (req, res) => {
   try {
     const { page = 1, limit = 10 } = req.query;
@@ -90,3 +90,54 @@ exports.getServices = async (req, res) => {
   }
 
 }
+exports.getAllServices = async (req, res) => {
+  try {
+    const services = await Service.find();
+    res.status(200).json({ services: services });
+  } catch (error) {
+    res.status(500).json({ message: "error by server" });
+  }
+
+}
+// Lấy tất cả hồ sơ theo Employee ID
+exports.getProfilesByUserId = async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      return res.status(400).json({
+        success: false,
+        message: 'ID người dùng không hợp lệ'
+      });
+    }
+
+    const user = await User.findById(userId)
+      .populate({
+        path: 'profiles',
+        select: 'name dateOfBirth gender diagnose note issues doctorId',
+        populate: {
+          path: 'doctorId',
+          select: 'name email specialization'
+        }
+      });
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'Không tìm thấy người dùng'
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      count: user.profiles.length,
+      data: user.profiles
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Lỗi server',
+      error: error.message
+    });
+  }
+};

@@ -18,6 +18,7 @@ staffRouter.put('/services/paid/:invoiceId', paymentController.paidServices);
 staffRouter.delete('/services/delete/:invoiceId', paymentController.deleteInvoice);
 staffRouter.get('/payments', paymentController.getPayments);
 staffRouter.get("/payments/summary", paymentController.getPaymentSummary);
-
+staffRouter.get("/services", invoiceController.getAllServices);
+staffRouter.get("/profiles/:userId", invoiceController.getProfilesByUserId)
 // staffRouter.get('/labtestresult/:profileId', LabTestbyProfileId);
 module.exports = staffRouter;
