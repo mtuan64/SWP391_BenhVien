@@ -14,5 +14,8 @@ staffRouter.put('/medical-records/:id', editMedicalRecord);
 staffRouter.get('/invoices', invoiceController.getAllInvoices);
 staffRouter.get('/services/:invoiceId', invoiceController.getServices);
 staffRouter.post('/invoices', invoiceController.CreateInvoices);
+staffRouter.put('/services/paid/:invoiceId', paymentController.paidServices);
+staffRouter.delete('services/delete/:invoiceId', paymentController.deleteInvoice);
+
 // staffRouter.get('/labtestresult/:profileId', LabTestbyProfileId);
 module.exports = staffRouter;
