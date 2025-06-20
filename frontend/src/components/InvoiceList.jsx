@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useAuth } from '../context/authContext';
-import { ChevronDown, ChevronRight, FileText, Calendar, DollarSign, User, Loader2, Search, Filter, CheckCircle, Clock, XCircle, CreditCard } from 'lucide-react';
-
+import { ChevronDown, ChevronRight, FileText, Calendar, DollarSign, User, Loader2, Search, Filter, CheckCircle, Clock, XCircle, CreditCard, Trash2, Check } from 'lucide-react';
 const statusText = {
     Paid: 'Đã thanh toán',
     Pending: 'Đang chờ',
@@ -42,6 +41,58 @@ const InvoiceList = () => {
     const [openInvoiceId, setOpenInvoiceId] = useState(null);
     const [serviceData, setServiceData] = useState({});
     const [loadingInvoiceId, setLoadingInvoiceId] = useState(null);
+    const [markPaidLoading, setMarkPaidLoading] = useState(null);
+    const [deleteLoading, setDeleteLoading] = useState(null);
+
+    const handleMarkAsPaid = async (invoiceId) => {
+        setMarkPaidLoading(invoiceId);
+        // Simulate API call
+        const token = localStorage.getItem("token");
+        const response = await axios.put(
+            `http://localhost:9999/api/staff/services/paid/${invoiceId}`,
+            {},
+            {
+                headers: { Authorization: `Bearer ${token}` },
+                body: { method: "Cash" }
+            }
+        );
+
+        // Update invoice status to Paid
+        setInvoices(prev => prev.map(invoice =>
+            invoice._id === invoiceId
+                ? { ...invoice, status: 'Paid' }
+                : invoice
+        ));
+
+        setMarkPaidLoading(null);
+    };
+
+    const handleDeleteInvoice = async (invoiceId) => {
+        if (!window.confirm('Bạn có chắc chắn muốn xóa hóa đơn này không?')) {
+            return;
+        }
+
+        setDeleteLoading(invoiceId);
+        // Simulate API call
+        const token = localStorage.getItem("token");
+        const response = await axios.delete(
+            `http://localhost:9999/api/staff/services/delete${invoiceId}`,
+            {},
+            {
+                headers: { Authorization: `Bearer ${token}` }
+            }
+        );
+
+        // Remove invoice from list
+        setInvoices(prev => prev.filter(invoice => invoice._id !== invoiceId));
+
+        // Close expanded services if this invoice was open
+        if (openInvoiceId === invoiceId) {
+            setOpenInvoiceId(null);
+        }
+
+        setDeleteLoading(null);
+    };
 
     const toggleServices = async (invoiceId) => {
         if (openInvoiceId === invoiceId) {
@@ -394,22 +445,60 @@ const InvoiceList = () => {
                                                     </span>
                                                 </td>
                                                 <td className="py-4 px-6">
-                                                    {invoice.status === 'Pending' ? (
+                                                    <div className="flex items-center gap-2">
+                                                        {/* Payment Button - Only for Pending invoices */}
+                                                        {invoice.status === 'Pending' && (
+                                                            <button
+                                                                onClick={() => handlePayInvoice(invoice._id)}
+                                                                disabled={paymentLoading === invoice._id}
+                                                                className="text-nowrap inline-flex items-center gap-2 px-3 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-medium rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 text-sm"
+                                                            >
+                                                                {paymentLoading === invoice._id ? (
+                                                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                                                ) : (
+                                                                    <CreditCard className="w-4 h-4" />
+                                                                )}
+                                                                Thanh toán
+                                                            </button>
+                                                        )}
+
+                                                        {/* Mark as Paid Button - Only for Pending invoices */}
+                                                        {invoice.status === 'Pending' && (
+                                                            <button
+                                                                onClick={() => handleMarkAsPaid(invoice._id)}
+                                                                disabled={markPaidLoading === invoice._id}
+                                                                className="text-nowrap inline-flex items-center gap-2 px-3 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-400 text-white font-medium rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 text-sm"
+                                                            >
+                                                                {markPaidLoading === invoice._id ? (
+                                                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                                                ) : (
+                                                                    <Check className="w-4 h-4" />
+                                                                )}
+                                                                Thanh toán
+                                                            </button>
+                                                        )}
+
+                                                        {/* Delete Button - Available for all invoices */}
                                                         <button
-                                                            onClick={() => handlePayInvoice(invoice._id)}
-                                                            disabled={paymentLoading === invoice._id}
-                                                            className="text-nowrap inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-medium rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                                                            onClick={() => handleDeleteInvoice(invoice._id)}
+                                                            disabled={deleteLoading === invoice._id}
+                                                            className="inline-flex items-center gap-2 px-3 py-2 bg-red-600 hover:bg-red-700 disabled:bg-red-400 text-white font-medium rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 text-sm"
                                                         >
-                                                            {paymentLoading === invoice._id ? (
+                                                            {deleteLoading === invoice._id ? (
                                                                 <Loader2 className="w-4 h-4 animate-spin" />
                                                             ) : (
-                                                                <CreditCard className="w-4 h-4" />
+                                                                <Trash2 className="w-4 h-4" />
                                                             )}
-                                                            Thanh toán
+                                                            Xóa
                                                         </button>
-                                                    ) : (
-                                                        <span className="text-nowrap text-slate-400 text-sm font-medium">Đã xử lý</span>
-                                                    )}
+
+                                                        {/* Status for non-pending invoices */}
+                                                        {invoice.status !== 'Pending' && (
+                                                            <span className="text-slate-400 text-sm font-medium ml-2">
+                                                                {invoice.status === 'Paid' ? 'Đã xử lý' : 'Đã hủy'}
+                                                            </span>
+                                                        )}
+                                                    </div>
                                                 </td>
                                             </tr>
 

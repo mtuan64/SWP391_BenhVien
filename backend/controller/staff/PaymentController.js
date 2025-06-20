@@ -215,3 +215,39 @@ exports.paymentCancel = async (req, res) => {
         res.status(500).json({ success: false, message: 'Lỗi server', error: error.message });
     }
 };
+// thanh toan tien mat
+// Thanh toán tiền mặt
+exports.paidServices = async (req, res) => {
+    const invoiceId = req.params.invoiceId;
+    const { method } = req.body;
+
+    try {
+        const invoice = await Invoice.findByIdAndUpdate(
+            invoiceId,
+            { method: method },
+            { new: true }
+        );
+
+        if (!invoice) {
+            return res.status(404).json({ message: "Invoice not found" });
+        }
+        res.status(200).json({ invoice });
+    } catch (error) {
+        res.status(500).json({ message: "Server error", error: error.message });
+    }
+};
+exports.deleteInvoice = async (req, res) => {
+    const invoiceId = req.params.invoiceId;
+
+    try {
+        const deletedInvoice = await Invoice.findByIdAndDelete(invoiceId);
+
+        if (!deletedInvoice) {
+            return res.status(404).json({ message: "Invoice not found" });
+        }
+
+        res.status(200).json({ message: "Invoice deleted successfully", invoice: deletedInvoice });
+    } catch (error) {
+        res.status(500).json({ message: "Server error", error: error.message });
+    }
+};
