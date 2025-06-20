@@ -35,10 +35,9 @@ const DRAWER_WIDTH = 240;
 import "antd/dist/reset.css";
 import AdminLayout from "./components/admin/AdminLayout";
 import Dashboard from "./pages/admin/Dashboard";
-import UserManagement from "./pages/admin/UserManagement";
 import EmployeeManagement from "./pages/admin/EmployessManagement";
-
-
+import Changepass from "./pages/ChangePassword";
+import { forgotPassword } from "../../backend/controller/auth/authServices";
 const App = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const user = JSON.parse(localStorage.getItem("user"));
