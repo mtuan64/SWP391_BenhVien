@@ -1,7 +1,10 @@
-
-
 import React, { useState, useEffect } from "react";
-import { BrowserRouter as Router, Routes, Route, useNavigate } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  useNavigate,
+} from "react-router-dom";
 
 import ServicePage from "./pages/ServicePage";
 import DoctorPage from "./pages/DoctorPage";
@@ -20,11 +23,24 @@ import ResetPassword from "./pages/ResetPassword";
 import ForgotPassword from "./pages/ForgotPassword";
 import "antd/dist/reset.css";
 
-import "antd/dist/reset.css";
 import AdminLayout from "./components/admin/AdminLayout";
 import Dashboard from "./pages/admin/Dashboard";
 import UserManagement from "./pages/admin/UserManagement";
 import EmployeeManagement from "./pages/admin/EmployessManagement";
+
+import StaffLayout from "./components/Staff/StaffLayout";
+import BlogManagement from "./pages/staff/BlogManagement";
+import ServiceManagement from "./pages/staff/ServiceManagement";
+import SpecialtyManagement from "./pages/staff/SpecialtyManagement";
+import InvoiceManagement from "./pages/staff/InvoiceManagement";
+import PaymentView from "./pages/staff/PaymentView";
+import NewsManagement from "./pages/staff/NewsManagement";
+import FeedbackManagement from "./pages/staff/FeedbackManagement";
+import QnAView from "./pages/staff/QnAView";
+import AppointmentScheduleManagement from "./pages/staff/AppointmentScheduleManagement";
+import NotificationManagement from "./pages/staff/NotificationManagement";
+import UserManagement from "./pages/staff/UserManagement";
+import MedicineManagement from "./pages/staff/MedicineManagement";
 
 // 👉 A proper AppRoutes component, inside <Router> so we can use useNavigate()
 const AppRoutes = ({ menuOpen, setMenuOpen }) => {
@@ -67,7 +83,6 @@ const App = () => {
   const role = user?.role || "patient";
 
   const toggleMenu = () => setMenuOpen((open) => !open);
-  
 
   return (
     <Router>
@@ -79,6 +94,26 @@ const App = () => {
             <Route path="users" element={<UserManagement />} />
             <Route path="employees" element={<EmployeeManagement />} />
           </Route>
+        </Route>
+
+        {/* Staff Layout Routes */}
+        <Route path="/staff/*" element={<StaffLayout />}>
+          <Route index element={<BlogManagement />} />
+          <Route path="blogs" element={<BlogManagement />} />
+          <Route path="services" element={<ServiceManagement />} />
+          <Route path="specialties" element={<SpecialtyManagement />} />
+          <Route path="invoices" element={<InvoiceManagement />} />
+          <Route path="payments" element={<PaymentView />} />
+          <Route path="news" element={<NewsManagement />} />
+          <Route path="feedback" element={<FeedbackManagement />} />
+          <Route path="qna" element={<QnAView />} />
+          <Route
+            path="appointments"
+            element={<AppointmentScheduleManagement />}
+          />
+          <Route path="notifications" element={<NotificationManagement />} />
+          <Route path="users" element={<UserManagement />} />
+          <Route path="medicines" element={<MedicineManagement />} />
         </Route>
 
         {/* Public Site Layout */}
@@ -158,4 +193,3 @@ const App = () => {
 };
 
 export default App;
-
