@@ -15,12 +15,14 @@ const Login = async (req, res) => {
     if(userPassword !== user.password){
       return res.status(400).json({message: "invalid password"});
     }
-
+    const role = "patient";
+    if(user.role){
+      role = user.role;
+    }
     const payLoad = {
-      
+      role:role,
       id: user._id,
       email: user.email,
-      name: user.name
     };
 
     const token = jwt.sign(payLoad,"3ubgunbguisgy47ni7rynvgtkuenkjdsfnhrvbyr7tvbkuynv",{expiresIn: '1h'});

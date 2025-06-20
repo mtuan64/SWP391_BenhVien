@@ -17,20 +17,33 @@ import Changepass from "./pages/ChangePassword";
 import ResetPassword from "./pages/ResetPassword";
 import ForgotPassword from "./pages/ForgotPassword";
 import "antd/dist/reset.css"; // hoặc 'antd/dist/antd.css' nếu bạn dùng antd v4
+import { useNavigate } from "react-router-dom";
 
 const DRAWER_WIDTH = 240;
 
+
 const App = () => {
+    
+  const navigate = useNavigate();
+
   // State mở/đóng menu
   const [menuOpen, setMenuOpen] = useState(false);
-
-  // Lấy user và role (có thể lấy từ context hoặc localStorage)
   const user = JSON.parse(localStorage.getItem("user"));
-  const role = user?.role || "patient";
-
-  // Hàm toggle menu
   const toggleMenu = () => setMenuOpen((open) => !open);
-
+    const role = user.role?user.role:"patient";
+  if (role === "admin") {
+  navigate("/admin/"); // hiển thị AdminLayout
+} else if (role === "staff") {
+  navigate("/staff/"); // hiển thị StaffLayout
+}else if(role === "patient"){
+  navigate("/patient");
+} else if(role === "doctor"){
+  navigate("/doctor");
+} 
+else {
+  navigate("/login");
+}
+  // Hàm toggle menu
   return (
     <Router>
       {/* Header luôn hiện trên mọi trang */}
@@ -63,7 +76,7 @@ const App = () => {
           <Route path="/myprofile" element={<ProfilePage />} />
           <Route path="/appointment" element={<AppointmentPage />} />
           <Route path="/doctor/:doctorId" element={<DoctorDetail />} />
-                    <Route path="/changepass" element={<Changepass />} />
+          <Route path="/changepass" element={<Changepass />} />
                     <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
 
