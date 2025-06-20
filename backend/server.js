@@ -22,6 +22,9 @@ app.use("/api/checkup", require("./routers/checkup/checkup.route"));
 app.use("/api/apm", require("./routers/appointment/appointment.routes"));
 app.use("/api/auth", require("./routers/auth/auth.route"));
 app.use("/api/med", require("./routers/medicine/medicine.route"));
+app.use("/api/appointmentScheduleManagement", require("./routers/appointment/appointmentScheduleManagement.route"));
+app.use("/api/users", require("./routers/appointment/userManagementController.routes"));
+
 
 const PORT = process.env.PORT || 9999;
 app.listen(PORT, () => {
