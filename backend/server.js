@@ -24,6 +24,8 @@ app.use("/api/auth", require("./routers/auth/auth.route"));
 app.use("/api/doctor", require("./routers/Doctor/doctor.route"));
 app.use("/api/staff", require("./routers/Staff/staff.route"));
 
+app.use("/api/doctr", require("./routers/User/user.route"));
+
 const PORT = process.env.PORT || 9999;
 app.listen(PORT, () => {
   connectDb();

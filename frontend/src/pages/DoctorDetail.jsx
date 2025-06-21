@@ -16,10 +16,10 @@ const DoctorDetail = () => {
     const fetchDoctor = async () => {
       try {
         console.log(`Fetching doctor with ID: ${doctorId}`);
-        const res = await axios.get(`http://localhost:9999/api/doctor/${doctorId}`);
+        const res = await axios.get(`http://localhost:9999/api/doctr/${doctorId}`);
         console.log("API Response:", res.data);
-        if (res.data.data) {
-          setDoctor(res.data.data);
+        if (res.data.doctor) {
+          setDoctor(res.data.doctor);
         } else if (res.data) {
           setDoctor(res.data);
         } else {
@@ -35,6 +35,57 @@ const DoctorDetail = () => {
 
     fetchDoctor();
   }, [doctorId]);
+
+//   const doctors = [
+//   {
+//     _id: "1",
+//     userId: { fullname: "Nguyễn Văn An" },
+//     ProfileImage: "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d",
+//     Specialty: "Nội Tổng Quát",
+//   },
+//   {
+//     _id: "2",
+//     userId: { fullname: "Trần Thị Bình" },
+//     ProfileImage: "https://images.unsplash.com/photo-1594824476967-48c8b964273f",
+//     Specialty: "Nhi Khoa",
+//   },
+//   {
+//     _id: "3",
+//     userId: { fullname: "Lê Minh Châu" },
+//     ProfileImage: "https://images.unsplash.com/photo-1598257006626-48b0c252070d",
+//     Specialty: "Phụ Sản",
+//   },
+//   {
+//     _id: "4",
+//     userId: { fullname: "Phạm Quốc Đạt" },
+//     ProfileImage: "https://images.unsplash.com/photo-1622253692010-333f2b7c2f96",
+//     Specialty: "Ngoại Khoa",
+//   },
+//   {
+//     _id: "5",
+//     userId: { fullname: "Hoàng Thị Mai" },
+//     ProfileImage: "https://images.unsplash.com/photo-1594824476967-48c8b964273f",
+//     Specialty: "Chẩn Đoán Hình Ảnh",
+//   },
+// ];
+
+//   useEffect(() => {
+//     const fetchDoctor = async () => {
+//       try {
+//         console.log(`Fetching doctor with ID: ${doctorId}`);
+//         const doctor1 = doctors.find(dt => dt._id == doctorId);
+//         setDoctor(doctor1);
+//         setLoading(false);
+//       } catch (error) {
+//         console.error("Error fetching doctor details:", error);
+//         setError("Failed to load doctor details. Please check the console for more details.");
+//         setLoading(false);
+//       }
+//     };
+
+//     fetchDoctor();
+//     console.log(JSON.stringify(doctor));
+//   }, [doctorId]);
 
   if (loading) {
     return (
@@ -77,7 +128,7 @@ const DoctorDetail = () => {
         </Row>
       </div>
 
-      
+
 
       {/* Hero Carousel */}
       <div id="heroCarousel" className="carousel slide carousel-fade" data-bs-ride="carousel">
@@ -127,13 +178,13 @@ const DoctorDetail = () => {
             <Col lg={6} className="wow fadeInUp" data-wow-delay="0.3s">
               <div className="bg-light rounded p-5 h-100">
                 <h2 className="mb-4">Doctor Details</h2>
-                <p><strong>Clinic ID:</strong> {doctor.clinic_id}</p>
+                <p><strong>Name:</strong> {doctor.Name}</p>
                 <p><strong>Specialty:</strong> {doctor.Specialty}</p>
                 <p><strong>Degree:</strong> {doctor.Degree}</p>
                 <p><strong>Experience Years:</strong> {doctor.ExperienceYears}</p>
                 <p><strong>Description:</strong> {doctor.Description}</p>
                 <p><strong>Status:</strong> {doctor.Status}</p>
-                <Link to="/doctor" className="btn btn-secondary mt-3">Back to Team</Link>
+                <Link to="/doctr" className="btn btn-secondary mt-3">Back to Team</Link>
               </div>
             </Col>
           </Row>

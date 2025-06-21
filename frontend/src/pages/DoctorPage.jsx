@@ -188,7 +188,7 @@ const DoctorPage = () => {
                     <p className="mb-2">
                       <strong>Chuyên ngành:</strong> {doctor.Specialty || 'Không rõ'}
                     </p>
-                    <Link to={`/doctor/${doctor._id}`} className="btn btn-primary mt-2">
+                    <Link to={`/doctr/${doctor._id}`} className="btn btn-primary mt-2">
                       Xem chi tiết
                     </Link>
                   </div>
