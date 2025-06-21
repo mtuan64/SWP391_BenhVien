@@ -403,7 +403,8 @@ exports.getPayments = async (req, res) => {
                     as: "user",
                 },
             },
-            { $unwind: "$user" },
+            { $unwind: { path: "$user", preserveNullAndEmptyArrays: true } },
+
             // Populate profile info
             {
                 $lookup: {
@@ -413,7 +414,7 @@ exports.getPayments = async (req, res) => {
                     as: "profile",
                 },
             },
-            { $unwind: "$profile" },
+            { $unwind: { path: "$profile", preserveNullAndEmptyArrays: true } },
             // Project fields you want to return
             {
                 $project: {
