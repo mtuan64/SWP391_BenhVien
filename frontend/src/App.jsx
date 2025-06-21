@@ -42,35 +42,58 @@ import MedicineManagement from "./pages/staff/MedicineManagement";
 import Header from "./components/HeaderComponent";
 import MenuComponent from "./components/MenuComponent";
 import FooterComponent from "./components/FooterComponent";
-import PrivateRoute from "./components/PrivateRoute";
+import { PrivateRoute, PrivateRouteNotAllowUser } from "./components/PrivateRoute"
 import "antd/dist/reset.css";
-
+import NotFoundPage from "./pages/NotFoundPage";
 const DRAWER_WIDTH = 240;
-const user = JSON.parse(localStorage.getItem("user"));
-  const role = user?.role ?? "patient";
+
 const RoleRedirect = () => {
-  const navigate = useNavigate();
+  const navigate = useNavigate(); 
   const location = useLocation();
-  
 
-  useEffect(() => {
-    
-    if (location.pathname === "/") {
-      if (role === "Admin") navigate("/admin/");
-      else if (role === "Staff") navigate("/staff/");
-      else if (role === "patient") navigate("/home");
-      else if (role === "Doctor") navigate("/doctor");
-      else navigate("/login");
-    }
-  }, [navigate, role, location.pathname]);
-
-  return null; // doesn't render UI
-};
- const isPatient = role === "staff";
-const App = () => {
-  const [menuOpen, setMenuOpen] = useState(false);
   const user = JSON.parse(localStorage.getItem("user"));
   const role = user?.role || "patient";
+
+  useEffect(() => {
+    if (!user) return;
+
+    const path = location.pathname;
+
+    if (path === "/") {
+      // Điều hướng ban đầu
+      if (role === "Admin") navigate("/admin/");
+      else if (role === "Staff") navigate("/staff/");
+      else if (role === "Doctor") navigate("/doctor");
+      else navigate("/home");
+    } else {
+      // Nếu đã vào nhầm layout (sai path so với role) thì redirect lại
+      if (role === "Admin" && !path.startsWith("/admin")) navigate("/admin/");
+      if (role === "Staff" && !path.startsWith("/staff")) navigate("/staff/");
+      if (role === "Doctor" && !path.startsWith("/doctor")) navigate("/doctor");
+      if (role === "patient" && (path.startsWith("/admin") || path.startsWith("/staff") || path.startsWith("/doctor")))
+        navigate("/home");
+    }
+  }, [navigate, location.pathname]);
+
+  return null;
+};
+const getRole = () => {
+  try {
+    const user = JSON.parse(localStorage.getItem("user"));
+    const role = user?.role;
+    return role || "patient";
+  } catch {
+    return "patient";
+  }
+};
+
+
+const App = () => {
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  const role = getRole();
+  const isPatient = role === "patient";
+  const user = JSON.parse(localStorage.getItem("user"));
 
   const toggleMenu = () => setMenuOpen((open) => !open);
 
@@ -106,7 +129,7 @@ const App = () => {
           </Route>
 
           {/* Staff Layout Routes */}
-          <Route path="/staff/*" element={<StaffLayout />}>
+          <Route path="/staff/*" element={<PrivateRouteNotAllowUser><StaffLayout /></PrivateRouteNotAllowUser>}>
             <Route index element={<BlogManagement />} />
             <Route path="blogs" element={<BlogManagement />} />
             <Route path="services" element={<ServiceManagement />} />
@@ -135,6 +158,7 @@ const App = () => {
               <AppointmentPage />
             </PrivateRoute>
           } />
+          <Route path="/not-found" element={<NotFoundPage/>}/>
           <Route path="/doctor/:doctorId" element={<DoctorDetail />} />
           <Route path="/changepass" element={<Changepass />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
