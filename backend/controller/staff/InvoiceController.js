@@ -45,7 +45,7 @@ exports.getAllInvoices = async (req, res) => {
   }
 };
 exports.CreateInvoices = async (req, res) => {
-  const { userId, profileId, ArrayServiceId } = req.body;
+  const { userId = null, profileId = null, ArrayServiceId } = req.body;
 
   try {
     // Lấy danh sách dịch vụ từ DB

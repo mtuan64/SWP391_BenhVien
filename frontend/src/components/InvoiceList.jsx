@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useAuth } from '../context/authContext';
 import { ChevronDown, ChevronRight, FileText, Calendar, DollarSign, User, Loader2, Search, Filter, CheckCircle, Clock, XCircle, CreditCard, Trash2, Check } from 'lucide-react';
+import { useNavigate } from "react-router-dom";
 const statusText = {
     Paid: 'Đã thanh toán',
     Pending: 'Đang chờ',
@@ -13,20 +14,20 @@ const statusConfig = {
         text: 'Đã thanh toán',
         class: 'bg-emerald-50 text-emerald-700 border-emerald-200',
         icon: CheckCircle,
-        dot: 'bg-emerald-500'
+        dot: 'bg-emerald-500',
     },
     Pending: {
         text: 'Đang chờ',
         class: 'bg-amber-50 text-amber-700 border-amber-200',
         icon: Clock,
-        dot: 'bg-amber-500'
+        dot: 'bg-amber-500',
     },
     Canceled: {
         text: 'Đã hủy',
         class: 'bg-red-50 text-red-700 border-red-200',
         icon: XCircle,
-        dot: 'bg-red-500'
-    }
+        dot: 'bg-red-500',
+    },
 };
 
 const InvoiceList = () => {
@@ -37,34 +38,73 @@ const InvoiceList = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState('all');
     const [paymentLoading, setPaymentLoading] = useState(null);
-
     const [openInvoiceId, setOpenInvoiceId] = useState(null);
     const [serviceData, setServiceData] = useState({});
     const [loadingInvoiceId, setLoadingInvoiceId] = useState(null);
     const [markPaidLoading, setMarkPaidLoading] = useState(null);
     const [deleteLoading, setDeleteLoading] = useState(null);
+    // Pagination state
+    const [currentPage, setCurrentPage] = useState(1);
+    const [pageSize] = useState(10); // Matches backend default limit
+    const [totalInvoices, setTotalInvoices] = useState(0);
+    const [totalPages, setTotalPages] = useState(1);
+
+    const navigate = useNavigate();
+
+    const fetchInvoices = async () => {
+        setLoading(true);
+        setError(null);
+
+        try {
+            const token = localStorage.getItem('token');
+            const response = await axios.get('http://localhost:9999/api/staff/invoices', {
+                headers: { Authorization: `Bearer ${token}` },
+                params: {
+                    page: currentPage,
+                    limit: pageSize,
+                },
+            });
+
+            if (response.data.success) {
+                setInvoices(response.data.data || []);
+                setTotalInvoices(response.data.total || 0);
+                setTotalPages(response.data.totalPages || 1);
+            } else {
+                throw new Error(response.data.message || 'Lỗi khi tải danh sách hóa đơn');
+            }
+            setLoading(false);
+        } catch (err) {
+            console.error('Error fetching invoices:', err);
+            setError(err.response?.data?.message || 'Lỗi khi tải danh sách hóa đơn');
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchInvoices();
+    }, [currentPage, pageSize, user?._id, authLoading]);
 
     const handleMarkAsPaid = async (invoiceId) => {
         setMarkPaidLoading(invoiceId);
-        // Simulate API call
-        const token = localStorage.getItem("token");
-        const response = await axios.put(
-            `http://localhost:9999/api/staff/services/paid/${invoiceId}`,
-            {},
-            {
-                headers: { Authorization: `Bearer ${token}` },
-                body: { method: "Cash" }
-            }
-        );
+        try {
+            const token = localStorage.getItem('token');
+            await axios.put(
+                `http://localhost:9999/api/staff/services/paid/${invoiceId}`,
+                { method: 'Cash' },
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
 
-        // Update invoice status to Paid
-        setInvoices(prev => prev.map(invoice =>
-            invoice._id === invoiceId
-                ? { ...invoice, status: 'Paid' }
-                : invoice
-        ));
-
-        setMarkPaidLoading(null);
+            setInvoices((prev) =>
+                prev.map((invoice) =>
+                    invoice._id === invoiceId ? { ...invoice, status: 'Paid' } : invoice
+                )
+            );
+        } catch (err) {
+            console.error('Error marking invoice as paid:', err);
+            alert(err.response?.data?.message || 'Lỗi khi đánh dấu hóa đơn đã thanh toán');
+        } finally {
+            setMarkPaidLoading(null);
+        }
     };
 
     const handleDeleteInvoice = async (invoiceId) => {
@@ -73,85 +113,54 @@ const InvoiceList = () => {
         }
 
         setDeleteLoading(invoiceId);
-        // Simulate API call
-        const token = localStorage.getItem("token");
-        const response = await axios.delete(
-            `http://localhost:9999/api/staff/services/delete${invoiceId}`,
-            {},
-            {
-                headers: { Authorization: `Bearer ${token}` }
+        try {
+            const token = localStorage.getItem('token');
+            await axios.delete(`http://localhost:9999/api/staff/services/delete/${invoiceId}`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+
+            setInvoices((prev) => prev.filter((invoice) => invoice._id !== invoiceId));
+            if (openInvoiceId === invoiceId) {
+                setOpenInvoiceId(null);
             }
-        );
-
-        // Remove invoice from list
-        setInvoices(prev => prev.filter(invoice => invoice._id !== invoiceId));
-
-        // Close expanded services if this invoice was open
-        if (openInvoiceId === invoiceId) {
-            setOpenInvoiceId(null);
+        } catch (err) {
+            console.error('Error deleting invoice:', err);
+            alert(err.response?.data?.message || 'Lỗi khi xóa hóa đơn');
+        } finally {
+            setDeleteLoading(null);
         }
-
-        setDeleteLoading(null);
     };
 
     const toggleServices = async (invoiceId) => {
         if (openInvoiceId === invoiceId) {
-            setOpenInvoiceId(null); // Đóng nếu đã mở
+            setOpenInvoiceId(null);
             return;
         }
 
         if (serviceData[invoiceId]) {
-            setOpenInvoiceId(invoiceId); // Mở nếu đã có dữ liệu
+            setOpenInvoiceId(invoiceId);
             return;
         }
 
         try {
             setLoadingInvoiceId(invoiceId);
-            const token = localStorage.getItem("token");
-            const response = await axios.get(
-                `http://localhost:9999/api/staff/services/${invoiceId}`,
-                {},
-                {
-                    headers: { Authorization: `Bearer ${token}` }
-                }
-            );
+            const token = localStorage.getItem('token');
+            const response = await axios.get(`http://localhost:9999/api/staff/services/${invoiceId}`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
 
-            setServiceData(prev => ({
+            setServiceData((prev) => ({
                 ...prev,
-                [invoiceId]: response.data.services || []
+                [invoiceId]: response.data.services || [],
             }));
             setOpenInvoiceId(invoiceId);
         } catch (err) {
-            alert("Không lấy được thông tin dịch vụ.");
+            alert('Không lấy được thông tin dịch vụ.');
             console.error(err);
         } finally {
             setLoadingInvoiceId(null);
         }
     };
-    useEffect(() => {
-        const fetchInvoices = async () => {
-            setLoading(true);
-            setError(null);
-
-            try {
-                const response = await axios.get('http://localhost:9999/api/staff/invoices');
-                setInvoices(response.data?.data || []);
-                setLoading(false);
-            } catch (err) {
-                console.error('Error fetching invoices:', err);
-                setError(err.response?.data?.message || 'Lỗi khi tải danh sách hóa đơn');
-                setLoading(false);
-            }
-        };
-
-        // if (user?._id && !authLoading) {
-        //     fetchInvoices();
-        // } else if (!authLoading) {
-        //     setError('Vui lòng đăng nhập để tải dữ liệu');
-        //     setLoading(false);
-        // }
-        fetchInvoices();
-    }, [user?._id, authLoading]);
 
     const handlePayInvoice = async (invoiceId) => {
         setPaymentLoading(invoiceId);
@@ -175,8 +184,9 @@ const InvoiceList = () => {
         }
     };
 
-    const filteredInvoices = invoices.filter(invoice => {
-        const matchesSearch = invoice.invoiceNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    const filteredInvoices = invoices.filter((invoice) => {
+        const matchesSearch =
+            invoice.invoiceNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
             (invoice.userId?.name?.toLowerCase().includes(searchTerm.toLowerCase()) || '');
         const matchesStatus = statusFilter === 'all' || invoice.status === statusFilter;
         return matchesSearch && matchesStatus;
@@ -184,10 +194,22 @@ const InvoiceList = () => {
 
     const stats = {
         total: invoices.length,
-        paid: invoices.filter(i => i.status === 'Paid').length,
-        pending: invoices.filter(i => i.status === 'Pending').length,
-        canceled: invoices.filter(i => i.status === 'Canceled').length,
-        totalAmount: invoices.reduce((sum, i) => sum + (i.totalAmount || 0), 0)
+        paid: invoices.filter((i) => i.status === 'Paid').length,
+        pending: invoices.filter((i) => i.status === 'Pending').length,
+        canceled: invoices.filter((i) => i.status === 'Canceled').length,
+        totalAmount: invoices.reduce((sum, i) => sum + (i.totalAmount || 0), 0),
+    };
+
+    const handleNextPage = () => {
+        if (currentPage < totalPages) {
+            setCurrentPage(currentPage + 1);
+        }
+    };
+
+    const handlePreviousPage = () => {
+        if (currentPage > 1) {
+            setCurrentPage(currentPage - 1);
+        }
     };
 
     if (authLoading || loading) {
@@ -200,27 +222,6 @@ const InvoiceList = () => {
             </div>
         );
     }
-    const handleService = async (invoiceId) => {
-        try {
-            const token = localStorage.getItem('token');
-            const response = await axios.post(
-                `http://localhost:9999/api/staff/services/${invoiceId}`,
-                {}, // Gửi rỗng body để tránh lỗi
-                { headers: { Authorization: `Bearer ${token}` } }
-            );
-
-            if (response.status === 200) {
-                const services = response.data.services;
-                console.log("Danh sách dịch vụ:", services);
-                // Tùy bạn xử lý dữ liệu services tại đây
-            } else {
-                alert(response.data.message || "Không lấy được dịch vụ");
-            }
-        } catch (err) {
-            console.error('Lỗi khi lấy danh sách dịch vụ:', err);
-            alert(err.response?.data?.message || 'Lỗi khi lấy danh sách dịch vụ');
-        }
-    };
 
     if (error) {
         return (
@@ -228,7 +229,7 @@ const InvoiceList = () => {
                 <div className="bg-white rounded-xl p-8 shadow-lg border border-red-100 max-w-md w-full">
                     <div className="flex items-center gap-3 mb-4">
                         <div className="p-2 bg-red-100 rounded-lg">
-                            <AlertTriangle className="w-6 h-6 text-red-600" />
+                            <XCircle className="w-6 h-6 text-red-600" />
                         </div>
                         <h3 className="text-lg font-semibold text-red-800">Có lỗi xảy ra</h3>
                     </div>
@@ -241,7 +242,7 @@ const InvoiceList = () => {
                     </button>
                 </div>
             </div>
-        );//code co tailwind ma no co tailwind dau
+        );
     }
 
     return (
@@ -254,6 +255,12 @@ const InvoiceList = () => {
                             <FileText className="w-6 h-6 text-white" />
                         </div>
                         <h1 className="text-3xl font-bold text-slate-800">Danh sách hóa đơn</h1>
+                        <div
+                            onClick={() => { navigate("/staff/invoices/create"); }}
+                            className="bg-green-200 cursor-pointer rounded-xl rounded-3xl p-6 text-green-600 shadow-sm border border-slate-100 hover:shadow-md transition-shadow"
+                        >
+                            + Tạo hóa đơn
+                        </div>
                     </div>
                     <p className="text-slate-600">Theo dõi và quản lý tất cả hóa đơn của bạn</p>
                 </div>
@@ -269,7 +276,6 @@ const InvoiceList = () => {
                             <FileText className="w-8 h-8 text-slate-400" />
                         </div>
                     </div>
-
                     <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-100 hover:shadow-md transition-shadow">
                         <div className="flex items-center justify-between">
                             <div>
@@ -279,7 +285,6 @@ const InvoiceList = () => {
                             <CheckCircle className="w-8 h-8 text-emerald-400" />
                         </div>
                     </div>
-
                     <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-100 hover:shadow-md transition-shadow">
                         <div className="flex items-center justify-between">
                             <div>
@@ -289,7 +294,6 @@ const InvoiceList = () => {
                             <Clock className="w-8 h-8 text-amber-400" />
                         </div>
                     </div>
-
                     <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-100 hover:shadow-md transition-shadow">
                         <div className="flex items-center justify-between">
                             <div>
@@ -299,14 +303,11 @@ const InvoiceList = () => {
                             <XCircle className="w-8 h-8 text-red-400" />
                         </div>
                     </div>
-
                     <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-100 hover:shadow-md transition-shadow">
                         <div className="flex items-center justify-between">
                             <div>
                                 <p className="text-sm font-medium text-slate-600">Tổng giá trị</p>
-                                <p className="text-2xl font-bold text-blue-600">
-                                    {(stats.totalAmount / 1000).toFixed(1)}K
-                                </p>
+                                <p className="text-2xl font-bold text-blue-600">{(stats.totalAmount / 1000).toFixed(1)}K</p>
                             </div>
                             <CreditCard className="w-8 h-8 text-blue-400" />
                         </div>
@@ -383,7 +384,7 @@ const InvoiceList = () => {
                                                 style={{
                                                     animation: `fadeInUp 0.4s ease forwards ${index * 0.05}s`,
                                                     opacity: 0,
-                                                    transform: 'translateY(10px)'
+                                                    transform: 'translateY(10px)',
                                                 }}
                                             >
                                                 <td className="py-4 px-6">
@@ -420,9 +421,7 @@ const InvoiceList = () => {
                                                         onClick={() => toggleServices(invoice._id)}
                                                         className="group/btn inline-flex items-center space-x-2 px-4 py-2 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 font-medium transition-all duration-200 hover:shadow-sm border border-blue-200 hover:border-blue-300"
                                                     >
-                                                        <span className="text-nowrap text-sm">
-                                                            {invoice.services?.length || 0} dịch vụ
-                                                        </span>
+                                                        <span className="text-nowrap text-sm">{invoice.services?.length || 0} dịch vụ</span>
                                                         <div className="transform transition-transform duration-200 ease-in-out">
                                                             {openInvoiceId === invoice._id ? (
                                                                 <ChevronDown className="h-4 w-4 group-hover/btn:scale-110" />
@@ -432,21 +431,24 @@ const InvoiceList = () => {
                                                         </div>
                                                     </button>
                                                 </td>
-
                                                 <td className="py-4 px-6">
                                                     <p className="text-nowrap font-bold text-slate-800 text-lg">
                                                         {invoice.totalAmount.toLocaleString('vi-VN')} VNĐ
                                                     </p>
                                                 </td>
                                                 <td className="py-4 px-6">
-                                                    <span className={`text-nowrap inline-flex items-center gap-2 px-3 py-2 rounded-full text-sm font-medium border ${statusConfig[invoice.status]?.class || 'bg-gray-50 text-gray-700 border-gray-200'}`}>
-                                                        <span className={`text-nowrap w-2 h-2 rounded-full ${statusConfig[invoice.status]?.dot || 'bg-gray-500'}`}></span>
+                                                    <span
+                                                        className={`text-nowrap inline-flex items-center gap-2 px-3 py-2 rounded-full text-sm font-medium border ${statusConfig[invoice.status]?.class || 'bg-gray-50 text-gray-700 border-gray-200'
+                                                            }`}
+                                                    >
+                                                        <span
+                                                            className={`text-nowrap w-2 h-2 rounded-full ${statusConfig[invoice.status]?.dot || 'bg-gray-500'}`}
+                                                        ></span>
                                                         {statusText[invoice.status] || invoice.status}
                                                     </span>
                                                 </td>
                                                 <td className="py-4 px-6">
                                                     <div className="flex items-center gap-2">
-                                                        {/* Payment Button - Only for Pending invoices */}
                                                         {invoice.status === 'Pending' && (
                                                             <button
                                                                 onClick={() => handlePayInvoice(invoice._id)}
@@ -461,8 +463,6 @@ const InvoiceList = () => {
                                                                 Thanh toán
                                                             </button>
                                                         )}
-
-                                                        {/* Mark as Paid Button - Only for Pending invoices */}
                                                         {invoice.status === 'Pending' && (
                                                             <button
                                                                 onClick={() => handleMarkAsPaid(invoice._id)}
@@ -477,8 +477,6 @@ const InvoiceList = () => {
                                                                 Thanh toán
                                                             </button>
                                                         )}
-
-                                                        {/* Delete Button - Available for all invoices */}
                                                         <button
                                                             onClick={() => handleDeleteInvoice(invoice._id)}
                                                             disabled={deleteLoading === invoice._id}
@@ -491,8 +489,6 @@ const InvoiceList = () => {
                                                             )}
                                                             Xóa
                                                         </button>
-
-                                                        {/* Status for non-pending invoices */}
                                                         {invoice.status !== 'Pending' && (
                                                             <span className="text-slate-400 text-sm font-medium ml-2">
                                                                 {invoice.status === 'Paid' ? 'Đã xử lý' : 'Đã hủy'}
@@ -501,8 +497,6 @@ const InvoiceList = () => {
                                                     </div>
                                                 </td>
                                             </tr>
-
-                                            {/* Enhanced Services Expansion Row */}
                                             {openInvoiceId === invoice._id && (
                                                 <tr className="bg-gradient-to-r from-blue-50 to-indigo-50">
                                                     <td colSpan={7} className="px-6 py-6 border-l-4 border-blue-400">
@@ -527,7 +521,7 @@ const InvoiceList = () => {
                                                                                 className="flex items-center justify-between p-4 bg-white rounded-lg shadow-sm border border-slate-200 hover:shadow-md transition-all duration-200 hover:border-blue-200"
                                                                                 style={{
                                                                                     animationDelay: `${serviceIndex * 100}ms`,
-                                                                                    animation: 'slideInUp 0.3s ease-out forwards'
+                                                                                    animation: 'slideInUp 0.3s ease-out forwards',
                                                                                 }}
                                                                             >
                                                                                 <div className="flex-1">
@@ -559,7 +553,6 @@ const InvoiceList = () => {
                             </tbody>
                         </table>
                     </div>
-
                     {filteredInvoices.length === 0 && (
                         <div className="text-center py-12">
                             <FileText className="w-12 h-12 text-slate-300 mx-auto mb-4" />
@@ -568,6 +561,32 @@ const InvoiceList = () => {
                         </div>
                     )}
                 </div>
+
+                {/* Pagination Controls */}
+                {totalInvoices > 0 && (
+                    <div className="flex justify-between items-center mt-6">
+                        <div className="text-slate-600">
+                            Hiển thị {(currentPage - 1) * pageSize + 1} -{' '}
+                            {Math.min(currentPage * pageSize, totalInvoices)} / {totalInvoices} hóa đơn
+                        </div>
+                        <div className="flex gap-2">
+                            <button
+                                onClick={handlePreviousPage}
+                                disabled={currentPage === 1}
+                                className="px-4 py-2 bg-blue-600 text-white rounded-lg disabled:bg-slate-300 hover:bg-blue-700 transition-colors text-sm"
+                            >
+                                Trước
+                            </button>
+                            <button
+                                onClick={handleNextPage}
+                                disabled={currentPage === totalPages}
+                                className="px-4 py-2 bg-blue-600 text-white rounded-lg disabled:bg-slate-300 hover:bg-blue-700 transition-colors text-sm"
+                            >
+                                Tiếp
+                            </button>
+                        </div>
+                    </div>
+                )}
             </div>
 
             <style jsx>{`
@@ -577,7 +596,6 @@ const InvoiceList = () => {
             transform: translateY(0);
           }
         }
-        
         @keyframes slideInUp {
           from {
             opacity: 0;

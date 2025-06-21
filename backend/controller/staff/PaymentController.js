@@ -32,7 +32,7 @@ exports.createPaymentLink = async (req, res) => {
 
         const invoice = await Invoice.findById(invoiceId)
             .populate('userId', 'name email')
-            .populate('profileId', 'name');
+            .populate('profileId', 'name').populate("services");
 
         if (!invoice) {
             return res.status(404).json({
@@ -72,7 +72,7 @@ exports.createPaymentLink = async (req, res) => {
         const paymentData = {
             orderCode: orderCode,
             amount: invoice.totalAmount,
-            description: `Pay ${invoice.invoiceNumber} for ${invoice.profileId.name}`,
+            description: `Pay ${invoice.invoiceNumber} for ${invoice.profileId?.name ?? "patient"}`,
             items: (invoice.services || []).map(service => ({
                 name: service.name || 'Dịch vụ y tế',
                 quantity: 1,
@@ -216,7 +216,6 @@ exports.paymentCancel = async (req, res) => {
     }
 };
 // thanh toan tien mat
-// Thanh toán tiền mặt
 exports.paidServices = async (req, res) => {
     const invoiceId = req.params.invoiceId;
     const { method } = req.body;
@@ -224,9 +223,27 @@ exports.paidServices = async (req, res) => {
     try {
         const invoice = await Invoice.findByIdAndUpdate(
             invoiceId,
-            { method: method },
+            { status: "Paid" },
             { new: true }
         );
+        // Kiểm tra xem đã có Payment đang chờ hay chưa
+        let payment = await Payment.findOne({ invoiceId, status: 'Pending' });
+        //chua co thi tao payment moi
+        if (!payment) {
+            payment = await Payment.create({
+                invoiceId,
+                userId: invoice.userId,
+                profileId: invoice.profileId,
+                amount: invoice.totalAmount,
+                method: "Cash",
+                status: 'Completed',
+                paymentDate: new Date()
+            });
+        } else {
+            payment.status = "Completed";
+            payment.method = "Cash";
+            await payment.save();
+        }
 
         if (!invoice) {
             return res.status(404).json({ message: "Invoice not found" });

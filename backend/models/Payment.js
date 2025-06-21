@@ -2,8 +2,8 @@ const mongoose = require('mongoose');
 
 const paymentSchema = new mongoose.Schema({
   invoiceId: { type: mongoose.Schema.Types.ObjectId, ref: 'Invoice', required: true, index: true },
-  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  profileId: { type: mongoose.Schema.Types.ObjectId, ref: 'Profile', required: true },
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: false },
+  profileId: { type: mongoose.Schema.Types.ObjectId, ref: 'Profile', required: false },
   amount: { type: Number, required: true, min: 0 },
   method: { type: String, enum: ['Credit Card', 'Mobile App', 'Cash'], required: true },
   status: { type: String, enum: ['Pending', 'Completed', 'Failed'], default: 'Pending' },

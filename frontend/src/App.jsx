@@ -38,7 +38,10 @@ import AppointmentScheduleManagement from "./pages/staff/AppointmentScheduleMana
 import NotificationManagement from "./pages/staff/NotificationManagement";
 import UserManagement from "./pages/staff/UserManagement";
 import MedicineManagement from "./pages/staff/MedicineManagement";
-
+import InvoiceList from "./components/InvoiceList";
+import PaymentSuccess from "./components/PaymentSuccess";
+import PaymentFail from "./components/PaymentFail";
+import CreateInvoice from "./components/staff/CreateInvoice";
 import Header from "./components/HeaderComponent";
 import MenuComponent from "./components/MenuComponent";
 import FooterComponent from "./components/FooterComponent";
@@ -96,7 +99,7 @@ const App = () => {
   const user = JSON.parse(localStorage.getItem("user"));
 
   const toggleMenu = () => setMenuOpen((open) => !open);
-
+  console.log(isPatient);
   return (
     <Router>
       {isPatient && (
@@ -134,9 +137,10 @@ const App = () => {
           </PrivateRouteByRole>}>
             <Route index element={<BlogManagement />} />
             <Route path="blogs" element={<BlogManagement />} />
+            <Route path="invoices/create" element={<CreateInvoice />}></Route>
             <Route path="services" element={<ServiceManagement />} />
             <Route path="specialties" element={<SpecialtyManagement />} />
-            <Route path="invoices" element={<InvoiceManagement />} />
+            <Route path="invoices" element={<InvoiceList />} />
             <Route path="payments" element={<PaymentView />} />
             <Route path="news" element={<NewsManagement />} />
             <Route path="feedback" element={<FeedbackManagement />} />
@@ -163,12 +167,12 @@ const App = () => {
           <Route path="/not-found" element={<NotFoundPage />} />
           <Route path="/doctor/:doctorId" element={<DoctorDetail />} />
 
-          <Route path="/medicalrecord" element={<AddMedicalRecord />} />
-          <Route path="/medicalrecords" element={<ViewMedicalRecords />} />
+          {/* <Route path="/medicalrecord" element={<AddMedicalRecord />} />
+          <Route path="/medicalrecords" element={<ViewMedicalRecords />} /> */}
           <Route path="/payment" element={<InvoiceList />} />
           <Route path="/payment/success" element={<PaymentSuccess />} />
           <Route path="/payment/fail" element={<PaymentFail />} />
-          <Route path="/labtests" element={<LabtestResult />} />
+          {/* <Route path="/labtests" element={<LabtestResult />} /> */}
 
 
           <Route path="/changepass" element={<Changepass />} />
