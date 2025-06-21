@@ -174,7 +174,7 @@ const ProfilePage = () => {
                 <input
                   type="text"
                   id="username"
-                  value={user?.username || ""}
+                  value={user?.email || ""}
                   className="form-control"
                   disabled
                 />
@@ -199,7 +199,7 @@ const ProfilePage = () => {
                   type="text"
                   id="fullname"
                   name="fullname"
-                  value={formData.name}
+                  value={user?.name}
                   onChange={handleInputChange}
                   className="form-control"
                   required

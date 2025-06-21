@@ -18,8 +18,22 @@ const role = payload?.role;
 
   return children;
 };
+const PrivateRouteByRole = ({ allowedRoles = [], children }) => {
+  const user = JSON.parse(localStorage.getItem("user"));
+  const token = localStorage.getItem("token");
 
-export { PrivateRoute, PrivateRouteNotAllowUser };
+  if (!user || !token) return <Navigate to="/login" replace />;
+
+  const payload = decodeToken(token);
+  const role = payload?.role || user?.role || "patient";
+
+  if (!allowedRoles.includes(role)) {
+    return <Navigate to="/not-found" replace />;
+  }
+
+  return children;
+};
+export { PrivateRoute, PrivateRouteNotAllowUser,PrivateRouteByRole };
 function decodeToken(token) {
   try {
     const base64Payload = token.split('.')[1]; // Phần payload của JWT

@@ -42,7 +42,7 @@ import MedicineManagement from "./pages/staff/MedicineManagement";
 import Header from "./components/HeaderComponent";
 import MenuComponent from "./components/MenuComponent";
 import FooterComponent from "./components/FooterComponent";
-import { PrivateRoute, PrivateRouteNotAllowUser } from "./components/PrivateRoute"
+import { PrivateRoute, PrivateRouteNotAllowUser,PrivateRouteByRole } from "./components/PrivateRoute"
 import "antd/dist/reset.css";
 import NotFoundPage from "./pages/NotFoundPage";
 const DRAWER_WIDTH = 240;
@@ -122,14 +122,16 @@ const App = () => {
 
         <Routes>
           {/* Admin Layout Routes */}
-          <Route path="/admin/*" element={<AdminLayout />}>
+          <Route path="/admin/*" element={<PrivateRouteByRole allowedRoles={["Admin"]}><AdminLayout /></PrivateRouteByRole>}>
             <Route index element={<Dashboard />} />
             <Route path="accounts" element={<AccountManagement />} />
             <Route path="employees" element={<EmployeeManagement />} />
           </Route>
 
           {/* Staff Layout Routes */}
-          <Route path="/staff/*" element={<PrivateRouteNotAllowUser><StaffLayout /></PrivateRouteNotAllowUser>}>
+          <Route path="/staff/*" element={<PrivateRouteByRole allowedRoles={["Staff"]}>
+      <StaffLayout />
+    </PrivateRouteByRole>}>
             <Route index element={<BlogManagement />} />
             <Route path="blogs" element={<BlogManagement />} />
             <Route path="services" element={<ServiceManagement />} />
