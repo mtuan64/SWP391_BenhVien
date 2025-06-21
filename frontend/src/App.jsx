@@ -56,10 +56,10 @@ const RoleRedirect = () => {
   useEffect(() => {
     
     if (location.pathname === "/") {
-      if (role === "admin") navigate("/admin/");
-      else if (role === "staff") navigate("/staff/");
+      if (role === "Admin") navigate("/admin/");
+      else if (role === "Staff") navigate("/staff/");
       else if (role === "patient") navigate("/home");
-      else if (role === "doctor") navigate("/doctor");
+      else if (role === "Doctor") navigate("/doctor");
       else navigate("/login");
     }
   }, [navigate, role, location.pathname]);
