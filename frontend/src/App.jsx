@@ -42,7 +42,7 @@ import MedicineManagement from "./pages/staff/MedicineManagement";
 import Header from "./components/HeaderComponent";
 import MenuComponent from "./components/MenuComponent";
 import FooterComponent from "./components/FooterComponent";
-
+import PrivateRoute from "./components/PrivateRoute";
 import "antd/dist/reset.css";
 
 const DRAWER_WIDTH = 240;
@@ -128,7 +128,11 @@ const App = () => {
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/myprofile" element={<ProfilePage />} />
-          <Route path="/appointment" element={<AppointmentPage />} />
+          <Route path="/appointment" element={
+            <PrivateRoute>
+              <AppointmentPage />
+            </PrivateRoute>
+          } />
           <Route path="/doctor/:doctorId" element={<DoctorDetail />} />
           <Route path="/changepass" element={<Changepass />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
