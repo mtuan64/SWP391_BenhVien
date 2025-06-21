@@ -46,12 +46,12 @@ import PrivateRoute from "./components/PrivateRoute";
 import "antd/dist/reset.css";
 
 const DRAWER_WIDTH = 240;
-
+const user = JSON.parse(localStorage.getItem("user"));
+  const role = user?.role ?? "patient";
 const RoleRedirect = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const user = JSON.parse(localStorage.getItem("user"));
-  const role = user?.role ?? "patient";
+  
 
   useEffect(() => {
     
@@ -66,7 +66,7 @@ const RoleRedirect = () => {
 
   return null; // doesn't render UI
 };
-
+ const isPatient = role === "staff";
 const App = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const user = JSON.parse(localStorage.getItem("user"));
@@ -76,9 +76,11 @@ const App = () => {
 
   return (
     <Router>
-      <Header onMenuClick={toggleMenu} menuOpen={menuOpen} />
+      {isPatient && (
+        <Header onMenuClick={toggleMenu} menuOpen={menuOpen} />
+      )}
 
-      {user && (
+      {isPatient && user && (
         <MenuComponent
           isOpen={menuOpen}
           onClose={() => setMenuOpen(false)}
@@ -139,8 +141,10 @@ const App = () => {
           <Route path="/reset-password" element={<ResetPassword />} />
         </Routes>
       </div>
-
-      <FooterComponent />
+{isPatient && (
+        <FooterComponent />
+      )}
+      
     </Router>
   );
 };
