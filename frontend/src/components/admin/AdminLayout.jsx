@@ -18,6 +18,7 @@ const AdminLayout = () => {
 
   const handleLogout = () => {
     localStorage.removeItem("user");
+    localStorage.removeItem("token");
     navigate("/login");
   };
 
@@ -42,7 +43,7 @@ const AdminLayout = () => {
             <Link to="/admin">Dashboard</Link>
           </Menu.Item>
           <Menu.Item key="2" icon={<UserOutlined />}>
-            <Link to="/admin/users">User Management</Link>
+            <Link to="/admin/accounts">User Management</Link>
           </Menu.Item>
           <Menu.Item key="3" icon={<TeamOutlined />}>
             <Link to="/admin/employees">Employee Management</Link>

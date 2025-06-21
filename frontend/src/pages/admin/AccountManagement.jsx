@@ -18,7 +18,7 @@ import moment from "moment";
 const { Option } = Select;
 const { RangePicker } = DatePicker;
 
-function UserManagement() {
+function AccountManagement() {
   const [users, setUsers] = useState([]);
   const [searchText, setSearchText] = useState("");
   const [statusFilter, setStatusFilter] = useState(null);
@@ -159,4 +159,4 @@ console.log(filteredUsers);
   );
 }
 
-export default UserManagement;
+export default AccountManagement;

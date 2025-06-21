@@ -1,5 +1,4 @@
 const mongoose = require("mongoose");
-
 const servicesSchema = new mongoose.Schema(
   {
     name: { type: String, required: true, unique: true },
@@ -11,7 +10,4 @@ const servicesSchema = new mongoose.Schema(
 );
 
 
-// serviceSchema.index({ name: 1 });
-
-module.exports = mongoose.model("Service", servicesSchema);
-
+module.exports = mongoose.model("Services", servicesSchema);

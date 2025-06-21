@@ -9,7 +9,7 @@ const ProfilePage = () => {
 
   // Initialize form data with all editable fields
   const [formData, setFormData] = useState({
-    fullname: user?.fullname || "",
+    name: user?.fullname || "",
     email: user?.email || "",
     phone: user?.phone || "",
     address: user?.address || "",
@@ -101,7 +101,7 @@ const ProfilePage = () => {
           "Authorization": `Bearer ${user.token}`,
         },
         body: JSON.stringify({
-          fullname: formData.fullname,
+          name: formData.fullname,
           email: formData.email,
           phone: formData.phone,
           address: formData.address,
@@ -174,7 +174,7 @@ const ProfilePage = () => {
                 <input
                   type="text"
                   id="username"
-                  value={user?.username || ""}
+                  value={user?.email || ""}
                   className="form-control"
                   disabled
                 />
@@ -186,7 +186,7 @@ const ProfilePage = () => {
                 <input
                   type="text"
                   id="role"
-                  value={user?.role || ""}
+                  value={user?.role || "patient"}
                   className="form-control"
                   disabled
                 />
@@ -199,7 +199,7 @@ const ProfilePage = () => {
                   type="text"
                   id="fullname"
                   name="fullname"
-                  value={formData.fullname}
+                  value={user?.name}
                   onChange={handleInputChange}
                   className="form-control"
                   required
