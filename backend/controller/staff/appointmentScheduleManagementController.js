@@ -81,15 +81,27 @@ exports.deleteAppointment = async (req, res) => {
   }
 };
 
-// Lấy danh sách tất cả bác sĩ có role = 'doctor'
+// Lấy tất cả bác sĩ có role = 'Doctor' và thêm department
 exports.getAllDoctors = async (req, res) => {
   try {
     const doctors = await Employee.find(
       { role: "Doctor" },
-      { _id: 1, name: 1 }
+      { _id: 1, name: 1, department: 1 } // 👈 lấy cả department
     );
     res.status(200).json(doctors);
   } catch (error) {
     res.status(500).json({ message: "Lỗi server", error: error.message });
   }
 };
+
+// Lấy danh sách tất cả department (không trùng)
+exports.getAllDepartments = async (req, res) => {
+  try {
+    // Lấy tất cả giá trị department duy nhất trong bảng Appointment
+    const departments = await Appointment.distinct("department");
+    res.status(200).json(departments); // trả về mảng chuỗi tên department
+  } catch (error) {
+    res.status(500).json({ message: "Lỗi server", error: error.message });
+  }
+};
+
