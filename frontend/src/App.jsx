@@ -29,7 +29,7 @@ import StaffLayout from "./components/Staff/StaffLayout";
 import BlogManagement from "./pages/staff/BlogManagement";
 import ServiceManagement from "./pages/staff/ServiceManagement";
 import SpecialtyManagement from "./pages/staff/SpecialtyManagement";
-import InvoiceManagement from "./pages/staff/InvoiceManagement";
+import InvoiceUser from "./pages/InvoiceManagement";
 import PaymentView from "./pages/staff/PaymentView";
 import NewsManagement from "./pages/staff/NewsManagement";
 import FeedbackManagement from "./pages/staff/FeedbackManagement";
@@ -159,6 +159,7 @@ const App = () => {
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/myprofile" element={<ProfilePage />} />
+          <Route path="/invoice" element={<InvoiceUser />} />
           <Route path="/appointment" element={
             <PrivateRoute>
               <AppointmentPage />
