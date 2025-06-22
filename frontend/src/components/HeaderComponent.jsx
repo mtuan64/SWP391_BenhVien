@@ -10,7 +10,7 @@ const Header = ({ onMenuClick }) => {
 
   const handleLogout = () => {
     logout();
-    navigate("/"); // ✅ Điều hướng về trang chủ
+    navigate("/home"); // ✅ Điều hướng về trang chủ
   };
 
   return (
@@ -53,6 +53,7 @@ const Header = ({ onMenuClick }) => {
         <div className="navbar-nav ms-auto py-0 align-items-center d-flex">
           <Link to="/" className="nav-item nav-link">Home</Link>
           <Link to="/about" className="nav-item nav-link">About</Link>
+          <Link to="/blogs" className="nav-item nav-link">Blog</Link>
           <Link to="/service" className="nav-item nav-link">Service</Link>
           <Link to="/doctor" className="nav-item nav-link">Doctor</Link>
 

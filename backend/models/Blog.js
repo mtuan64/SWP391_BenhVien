@@ -43,7 +43,7 @@ const blogSchema = new Schema({
   ],
   author_id: {
     type: Schema.Types.ObjectId,
-    ref: "User",
+    ref: "Employee",
     required: true,
   },
   image: {
