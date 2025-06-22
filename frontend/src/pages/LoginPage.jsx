@@ -12,12 +12,12 @@ const LoginPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch("http://localhost:9999/api/auth/Login", {
+      const response = await fetch("http://localhost:9999/api/auth/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ userEmail:email, userPassword:password }),
+        body: JSON.stringify({ email:email, password:password }),
       });
 
       const data = await response.json();
