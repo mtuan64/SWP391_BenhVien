@@ -3,6 +3,8 @@ const staffRouter = express.Router();
 const Appointment = require("../../models/Appointment");
 const User = require("../../models/User");
 const Employee = require("../../models/Employee");
+const Schedule = require('../../models/Schedule');
+const Profile = require('../../models/Profile');
 
 // Lấy danh sách lịch hẹn có kèm tên bác sĩ và người dùng
 exports.getAllAppointments = async (req, res) => {
@@ -132,29 +134,62 @@ exports.getAllUsers = async (req, res) => {
     res.status(500).json({ message: "Lỗi server", error: error.message });
   }
 };
+
 exports.getProfilesByUser = async (req, res) => {
   try {
-    const { userId } = req.params;
+    const userId = req.params.userId;
 
-    if (!userId) {
-      return res.status(400).json({ message: "Missing userId in params." });
-    }
-
-    const profiles = await Profile.find(
-      { userId: userId },
-      { _id: 1, fullName: 1 }
-    );
-
-    if (!profiles || profiles.length === 0) {
-      return res.status(200).json([]); // Trả mảng rỗng nếu không có profile
-    }
+    const profiles = await Profile.find({ userId });
 
     res.status(200).json(profiles);
   } catch (error) {
-    console.error("Error in getProfilesByUser:", error);
-    res.status(500).json({
-      message: "Lỗi server khi lấy danh sách profile theo userId.",
-      error: error.message,
+    console.error("Error fetching profiles:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+
+// GET /api/appointmentScheduleManagement/schedules/:doctorId
+exports.getDoctorSchedules = async (req, res) => {
+  try {
+    const { doctorId } = req.params;
+    const schedules = await Schedule.find({ employeeId: doctorId });
+    res.status(200).json(schedules);
+  } catch (err) {
+    res.status(500).json({ message: "Server error", error: err.message });
+  }
+};
+exports.createProfile = async (req, res) => {
+  try {
+    let { userId, name, gender, dateOfBirth, diagnose, note, issues, doctorId, medicine } = req.body;
+
+    if (!userId || !gender || !dateOfBirth) {
+      return res.status(400).json({ message: "Missing required fields" });
+    }
+
+    // Nếu không có name, tự lấy name từ user
+    if (!name) {
+      const user = await User.findById(userId);
+      if (!user) return res.status(404).json({ message: "User not found" });
+      name = user.name;
+    }
+
+    const profile = new Profile({
+      name,
+      dateOfBirth,
+      gender,
+      diagnose: diagnose || "",
+      note: note || "",
+      issues: issues || "",
+      doctorId: doctorId || null,
+      medicine: medicine || null,
+      userId
     });
+
+    await profile.save();
+    res.status(201).json(profile);
+  } catch (error) {
+    console.error("❌ Error creating profile:", error);
+    res.status(500).json({ message: "Error creating profile", error: error.message });
   }
 };
