@@ -10,4 +10,5 @@ router.delete("/:id", appointmentController.deleteAppointment);
 
 // Route mới lấy danh sách bác sĩ
 router.get("/doctors", appointmentController.getAllDoctors);
+router.get("/departments", appointmentController.getAllDepartments);
 module.exports = router;
