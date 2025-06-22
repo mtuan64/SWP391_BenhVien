@@ -18,13 +18,12 @@ import AboutPage from "./pages/AboutPage";
 import ProfilePage from "./pages/ProfilePage";
 import HomePage from "./pages/Homepage";
 import AppointmentPage from "./pages/AppointmentPage";
-import Header from "./components/HeaderComponent";
-import MenuComponent from "./components/MenuComponent";
-import FooterComponent from "./components/FooterComponent";
+
+
+
 import "antd/dist/reset.css";
 import MedicalLabPage from "./pages/BlogTestPage.jsx";
 import TestPageDetails from "./pages/TestPageDetails.jsx";
-import WorkSchedulePage from "./pages/WorkSchedulePage.jsx"; // hoặc 'antd/dist/antd.css' nếu bạn dùng antd v4
 import WorkSchedulePage from "./pages/WorkSchedule";
 import "antd/dist/reset.css"; // hoặc 'antd/dist/antd.css' nếu bạn dùng antd v4
 import Changepass from "./pages/ChangePassword";
