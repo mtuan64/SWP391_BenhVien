@@ -88,14 +88,39 @@ const fetchDoctors = async () => {
       minute: "2-digit",
     });
   };
+const [profiles, setProfiles] = useState([]);
 const [departments, setDepartments] = useState([]);
-
+const [users, setUsers] = useState([]);
 useEffect(() => {
   fetchAppointments();
   fetchDoctors();
   fetchDepartments();
+  fetchUsers();
 }, []);
-
+useEffect(() => {
+  if (form.userId) {
+    fetchProfilesByUser(form.userId);
+  } else {
+    setProfiles([]);
+  }
+}, [form.userId]);
+const fetchProfilesByUser = async (userId) => {
+  try {
+    const res = await axios.get(`http://localhost:9999/api/appointmentScheduleManagement/profiles/${userId}`);
+    setProfiles(res.data);
+  } catch (err) {
+    console.error("Failed to fetch profiles:", err);
+    setProfiles([]);
+  }
+};
+const fetchUsers = async () => {
+  try {
+    const res = await axios.get("http://localhost:9999/api/appointmentScheduleManagement/users");
+    setUsers(res.data);
+  } catch (err) {
+    console.error("Failed to fetch users:", err);
+  }
+};
 const fetchDepartments = async () => {
   try {
     const res = await axios.get("http://localhost:9999/api/appointmentScheduleManagement/departments");
@@ -153,23 +178,36 @@ function handleChange(e) {
 }
 
 
-  async function handleSubmit() {
-    try {
-      const payload = {
-        ...form,
-        appointmentDate: new Date(form.appointmentDate).toISOString(),
-      };
-      if (currentAppointment) {
-        await axios.put(`http://localhost:9999/api/AppointmentScheduleManagement/${currentAppointment._id}`, payload);
-      } else {
-        await axios.post("http://localhost:9999/api/AppointmentScheduleManagement", payload);
-      }
-      setShowModal(false);
-      fetchAppointments();
-    } catch (error) {
-      alert("Operation failed: " + error.message);
+async function handleSubmit() {
+  try {
+    const payload = {
+      ...form,
+      appointmentDate: new Date(form.appointmentDate).toISOString(),
+    };
+
+    // ❗️ Nếu profileId rỗng hoặc null thì loại bỏ
+    if (!payload.profileId || payload.profileId === "null" || payload.profileId === "") {
+      delete payload.profileId;
     }
+
+    console.log("Payload gửi:", payload); // 👈 BẮT BUỘC in ra để kiểm tra
+
+    if (currentAppointment) {
+      await axios.put(`http://localhost:9999/api/AppointmentScheduleManagement/${currentAppointment._id}`, payload);
+    } else {
+      await axios.post("http://localhost:9999/api/AppointmentScheduleManagement", payload);
+    }
+
+    setShowModal(false);
+    fetchAppointments();
+  } catch (error) {
+    console.error("Lỗi gửi dữ liệu:", error); // 👈 Quan trọng để xem lỗi
+    alert("Operation failed: " + error.message);
   }
+}
+
+
+
 
   function handleDeleteClick(appointmentId) {
     setDeleteAppointmentId(appointmentId);
@@ -249,7 +287,7 @@ function handleChange(e) {
                   <td>{appointment.department}</td>
                   <td>{appointment.type}</td>
                   <td>{appointment.userName || "N/A"}</td>
-                  <td>{appointment.profileId}</td>
+                  <td>{!appointment.profileId || appointment.profileId === "null" ? "N/A" : appointment.profileId}</td>
                   <td>{appointment.status}</td>
                   <td>{appointment.reminderSent ? "Yes" : "No"}</td>
                   <td>{formatDateTime(appointment.createdAt)}</td>
@@ -328,15 +366,31 @@ function handleChange(e) {
               </Form.Select>
             </Form.Group>
 
-            <Form.Group className="mb-3" controlId="userId">
-              <Form.Label>User ID</Form.Label>
-              <Form.Control type="text" name="userId" value={form.userId} onChange={handleChange} placeholder="Enter User ID" />
-            </Form.Group>
+<Form.Group className="mb-3" controlId="userId">
+  <Form.Label>User</Form.Label>
+  <Form.Select name="userId" value={form.userId} onChange={handleChange} required>
+    <option value="">Select user</option>
+    {users.map((user) => (
+      <option key={user._id} value={user._id}>
+        {user.name}
+      </option>
+    ))}
+  </Form.Select>
+</Form.Group>
 
-            <Form.Group className="mb-3" controlId="profileId">
-              <Form.Label>Profile ID</Form.Label>
-              <Form.Control type="text" name="profileId" value={form.profileId} onChange={handleChange} placeholder="Enter Profile ID" />
-            </Form.Group>
+
+<Form.Group className="mb-3" controlId="profileId">
+  <Form.Label>Profile</Form.Label>
+  <Form.Select name="profileId" value={form.profileId} onChange={handleChange}>
+    <option value="">-- No profile --</option>
+    {profiles.map((profile) => (
+      <option key={profile._id} value={profile._id}>
+        {profile.fullName || profile._id}
+      </option>
+    ))}
+  </Form.Select>
+</Form.Group>
+
 
             <Form.Group className="mb-3" controlId="status">
               <Form.Label>Status</Form.Label>
