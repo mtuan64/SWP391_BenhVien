@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
+import DoctorLayout from "./layouts/DoctorLayout";
+import UserMedicalProfile from "./pages/UserMedicalProfile";
 import ServicePage from "./pages/ServicePage";
 import DoctorPage from "./pages/DoctorPage";
 import LoginPage from "./pages/LoginPage";
@@ -16,6 +18,7 @@ import FooterComponent from "./components/FooterComponent";
 import Changepass from "./pages/ChangePassword";
 import ResetPassword from "./pages/ResetPassword";
 import ForgotPassword from "./pages/ForgotPassword";
+import WorkSchedulePage from "./pages/WorkSchedule";
 import "antd/dist/reset.css"; // hoặc 'antd/dist/antd.css' nếu bạn dùng antd v4
 
 const DRAWER_WIDTH = 240;
@@ -54,9 +57,17 @@ const App = () => {
         }}
       >
         <Routes>
+          <Route path="/doctor" element={<DoctorLayout />}>
+                    <Route path="medical-profile" element={<UserMedicalProfile />} />
+                    <Route path="medicine" element={<div>View Medicine Page</div>} />
+                    <Route path="appointments" element={<div>Appointment List Page</div>} />
+                    <Route path="notifications" element={<div>Notifications Page</div>} />
+                    <Route path="work-schedule" element={<WorkSchedulePage />} />
+          </Route>
+          
           <Route path="/" element={<HomePage />} />
           <Route path="/service" element={<ServicePage />} />
-          <Route path="/doctor" element={<DoctorPage />} />
+          <Route path="/doctor-home" element={<DoctorPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/about" element={<AboutPage />} />

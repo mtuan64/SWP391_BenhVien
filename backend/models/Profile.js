@@ -8,6 +8,8 @@ const profileSchema = new mongoose.Schema({
   note: { type: String },
   issues: { type: String },
   doctorId: { type: mongoose.Schema.Types.ObjectId, ref: 'Employee' }
+  medicine: { type: mongoose.Schema.Types.ObjectId, ref: "Medicine" },
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
 }, { timestamps: true });
 
 profileSchema.index({ name: 1 });

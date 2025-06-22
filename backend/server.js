@@ -1,11 +1,17 @@
-const express = require("express");
-const bodyParser = require("body-parser");
-const cors = require("cors");
-const app = express();
-const connectDb = require("./config/db");
-const morgan = require("morgan");
+// Load environment variables early
 require("dotenv").config();
 
+// Import packages
+const express = require("express");
+const morgan = require("morgan");
+const cors = require("cors");
+const bodyParser = require("body-parser");
+
+// App initialization
+const app = express();
+const connectDb = require("./config/db");
+
+// CORS configuration
 const corsOptions = {
   origin: ["http://localhost:5173"],
   methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
@@ -13,19 +19,37 @@ const corsOptions = {
   credentials: true,
 };
 
+// Middleware setup
 app.use(morgan("dev"));
 app.use(cors(corsOptions));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-app.use("/api/user", require("./routers/User/user.route"));
-app.use("/api/admin", require("./routers/Admin/admin.route"));
-app.use("/api/auth", require("./routers/auth/auth.route"));
-app.use("/api/doctor", require("./routers/Doctor/doctor.route"));
-app.use("/api/staff", require("./routers/Staff/staff.route"));
+// Routers import
+const userRouter = require("./routers/User/user.route");
+const userMedicalProfile = require("./routers/User/userMedicalProfile.route");
+const workschedule = require("./routers/Doctor/workschedule.route");
+const adminRouter = require("./routers/Admin/admin.route");
+const authRouter = require("./routers/auth/auth.route");
+const doctorRouter = require("./routers/Doctor/doctor.route");
+const staffRouter = require("./routers/Staff/staff.route");
 
+// Mount routers
+app.use("/api/user", userRouter);
+app.use("/api/user-profile",userMedicalProfile);
+app.use("/api/work-schedule",workschedule )
+app.use("/api/admin", adminRouter);
+app.use("/api/auth", authRouter);
+app.use("/api/doctor", doctorRouter);
+app.use("/api/staff", staffRouter);
+
+// Start server after DB connected
 const PORT = process.env.PORT || 9999;
-app.listen(PORT, () => {
-  connectDb();
-  console.log(`Server is running on port ${PORT}`);
+
+connectDb().then(() => {
+  app.listen(PORT, () => {
+    console.log(`✅ Server is running on port ${PORT}`);
+  });
+}).catch((err) => {
+  console.error("❌ MongoDB connection failed:", err);
 });
