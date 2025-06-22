@@ -51,24 +51,43 @@ exports.getAllAppointments = async (req, res) => {
 // Tạo cuộc hẹn mới
 exports.createAppointment = async (req, res) => {
   try {
-    const newAppointment = new Appointment(req.body);
+    const data = { ...req.body };
+
+    if (!data.profileId || data.profileId === "null" || data.profileId === "") {
+      delete data.profileId;
+    }
+
+    console.log("Dữ liệu tạo appointment:", data);
+
+    const newAppointment = new Appointment(data);
     await newAppointment.save();
+
     res.status(201).json(newAppointment);
   } catch (error) {
+    console.error("Lỗi tạo appointment:", error);
     res.status(500).json({ message: "Lỗi server", error: error.message });
   }
 };
 
+
 // Cập nhật lịch hẹn
 exports.updateAppointment = async (req, res) => {
   try {
-    const updated = await Appointment.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const data = { ...req.body };
+
+    if (!data.profileId || data.profileId === "null" || data.profileId.trim() === "") {
+      delete data.profileId;
+    }
+
+    const updated = await Appointment.findByIdAndUpdate(req.params.id, data, { new: true });
     if (!updated) return res.status(404).json({ message: "Appointment not found" });
+
     res.json(updated);
   } catch (error) {
     res.status(500).json({ message: "Lỗi server", error: error.message });
   }
 };
+
 
 // Xóa lịch hẹn
 exports.deleteAppointment = async (req, res) => {
@@ -104,4 +123,38 @@ exports.getAllDepartments = async (req, res) => {
     res.status(500).json({ message: "Lỗi server", error: error.message });
   }
 };
+// Lấy danh sách tất cả user
+exports.getAllUsers = async (req, res) => {
+  try {
+    const users = await User.find({}, { _id: 1, name: 1 }); // chỉ lấy _id và name
+    res.status(200).json(users);
+  } catch (error) {
+    res.status(500).json({ message: "Lỗi server", error: error.message });
+  }
+};
+exports.getProfilesByUser = async (req, res) => {
+  try {
+    const { userId } = req.params;
 
+    if (!userId) {
+      return res.status(400).json({ message: "Missing userId in params." });
+    }
+
+    const profiles = await Profile.find(
+      { userId: userId },
+      { _id: 1, fullName: 1 }
+    );
+
+    if (!profiles || profiles.length === 0) {
+      return res.status(200).json([]); // Trả mảng rỗng nếu không có profile
+    }
+
+    res.status(200).json(profiles);
+  } catch (error) {
+    console.error("Error in getProfilesByUser:", error);
+    res.status(500).json({
+      message: "Lỗi server khi lấy danh sách profile theo userId.",
+      error: error.message,
+    });
+  }
+};
