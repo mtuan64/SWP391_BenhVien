@@ -10,9 +10,11 @@ const AppointmentScheduleManagement = () => {
   const [filteredAppointments, setFilteredAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [schedules, setSchedules] = useState([]);
+  const [selectedTimeSlot, setSelectedTimeSlot] = useState(null);
 
   const [doctors, setDoctors] = useState([]);
-
+  
   // Modal & form
   const [showModal, setShowModal] = useState(false);
   const [form, setForm] = useState({
@@ -54,6 +56,18 @@ const AppointmentScheduleManagement = () => {
     }
   }, [searchTerm, appointments]);
 
+  const fetchSchedules = async (doctorId) => {
+    try {
+      const res = await axios.get(`http://localhost:9999/api/appointmentScheduleManagement/schedules/${doctorId}`);
+      console.log("Fetched schedules:", res.data); // 👈 kiểm tra có dữ liệu
+      setSchedules(res.data || []);
+    } catch (err) {
+      console.error("Failed to fetch schedules:", err);
+      setSchedules([]);
+    }
+  };
+
+
   const fetchAppointments = async () => {
     try {
       setLoading(true);
@@ -91,12 +105,14 @@ const fetchDoctors = async () => {
 const [profiles, setProfiles] = useState([]);
 const [departments, setDepartments] = useState([]);
 const [users, setUsers] = useState([]);
+
 useEffect(() => {
   fetchAppointments();
   fetchDoctors();
   fetchDepartments();
   fetchUsers();
 }, []);
+
 useEffect(() => {
   if (form.userId) {
     fetchProfilesByUser(form.userId);
@@ -104,8 +120,17 @@ useEffect(() => {
     setProfiles([]);
   }
 }, [form.userId]);
+
+
 const fetchProfilesByUser = async (userId) => {
   try {
+    console.log("🔍 userId gửi lên:", userId);
+
+    if (!/^[0-9a-fA-F]{24}$/.test(userId)) {
+      console.error("❌ Invalid userId format:", userId);
+      return;
+    }
+
     const res = await axios.get(`http://localhost:9999/api/appointmentScheduleManagement/profiles/${userId}`);
     setProfiles(res.data);
   } catch (err) {
@@ -113,6 +138,8 @@ const fetchProfilesByUser = async (userId) => {
     setProfiles([]);
   }
 };
+
+
 const fetchUsers = async () => {
   try {
     const res = await axios.get("http://localhost:9999/api/appointmentScheduleManagement/users");
@@ -167,9 +194,17 @@ function handleChange(e) {
     setForm(prev => ({
       ...prev,
       doctorId: value,
-      department: selectedDoctor?.department || ""  // 👈 set department tự động
+      department: selectedDoctor?.department || ""
     }));
-  } else {
+
+    // 👉 Gọi sau khi setForm, nhưng vì setForm không chờ được, bạn vẫn có thể gọi trực tiếp:
+    fetchSchedules(value);
+  } 
+  else if (name === "userId") {
+    setForm(prev => ({ ...prev, userId: value }));
+    fetchProfilesByUser(value); // ✅ Gọi luôn khi chọn user
+  } 
+  else {
     setForm(prev => ({
       ...prev,
       [name]: type === "checkbox" ? checked : value,
@@ -178,20 +213,43 @@ function handleChange(e) {
 }
 
 
+
 async function handleSubmit() {
   try {
-    const payload = {
+    let payload = {
       ...form,
       appointmentDate: new Date(form.appointmentDate).toISOString(),
     };
 
-    // ❗️ Nếu profileId rỗng hoặc null thì loại bỏ
-    if (!payload.profileId || payload.profileId === "null" || payload.profileId === "") {
-      delete payload.profileId;
+    // 👉 Nếu user chọn No Profile (rỗng)
+    if (!form.profileId || form.profileId === "") {
+      console.warn("⚠️ Không có profile, sẽ tạo mới");
+
+      const selectedUser = users.find(u => u._id === form.userId);
+
+      const newProfile = await axios.post("http://localhost:9999/api/appointmentScheduleManagement/profiles", {
+        userId: form.userId,
+        name: selectedUser?.name,
+        gender: "Other",
+        dateOfBirth: "2000-01-01",
+        diagnose: "",
+        note: "",
+        issues: "",
+        doctorId: form.doctorId || null,
+        medicine: null,
+      });
+
+      console.log("✅ Profile mới tạo:", newProfile.data);
+      payload.profileId = newProfile.data._id;
     }
 
-    console.log("Payload gửi:", payload); // 👈 BẮT BUỘC in ra để kiểm tra
+    // 🔐 Kiểm tra profileId đã chắc chắn có chưa
+    if (!payload.profileId) {
+      alert("Không thể tạo cuộc hẹn vì không có profileId.");
+      return;
+    }
 
+    // ✅ Tạo hoặc cập nhật Appointment
     if (currentAppointment) {
       await axios.put(`http://localhost:9999/api/AppointmentScheduleManagement/${currentAppointment._id}`, payload);
     } else {
@@ -201,10 +259,13 @@ async function handleSubmit() {
     setShowModal(false);
     fetchAppointments();
   } catch (error) {
-    console.error("Lỗi gửi dữ liệu:", error); // 👈 Quan trọng để xem lỗi
-    alert("Operation failed: " + error.message);
+    console.error("❌ Lỗi gửi dữ liệu: ", error);
+    alert("Lỗi tạo/cập nhật lịch hẹn: " + (error?.response?.data?.message || error.message));
   }
 }
+
+
+
 
 
 
@@ -270,7 +331,7 @@ async function handleSubmit() {
                 <th>Department</th>
                 <th>Type</th>
                 <th>User</th>
-                <th>Profile ID</th>
+                <th>Medical Profile</th>
                 <th>Status</th>
                 <th>Reminder</th>
                 <th>Created</th>
@@ -328,10 +389,9 @@ async function handleSubmit() {
         </Modal.Header>
         <Modal.Body>
           <Form>
-            <Form.Group className="mb-3" controlId="appointmentDate">
-              <Form.Label>Appointment Date</Form.Label>
-              <Form.Control type="datetime-local" name="appointmentDate" value={form.appointmentDate} onChange={handleChange} />
-            </Form.Group>
+
+
+
 
             <Form.Group className="mb-3" controlId="doctorId">
               <Form.Label>Doctor</Form.Label>
@@ -344,7 +404,32 @@ async function handleSubmit() {
                 ))}
               </Form.Select>
             </Form.Group>
-
+<Form.Group className="mb-3" controlId="appointmentDate">
+  <Form.Label>Appointment Date</Form.Label>
+  {schedules.length === 0 ? (
+    <div className="text-muted">No available schedule</div>
+  ) : (
+    <Form.Select
+      value={form.appointmentDate}
+      onChange={(e) =>
+        setForm(prev => ({ ...prev, appointmentDate: e.target.value }))
+      }
+    >
+      <option value="">Select a time slot</option>
+      {schedules.map((s) =>
+        s.timeSlots
+          .filter((slot) => slot.status === "Available")
+          .map((slot, i) => (
+            <option key={i} value={slot.startTime}>
+              {new Date(s.date).toLocaleDateString("en-GB")} |{" "}
+              {new Date(slot.startTime).toLocaleTimeString("en-GB")} -{" "}
+              {new Date(slot.endTime).toLocaleTimeString("en-GB")}
+            </option>
+          ))
+      )}
+    </Form.Select>
+  )}
+</Form.Group>
 <Form.Group className="mb-3" controlId="department">
   <Form.Label>Department</Form.Label>
   <Form.Control
@@ -380,7 +465,7 @@ async function handleSubmit() {
 
 
 <Form.Group className="mb-3" controlId="profileId">
-  <Form.Label>Profile</Form.Label>
+  <Form.Label>Medical Profile</Form.Label>
   <Form.Select name="profileId" value={form.profileId} onChange={handleChange}>
     <option value="">-- No profile --</option>
     {profiles.map((profile) => (
@@ -390,6 +475,8 @@ async function handleSubmit() {
     ))}
   </Form.Select>
 </Form.Group>
+
+
 
 
             <Form.Group className="mb-3" controlId="status">
