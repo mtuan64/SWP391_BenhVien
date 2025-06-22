@@ -88,7 +88,22 @@ const fetchDoctors = async () => {
       minute: "2-digit",
     });
   };
+const [departments, setDepartments] = useState([]);
 
+useEffect(() => {
+  fetchAppointments();
+  fetchDoctors();
+  fetchDepartments();
+}, []);
+
+const fetchDepartments = async () => {
+  try {
+    const res = await axios.get("http://localhost:9999/api/appointmentScheduleManagement/departments");
+    setDepartments(res.data);
+  } catch (error) {
+    console.error("Failed to fetch departments: ", error);
+  }
+};
   function handleAddNew() {
     setCurrentAppointment(null);
     setForm({
@@ -119,13 +134,24 @@ const fetchDoctors = async () => {
     setShowModal(true);
   }
 
-  function handleChange(e) {
-    const { name, value, type, checked } = e.target;
-    setForm((prev) => ({
+function handleChange(e) {
+  const { name, value, type, checked } = e.target;
+
+  if (name === "doctorId") {
+    const selectedDoctor = doctors.find(doc => doc._id === value);
+    setForm(prev => ({
+      ...prev,
+      doctorId: value,
+      department: selectedDoctor?.department || ""  // 👈 set department tự động
+    }));
+  } else {
+    setForm(prev => ({
       ...prev,
       [name]: type === "checkbox" ? checked : value,
     }));
   }
+}
+
 
   async function handleSubmit() {
     try {
@@ -281,10 +307,18 @@ const fetchDoctors = async () => {
               </Form.Select>
             </Form.Group>
 
-            <Form.Group className="mb-3" controlId="department">
-              <Form.Label>Department</Form.Label>
-              <Form.Control type="text" name="department" value={form.department} onChange={handleChange} placeholder="Enter Department" />
-            </Form.Group>
+<Form.Group className="mb-3" controlId="department">
+  <Form.Label>Department</Form.Label>
+  <Form.Control
+    type="text"
+    name="department"
+    value={form.department}
+    onChange={handleChange}
+    placeholder="Enter Department"
+    readOnly
+  />
+</Form.Group>
+
 
             <Form.Group className="mb-3" controlId="type">
               <Form.Label>Type</Form.Label>
