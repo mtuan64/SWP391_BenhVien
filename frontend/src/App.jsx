@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
+import DoctorLayout from "./layouts/DoctorLayout";
+import UserMedicalProfile from "./pages/UserMedicalProfile";
 import ServicePage from "./pages/ServicePage";
 import DoctorPage from "./pages/DoctorPage";
 import LoginPage from "./pages/LoginPage";
@@ -17,6 +19,8 @@ import "antd/dist/reset.css";
 import MedicalLabPage from "./pages/BlogTestPage.jsx";
 import TestPageDetails from "./pages/TestPageDetails.jsx";
 import WorkSchedulePage from "./pages/WorkSchedulePage.jsx"; // hoặc 'antd/dist/antd.css' nếu bạn dùng antd v4
+import WorkSchedulePage from "./pages/WorkSchedule";
+import "antd/dist/reset.css"; // hoặc 'antd/dist/antd.css' nếu bạn dùng antd v4
 
 const DRAWER_WIDTH = 240;
 
@@ -54,18 +58,28 @@ const App = () => {
         }}
       >
         <Routes>
+          <Route path="/doctor" element={<DoctorLayout />}>
+                    <Route path="medical-profile" element={<UserMedicalProfile />} />
+                    <Route path="medicine" element={<div>View Medicine Page</div>} />
+                    <Route path="appointments" element={<div>Appointment List Page</div>} />
+                    <Route path="notifications" element={<div>Notifications Page</div>} />
+                    <Route path="work-schedule" element={<WorkSchedulePage />} />
+          </Route>
+          
           <Route path="/" element={<HomePage />} />
           <Route path="/service" element={<ServicePage />} />
-          <Route path="/doctor" element={<DoctorPage />} />
+          <Route path="/doctor-home" element={<DoctorPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/myprofile" element={<ProfilePage />} />
           <Route path="/appointment" element={<AppointmentPage />} />
           <Route path="/doctor/:doctorId" element={<DoctorDetail />} />
-            <Route path={'/lab-test'} element={<MedicalLabPage />}/>
-            <Route path={'/lab-test/:testId'} element={<TestPageDetails />}/>
-            <Route path={'/work-schedule'} element={<WorkSchedulePage />}/>
+
+                    <Route path="/changepass" element={<Changepass />} />
+                    <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
+
         </Routes>
       </div>
 
