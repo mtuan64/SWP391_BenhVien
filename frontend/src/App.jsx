@@ -7,6 +7,8 @@ import {
   useLocation,
 } from "react-router-dom";
 
+import DoctorLayout from "./layouts/DoctorLayout";
+import UserMedicalProfile from "./pages/UserMedicalProfile";
 import ServicePage from "./pages/ServicePage";
 import DoctorPage from "./pages/DoctorPage";
 import LoginPage from "./pages/LoginPage";
@@ -16,6 +18,14 @@ import AboutPage from "./pages/AboutPage";
 import ProfilePage from "./pages/ProfilePage";
 import HomePage from "./pages/Homepage";
 import AppointmentPage from "./pages/AppointmentPage";
+
+
+
+import "antd/dist/reset.css";
+import MedicalLabPage from "./pages/BlogTestPage.jsx";
+import TestPageDetails from "./pages/TestPageDetails.jsx";
+import WorkSchedulePage from "./pages/WorkSchedule";
+import "antd/dist/reset.css"; // hoặc 'antd/dist/antd.css' nếu bạn dùng antd v4
 import Changepass from "./pages/ChangePassword";
 import ResetPassword from "./pages/ResetPassword";
 import ForgotPassword from "./pages/ForgotPassword";
@@ -42,13 +52,13 @@ import MedicineManagement from "./pages/staff/MedicineManagement";
 import Header from "./components/HeaderComponent";
 import MenuComponent from "./components/MenuComponent";
 import FooterComponent from "./components/FooterComponent";
-import { PrivateRoute, PrivateRouteNotAllowUser,PrivateRouteByRole } from "./components/PrivateRoute"
+import { PrivateRoute, PrivateRouteNotAllowUser, PrivateRouteByRole } from "./components/PrivateRoute"
 import "antd/dist/reset.css";
 import NotFoundPage from "./pages/NotFoundPage";
 const DRAWER_WIDTH = 240;
 
 const RoleRedirect = () => {
-  const navigate = useNavigate(); 
+  const navigate = useNavigate();
   const location = useLocation();
 
   const user = JSON.parse(localStorage.getItem("user"));
@@ -121,6 +131,15 @@ const App = () => {
         <RoleRedirect />
 
         <Routes>
+          <Route path="/doctor" element={<DoctorLayout />}>
+            <Route path="medical-profile" element={<UserMedicalProfile />} />
+            <Route path="medicine" element={<div>View Medicine Page</div>} />
+            <Route path="appointments" element={<div>Appointment List Page</div>} />
+            <Route path="notifications" element={<div>Notifications Page</div>} />
+            <Route path="work-schedule" element={<WorkSchedulePage />} />
+          </Route>
+
+          <Route path="/" element={<HomePage />} />
           {/* Admin Layout Routes */}
           <Route path="/admin/*" element={<PrivateRouteByRole allowedRoles={["Admin"]}><AdminLayout /></PrivateRouteByRole>}>
             <Route index element={<Dashboard />} />
@@ -130,8 +149,8 @@ const App = () => {
 
           {/* Staff Layout Routes */}
           <Route path="/staff/*" element={<PrivateRouteByRole allowedRoles={["Staff"]}>
-      <StaffLayout />
-    </PrivateRouteByRole>}>
+            <StaffLayout />
+          </PrivateRouteByRole>}>
             <Route index element={<BlogManagement />} />
             <Route path="blogs" element={<BlogManagement />} />
             <Route path="services" element={<ServiceManagement />} />
@@ -150,7 +169,7 @@ const App = () => {
           {/* Public routes */}
           <Route path="/home" element={<HomePage />} />
           <Route path="/service" element={<ServicePage />} />
-          <Route path="/doctr" element={<DoctorPage />} />
+          <Route path="/doctor-home" element={<DoctorPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/about" element={<AboutPage />} />
@@ -160,17 +179,22 @@ const App = () => {
               <AppointmentPage />
             </PrivateRoute>
           } />
-          <Route path="/not-found" element={<NotFoundPage/>}/>
-          <Route path="/doctr/:doctorId" element={<DoctorDetail />} />
+          <Route path="/not-found" element={<NotFoundPage />} />
+          <Route path="/doctor/:doctorId" element={<DoctorDetail />} />
+
+          <Route path="/changepass" element={<Changepass />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
+
           <Route path="/changepass" element={<Changepass />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
         </Routes>
       </div>
-{isPatient && (
+      {isPatient && (
         <FooterComponent />
       )}
-      
+
     </Router>
   );
 };
