@@ -44,6 +44,124 @@ exports.getAllInvoices = async (req, res) => {
     });
   }
 };
+exports.getAllInvoices4User = async (req, res) => {
+  try {
+    const {
+      page = 1,
+      limit = 10,
+      sort = 'createdAt',     // Tên trường cần sort
+      order = 'desc',         // asc | desc
+      status,                 // Lọc trạng thái nếu cần
+      search                  // Tìm kiếm từ khóa
+    } = req.query;
+
+    const pageNum = parseInt(page);
+    const limitNum = parseInt(limit);
+    const skip = (pageNum - 1) * limitNum;
+
+    if (!req.user) {
+      return res.status(401).json({
+        success: false,
+        message: 'Vui lòng đăng nhập để truy cập'
+      });
+    }
+
+    // ===== 1. Tạo query lọc ==========
+    const query = { userId: req.user.id };
+
+    if (status && status !== 'all') {
+      query.status = status;
+    }
+
+    if (search) {
+      query.$or = [
+        { invoiceNumber: { $regex: search, $options: 'i' } }, // ví dụ tìm theo "note"
+        // Thêm field khác nếu có
+      ];
+    }
+
+    // ===== 2. Tạo sort object ==========
+    const sortQuery = {};
+    sortQuery[sort] = order === 'asc' ? 1 : -1;
+
+    // ===== 3. Query với sort ==========
+    const invoices = await Invoice.find(query)
+      .populate('userId', 'name email')
+      .populate('profileId', 'name')
+      .populate('services', 'name price')
+      .sort(sortQuery)
+      .skip(skip)
+      .limit(limitNum);
+
+    const total = await Invoice.countDocuments(query);
+
+    res.status(200).json({
+      success: true,
+      count: invoices.length,
+      total,
+      page: pageNum,
+      totalPages: Math.ceil(total / limitNum),
+      data: invoices
+    });
+  } catch (error) {
+    console.error('Error fetching invoices:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Lỗi server',
+      error: error.message
+    });
+  }
+};
+
+exports.CompletedInvoices = async (req, res) => {
+  const { invoiceId, method = 'Mobile App' } = req.body;
+
+  if (!invoiceId) {
+    return res.status(400).json({ success: false, message: "Thiếu invoiceId" });
+  }
+
+  try {
+    // 1. Cập nhật trạng thái hóa đơn
+    const invoice = await Invoice.findByIdAndUpdate(
+      invoiceId,
+      { status: "Paid" },
+      { new: true }
+    )
+      .populate('userId profileId services');
+
+    if (!invoice) {
+      return res.status(404).json({ success: false, message: "Không tìm thấy hóa đơn" });
+    }
+
+    // 2. Tạo bản ghi thanh toán mới
+    const payment = new Payment({
+      invoiceId: invoice._id,
+      userId: invoice.userId?._id,
+      profileId: invoice.profileId?._id,
+      amount: invoice.totalAmount || 0, // đảm bảo Invoice có trường này
+      method,
+      status: "Completed",
+      paymentDate: new Date()
+    });
+
+    await payment.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Cập nhật và tạo thanh toán thành công",
+      invoice,
+      payment
+    });
+  } catch (error) {
+    console.error("Lỗi khi hoàn tất hóa đơn:", error);
+    res.status(500).json({
+      success: false,
+      message: "Lỗi server khi cập nhật hóa đơn",
+      error: error.message
+    });
+  }
+};
+
 exports.CreateInvoices = async (req, res) => {
   const { userId = null, profileId = null, ArrayServiceId } = req.body;
 

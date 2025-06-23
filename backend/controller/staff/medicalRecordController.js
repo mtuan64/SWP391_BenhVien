@@ -66,6 +66,63 @@ const createMedicalRecord = async (req, res) => {
         });
     }
 };
+const createProfile = async (req, res) => {
+    try {
+        const { userId = null, doctorId, name, dob, gender, issues, diagnose, notes } = req.body;
+        console.log(req.body);
+        // Kiểm tra các trường bắt buộc
+        if (!doctorId || !diagnose || !issues || !name || !dob || !gender) {
+            return res.status(400).json({
+                success: false,
+                message: 'Vui lòng cung cấp đầy đủ thông tin nhék'
+            });
+        }
+
+        if (userId) {
+            // Kiểm tra userId hợp lệ
+            if (!mongoose.Types.ObjectId.isValid(userId)) {
+                return res.status(400).json({ success: false, message: 'ID người dùng không hợp lệ' });
+            }
+            const user = await User.findById(userId);
+            if (!user) {
+                return res.status(404).json({ success: false, message: 'Không tìm thấy người dùng' });
+            }
+        }
+        // Kiểm tra doctorId hợp lệ
+        if (!mongoose.Types.ObjectId.isValid(doctorId)) {
+            return res.status(400).json({ success: false, message: 'ID bác sĩ không hợp lệ' });
+        }
+        const doctor = await Employee.findById(doctorId);
+        if (!doctor || doctor.role !== 'Doctor') {
+            return res.status(400).json({ success: false, message: 'ID bác sĩ không hợp lệ hoặc không phải bác sĩ' });
+        }
+
+        // Tạo MedicalRecord
+        const profile = await Profile.create({
+            userId,
+            doctorId,
+            diagnose,
+            issues,
+            gender,
+            name,
+            note: notes,
+            dateOfBirth: dob,
+            createdBy: doctorId
+        });
+
+
+        res.status(201).json({
+            success: true,
+            data: profile
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: 'Lỗi server',
+            error: error.message
+        });
+    }
+};
 const allMedicalRecord = async (req, res) => {
     try {
         const { page = 1, limit = 10, search, profileId } = req.query;
@@ -157,5 +214,5 @@ const editMedicalRecord = async (req, res) => {
 }
 
 module.exports = {
-    createMedicalRecord, allMedicalRecord, editMedicalRecord
+    createMedicalRecord, allMedicalRecord, editMedicalRecord, createProfile
 }

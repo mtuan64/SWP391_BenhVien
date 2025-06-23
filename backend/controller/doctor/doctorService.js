@@ -134,8 +134,6 @@ module.exports = {
 }
 
 require("dotenv").config();
-const User = require("../../models/User");
-const Employee = require("../../models/Employee");
 const bcrypt = require("bcrypt");
 
 // Admin - user manage

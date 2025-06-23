@@ -13,7 +13,7 @@ const profileSchema = new mongoose.Schema(
     medicine: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Medicine",
-    },
+    }, userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: false }
   },
   { timestamps: true }
 );

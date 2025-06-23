@@ -465,4 +465,29 @@ exports.getPayments = async (req, res) => {
     }
 };
 
+exports.createPaymentLinkEmbedded = async (req, res) => {
+    try {
+        const { invoiceId } = req.body;
+
+        const invoice = await Invoice.findById(invoiceId).populate("services");
+        const total = invoice.totalAmount;
+
+        // Đảm bảo orderCode là số duy nhất
+        const orderCode = Number(invoice.invoiceNumber) || Date.now();
+
+        const result = await payos.createPaymentLink({
+            orderCode,
+            amount: total,
+            description: `Thanh toán kiwicare`,
+            cancelUrl: "http://localhost:5173/invoice", // bắt buộc
+            returnUrl: "http://localhost:5173/invoice", // quay lại front-end
+        });
+
+        res.json({ checkoutUrl: result.checkoutUrl });
+    } catch (error) {
+        console.error("Lỗi tạo link:", error.response?.data || error.message);
+        res.status(500).json({ message: "Lỗi tạo link thanh toán", error: error.message });
+    }
+};
+
 
