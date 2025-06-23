@@ -38,7 +38,7 @@ import AppointmentScheduleManagement from "./pages/staff/AppointmentScheduleMana
 import NotificationManagement from "./pages/staff/NotificationManagement";
 import UserManagement from "./pages/staff/UserManagement";
 import MedicineManagement from "./pages/staff/MedicineManagement";
-
+import MedicalRecord from "./pages/MedicalRecord";
 import Header from "./components/HeaderComponent";
 import MenuComponent from "./components/MenuComponent";
 import FooterComponent from "./components/FooterComponent";
@@ -158,6 +158,11 @@ const App = () => {
           <Route path="/appointment" element={
             <PrivateRoute>
               <AppointmentPage />
+            </PrivateRoute>
+          } />
+          <Route path="/medicalrecords" element={
+            <PrivateRoute>
+              <MedicalRecord />
             </PrivateRoute>
           } />
           <Route path="/not-found" element={<NotFoundPage/>}/>
