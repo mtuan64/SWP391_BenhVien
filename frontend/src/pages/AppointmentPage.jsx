@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Row, Col } from "react-bootstrap";
 import Flatpickr from "react-flatpickr";
+import axios from 'axios';
 import "flatpickr/dist/themes/material_green.css";
 import "../assets/css/AppointmentPage.css";
 
@@ -40,7 +41,7 @@ const doctorData = [
 const AppointmentPage = () => {
   const [step, setStep] = useState("doctor");
   const [selectedDoctor, setSelectedDoctor] = useState(null);
-  const [selectedService, setSelectedService] = useState(null);
+  const [selectedDepartment, setSelectedDepartment] = useState(null);
   const [selectedDate, setSelectedDate] = useState(null);
   const [selectedTime, setSelectedTime] = useState(null);
   const [selectedPayment, setSelectedPayment] = useState(null);
@@ -138,8 +139,8 @@ const AppointmentPage = () => {
               {serviceData.map((service) => (
                 <Col key={service.id} md={6} className="mb-4">
                   <label
-                    className={`border p-4 rounded text-center cursor-pointer hover:bg-light ${selectedService === service.id ? 'border-primary' : ''}`}
-                    onClick={() => setSelectedService(service.id)}
+                    className={`border p-4 rounded text-center cursor-pointer hover:bg-light ${selectedDepartment === service.id ? 'border-primary' : ''}`}
+                    onClick={() => setSelectedDepartment(service.id)}
                   >
                     <input type="radio" name="service" className="d-none" />
                     <h5 className="fw-semibold">{service.title}</h5>
@@ -158,7 +159,7 @@ const AppointmentPage = () => {
               <button
                 className="btn btn-primary"
                 onClick={() => setStep("datetime")}
-                disabled={!selectedService}
+                disabled={!selectedDepartment}
               >
                 Tiếp Theo
               </button>
@@ -235,13 +236,13 @@ const AppointmentPage = () => {
                   <div className="mt-3 p-3 bg-light rounded">
                     <h6 className="small fw-bold">Dịch Vụ</h6>
                     <div className="d-flex justify-content-between small">
-                      <span>{serviceData.find(s => s.id === selectedService)?.title}</span>
-                      <span>{serviceData.find(s => s.id === selectedService)?.price}</span>
+                      <span>{serviceData.find(s => s.id === selectedDepartment)?.title}</span>
+                      <span>{serviceData.find(s => s.id === selectedDepartment)?.price}</span>
                     </div>
                   </div>
                   <div className="mt-3 d-flex justify-content-between small">
                     <strong>Tổng Chi Phí</strong>
-                    <strong className="text-primary">{serviceData.find(s => s.id === selectedService)?.price}</strong>
+                    <strong className="text-primary">{serviceData.find(s => s.id === selectedDepartment)?.price}</strong>
                   </div>
                 </div>
               </Col>
