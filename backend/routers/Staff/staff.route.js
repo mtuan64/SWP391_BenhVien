@@ -4,6 +4,14 @@ const path = require('path');
 const staffRouter = express.Router();
 
 const {
+  getAllProfile,
+  createProfile,
+  updateProfile,
+  deleteProfile,
+  getAllMedicines,
+  getDoctors
+} = require("../../controller/staff/staffService");
+const {
   getAllBlogs,
   createBlog,
   updateBlog,
@@ -74,5 +82,15 @@ staffRouter.get("/categories", getAllCategories);
 staffRouter.post("/categories", authStaffMiddleware, createCategory);
 staffRouter.put("/categories/:id", authStaffMiddleware, updateCategory);
 staffRouter.delete("/categories/:id", authStaffMiddleware, deleteCategory);
+
+
+//Medical Record(Profile)
+staffRouter.get("/profiles", getAllProfile);
+staffRouter.get("/medicines", getAllMedicines);
+staffRouter.get("/doctors", getDoctors);
+staffRouter.post("/profiles", authStaffMiddleware, createProfile);
+staffRouter.put("/profiles/:id", authStaffMiddleware, updateProfile);
+staffRouter.delete("/profiles/:id", authStaffMiddleware, deleteProfile);
+
 
 module.exports = staffRouter;

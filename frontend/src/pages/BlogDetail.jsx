@@ -128,11 +128,6 @@ const BlogDetail = () => {
                   </span>
                 </div>
               </div>
-              {/* {blog.image && (
-                <div className="blogdetail-image">
-                  <img src={blog.image} alt={blog.title} />
-                </div>
-              )} */}
               <div className="blogdetail-content">
                 {blog.content.map((item, index) => (
                   <div key={index} className={`content-${item.type}`}>

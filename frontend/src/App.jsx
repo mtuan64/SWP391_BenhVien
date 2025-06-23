@@ -19,13 +19,11 @@ import AppointmentPage from "./pages/AppointmentPage";
 import Changepass from "./pages/ChangePassword";
 import ResetPassword from "./pages/ResetPassword";
 import ForgotPassword from "./pages/ForgotPassword";
-
 import AdminLayout from "./components/admin/AdminLayout";
 import Dashboard from "./pages/admin/Dashboard";
 import AccountManagement from "./pages/admin/AccountManagement";
 import EmployeeManagement from "./pages/admin/EmployessManagement";
-
-import StaffLayout from "./components/Staff/StaffLayout";
+import StaffLayout from "./components/staff/StaffLayout";
 import BlogManagement from "./pages/staff/BlogManagement";
 import ServiceManagement from "./pages/staff/ServiceManagement";
 import SpecialtyManagement from "./pages/staff/SpecialtyManagement";
@@ -37,6 +35,7 @@ import QnAView from "./pages/staff/QnAView";
 import AppointmentScheduleManagement from "./pages/staff/AppointmentScheduleManagement";
 import NotificationManagement from "./pages/staff/NotificationManagement";
 import UserManagement from "./pages/staff/UserManagement";
+import MedicalRecord from "./pages/staff/MedicalRecord";
 import MedicineManagement from "./pages/staff/MedicineManagement";
 import BlogListPage from "./pages/BlogListPage";
 import BlogDetail from "./pages/BlogDetail";
@@ -65,14 +64,14 @@ const RoleRedirect = () => {
       if (role === "Admin") navigate("/admin/");
       else if (role === "Staff") navigate("/staff/");
       else if (role === "Doctor") navigate("/doctor");
-      else navigate("/home");
+      else navigate("/");
     } else {
       // Nếu đã vào nhầm layout (sai path so với role) thì redirect lại
       if (role === "Admin" && !path.startsWith("/admin")) navigate("/admin/");
       if (role === "Staff" && !path.startsWith("/staff")) navigate("/staff/");
       if (role === "Doctor" && !path.startsWith("/doctor")) navigate("/doctor");
       if (role === "patient" && (path.startsWith("/admin") || path.startsWith("/staff") || path.startsWith("/doctor")))
-        navigate("/home");
+        navigate("/");
     }
   }, [navigate, location.pathname]);
 
@@ -145,12 +144,13 @@ const App = () => {
             <Route path="appointments" element={<AppointmentScheduleManagement />} />
             <Route path="notifications" element={<NotificationManagement />} />
             <Route path="users" element={<UserManagement />} />
+            <Route path="medicalrecord" element={<MedicalRecord />} />
             <Route path="medicines" element={<MedicineManagement />} />
           </Route>
 
           {/* Public routes */}
-          <Route path="/home" element={<HomePage />} />
-          <Route path="/service" element={<ServicePage />} />
+          <Route path="/" element={<HomePage />} />
+          <Route path="/services" element={<ServicePage />} />
           <Route path="/blogs" element={<BlogListPage />} />
           <Route path="/blog/:slug" element={<BlogDetail />} />
           <Route path="/doctor" element={<DoctorPage />} />

@@ -28,6 +28,7 @@ import {
   CircularProgress,
   Snackbar,
   Alert,
+  Pagination,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
@@ -67,14 +68,15 @@ const BlogManagement = () => {
   const [newCategory, setNewCategory] = useState({ name: "" });
   const [openEditCategory, setOpenEditCategory] = useState(false);
   const [openAddCategory, setOpenAddCategory] = useState(false);
-  const [openDeleteCategoryConfirm, setOpenDeleteCategoryConfirm] =
-    useState(false);
+  const [openDeleteCategoryConfirm, setOpenDeleteCategoryConfirm] = useState(false);
   const [categoryToDelete, setCategoryToDelete] = useState(null);
   const [tabValue, setTabValue] = useState(0);
   const [loading, setLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
   const [filterCategory, setFilterCategory] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
+  const [page, setPage] = useState(1);
+  const blogsPerPage = 5;
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -238,6 +240,7 @@ const BlogManagement = () => {
       setImageFiles({ mainImage: null, contentImages: {} });
       setOpenAddBlog(false);
       setSuccessMessage("Blog added successfully!");
+      setPage(Math.ceil((blogs.length + 1) / blogsPerPage));
     } catch (error) {
       console.error("Error adding blog:", error.response?.data || error);
       alert(
@@ -348,6 +351,9 @@ const BlogManagement = () => {
       setOpenDeleteBlogConfirm(false);
       setBlogToDelete(null);
       setSuccessMessage("Blog deleted successfully!");
+      if (filteredBlogs.length % blogsPerPage === 1 && page > 1) {
+        setPage(page - 1);
+      }
     } catch (error) {
       console.error("Error deleting blog:", error);
       alert(
@@ -604,6 +610,10 @@ const BlogManagement = () => {
     setSuccessMessage("");
   };
 
+  const handlePageChange = (event, value) => {
+    setPage(value);
+  };
+
   // Lọc và tìm kiếm blogs
   const filteredBlogs = blogs.filter((blog) => {
     const matchesCategory =
@@ -613,6 +623,11 @@ const BlogManagement = () => {
       blog.title.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesCategory && matchesSearch;
   });
+
+  const paginatedBlogs = filteredBlogs.slice(
+    (page - 1) * blogsPerPage,
+    page * blogsPerPage
+  );
 
   return (
     <div className="blog-list-page">
@@ -676,7 +691,7 @@ const BlogManagement = () => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {filteredBlogs.map((blog) => {
+                {paginatedBlogs.map((blog) => {
                   const categoryIdValue =
                     blog.categoryId?._id || blog.categoryId;
                   const categoryName =
@@ -726,6 +741,12 @@ const BlogManagement = () => {
               </TableBody>
             </Table>
           </TableContainer>
+          <Pagination
+            count={Math.ceil(filteredBlogs.length / blogsPerPage)}
+            page={page}
+            onChange={handlePageChange}
+            sx={{ mt: 2, display: 'flex', justifyContent: 'center' }}
+          />
           {/* Edit Blog Dialog */}
           <Dialog
             open={openEditBlog}

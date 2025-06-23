@@ -1,4 +1,4 @@
-/* BlogListPage.css */
+/* BlogManagement.css */
 .blog-list-page {
   max-width: 1200px;
   margin: 0 auto;
@@ -136,15 +136,15 @@
 }
 
 .blog-list-page .MuiTableHead-root {
-  background-color: #f9fafb;
+  background: linear-gradient(90deg, #1976d2, #42a5f5);
 }
 
 .blog-list-page .MuiTableCell-head {
   font-weight: 600;
-  color: #1a202c;
+  color: #ffffff;
   padding: 12px;
   font-size: 0.85rem;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .blog-list-page .MuiTableCell-body {
@@ -187,7 +187,7 @@
 }
 
 .blog-list-page .MuiTableRow-root:hover {
-  background-color: #f1f5f9;
+  background: linear-gradient(90deg, rgba(25, 118, 210, 0.1), rgba(66, 165, 245, 0.1));
 }
 
 .blog-list-page .MuiTableCell-body img {
