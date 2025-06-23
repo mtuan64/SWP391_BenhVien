@@ -19,6 +19,7 @@ import AppointmentPage from "./pages/AppointmentPage";
 import Changepass from "./pages/ChangePassword";
 import ResetPassword from "./pages/ResetPassword";
 import ForgotPassword from "./pages/ForgotPassword";
+import SendQAForm from "./pages/sendQA";
 
 import AdminLayout from "./components/admin/AdminLayout";
 import Dashboard from "./pages/admin/Dashboard";
@@ -45,7 +46,10 @@ import FooterComponent from "./components/FooterComponent";
 import { PrivateRoute, PrivateRouteNotAllowUser,PrivateRouteByRole } from "./components/PrivateRoute"
 import "antd/dist/reset.css";
 import NotFoundPage from "./pages/NotFoundPage";
+import QAHistories from "./pages/QAHistories";
 const DRAWER_WIDTH = 240;
+
+
 
 const RoleRedirect = () => {
   const navigate = useNavigate(); 
@@ -155,6 +159,8 @@ const App = () => {
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/myprofile" element={<ProfilePage />} />
+                    <Route path="/qahistory" element={<QAHistories />} />
+
           <Route path="/appointment" element={
             <PrivateRoute>
               <AppointmentPage />
@@ -166,6 +172,8 @@ const App = () => {
             </PrivateRoute>
           } />
           <Route path="/not-found" element={<NotFoundPage/>}/>
+          <Route path="/qa" element={<SendQAForm/>}/>
+
           <Route path="/doctor/:doctorId" element={<DoctorDetail />} />
           <Route path="/changepass" element={<Changepass />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />

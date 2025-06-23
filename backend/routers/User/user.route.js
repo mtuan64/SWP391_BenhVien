@@ -2,7 +2,7 @@ const express = require('express');
 const userRouter = express.Router();
 const User = require('../../models/User'); // đường dẫn đúng đến file User.js
 const {verifyToken} = require('../../middleware/tokencheck');
-const {getMyProfiles} = require('../../controller/user/userService');
+const {getMyProfiles,sendQA,getAllQAUser} = require('../../controller/user/userService');
 // Update user by ID
 userRouter.put('/update', async (req, res) => {
   try {
@@ -36,5 +36,7 @@ userRouter.put('/update', async (req, res) => {
 });
 
 userRouter.get('/profile/my-records',verifyToken,getMyProfiles);
+userRouter.post('/qa',sendQA);
+userRouter.get('/qahistory',getAllQAUser);
 
 module.exports = userRouter;
