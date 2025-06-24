@@ -212,7 +212,57 @@ const editMedicalRecord = async (req, res) => {
         res.status(500).json({ message: 'Lỗi server', error });
     }
 }
+const getAllProfiles = async (req, res) => {
+    try {
+        let {
+            page = 1,
+            limit = 10,
+            sortBy = 'createdAt',
+            order = 'desc',
+            search = ''
+        } = req.query;
+
+        page = parseInt(page);
+        limit = parseInt(limit);
+
+        const sortOrder = order === 'asc' ? 1 : -1;
+
+        // Tạo điều kiện tìm kiếm
+        const query = {};
+        if (search) {
+            const regex = new RegExp(search, 'i'); // không phân biệt hoa thường
+            query.$or = [
+                { name: regex },
+                { diagnose: regex },
+                { issues: regex }
+            ];
+        }
+
+        // Đếm tổng số
+        const total = await Profile.countDocuments(query);
+
+        // Lấy dữ liệu
+        const profiles = await Profile.find(query)
+            .populate("doctorId", "name")
+            .populate("medicine", "name type")
+            .sort({ [sortBy]: sortOrder })
+            .skip((page - 1) * limit)
+            .limit(limit);
+
+        res.json({
+            success: true,
+            data: profiles,
+            total,
+            page,
+            totalPages: Math.ceil(total / limit)
+        });
+    } catch (err) {
+        console.error("Lỗi khi lấy hồ sơ:", err);
+        res.status(500).json({ success: false, message: "Lỗi server" });
+    }
+};
+
 
 module.exports = {
-    createMedicalRecord, allMedicalRecord, editMedicalRecord, createProfile
+    createMedicalRecord, allMedicalRecord, editMedicalRecord, createProfile, getAllProfiles
 }

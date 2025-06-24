@@ -25,7 +25,7 @@ import Dashboard from "./pages/admin/Dashboard";
 import AccountManagement from "./pages/admin/AccountManagement";
 import EmployeeManagement from "./pages/admin/EmployessManagement";
 
-import StaffLayout from "./components/Staff/StaffLayout";
+import StaffLayout from "./components/staff/StaffLayout";
 import BlogManagement from "./pages/staff/BlogManagement";
 import ServiceManagement from "./pages/staff/ServiceManagement";
 import SpecialtyManagement from "./pages/staff/SpecialtyManagement";
@@ -50,6 +50,8 @@ import "antd/dist/reset.css";
 import NotFoundPage from "./pages/NotFoundPage";
 import AddMedicalRecord from "./components/AddMedicalRecord";
 import ViewMedicalRecords from "./components/ViewMedicalRecord";
+import CreateServicePage from "./components/staff/CreateServicePage";
+import EditServicePage from "./components/staff/EditService";
 const DRAWER_WIDTH = 240;
 
 const RoleRedirect = () => {
@@ -141,6 +143,8 @@ const App = () => {
             <Route path="blogs" element={<BlogManagement />} />
             <Route path="invoices/create" element={<CreateInvoice />}></Route>
             <Route path="services" element={<ServiceManagement />} />
+            <Route path="services/create" element={<CreateServicePage />} />
+            <Route path="services/edit/:id" element={<EditServicePage />} />
             <Route path="specialties" element={<SpecialtyManagement />} />
             <Route path="invoices" element={<InvoiceList />} />
             <Route path="payments" element={<PaymentView />} />
