@@ -56,6 +56,7 @@ const Header = ({ onMenuClick }) => {
           <Link to="/service" className="nav-item nav-link">Service</Link>
           <Link to="/doctor" className="nav-item nav-link">Doctor</Link>
 
+          <Link to="/health/calculator" className="nav-item nav-link">BMI</Link>
           {user ? (
             <div className="nav-item dropdown">
               <button

@@ -52,6 +52,7 @@ import AddMedicalRecord from "./components/AddMedicalRecord";
 import ViewMedicalRecords from "./components/ViewMedicalRecord";
 import CreateServicePage from "./components/staff/CreateServicePage";
 import EditServicePage from "./components/staff/EditService";
+import HealthCalculatorPage from "./pages/HealthCalculatorPage";
 const DRAWER_WIDTH = 240;
 
 const RoleRedirect = () => {
@@ -183,7 +184,7 @@ const App = () => {
           <Route path="/payment/success" element={<PaymentSuccess />} />
           <Route path="/payment/fail" element={<PaymentFail />} />
           {/* <Route path="/labtests" element={<LabtestResult />} /> */}
-
+          <Route path="/health/calculator" element={<HealthCalculatorPage />} />
 
           <Route path="/changepass" element={<Changepass />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
