@@ -1,3 +1,4 @@
+const bcrypt = require('bcrypt');
 const User = require('../../models/User');
 
 // Controller getAllUsers hỗ trợ tìm kiếm và phân trang
@@ -51,12 +52,24 @@ exports.getUserById = async (req, res) => {
 exports.createUser = async (req, res) => {
   try {
     const { email, password, name, phone, status } = req.body;
+
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ message: 'Email đã tồn tại' });
     }
 
-    const newUser = new User({ email, password, name, phone, status });
+    // Hash mật khẩu
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    const newUser = new User({
+      email,
+      password: hashedPassword,
+      name,
+      phone,
+      status
+    });
+
     await newUser.save();
     res.status(201).json({ message: 'Tạo người dùng thành công', user: newUser });
   } catch (error) {
@@ -68,7 +81,12 @@ exports.createUser = async (req, res) => {
 exports.updateUser = async (req, res) => {
   try {
     const updateData = { ...req.body };
-    if (!updateData.password) delete updateData.password;
+
+    if (updateData.password) {
+      // Hash lại mật khẩu nếu có
+      const salt = await bcrypt.genSalt(10);
+      updateData.password = await bcrypt.hash(updateData.password, salt);
+    }
 
     const updatedUser = await User.findByIdAndUpdate(
       req.params.id,
