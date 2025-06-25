@@ -1,57 +1,44 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Container, Row, Col, Form, InputGroup } from "react-bootstrap";
 import { Link } from "react-router-dom";
+import axios from "axios";
 import HeaderComponent from "../components/HeaderComponent";
 import FooterComponent from "../components/FooterComponent";
 import "../assets/css/DoctorPage.css";
 
-// Hardcoded doctor data
-const doctors = [
-  {
-    _id: "1",
-    userId: { fullname: "Nguyễn Văn An" },
-    ProfileImage: "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d",
-    Specialty: "Nội Tổng Quát",
-  },
-  {
-    _id: "2",
-    userId: { fullname: "Trần Thị Bình" },
-    ProfileImage: "https://images.unsplash.com/photo-1594824476967-48c8b964273f",
-    Specialty: "Nhi Khoa",
-  },
-  {
-    _id: "3",
-    userId: { fullname: "Lê Minh Châu" },
-    ProfileImage: "https://images.unsplash.com/photo-1598257006626-48b0c252070d",
-    Specialty: "Phụ Sản",
-  },
-  {
-    _id: "4",
-    userId: { fullname: "Phạm Quốc Đạt" },
-    ProfileImage: "https://images.unsplash.com/photo-1622253692010-333f2b7c2f96",
-    Specialty: "Ngoại Khoa",
-  },
-  {
-    _id: "5",
-    userId: { fullname: "Hoàng Thị Mai" },
-    ProfileImage: "https://images.unsplash.com/photo-1594824476967-48c8b964273f",
-    Specialty: "Chẩn Đoán Hình Ảnh",
-  },
-];
-
 const DoctorPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedSpecialty, setSelectedSpecialty] = useState("");
+  const [selectedSpecialization, setSelectedSpecialization] = useState("");
+  const [doctors, setDoctors] = useState([]);
 
-  // Extract unique specialties from hardcoded data
-  const specialties = [...new Set(doctors.map(doctor => doctor.Specialty).filter(Boolean))];
+  useEffect(() => {
+    const fetchDoctor = async () => {
+      try {
+        const res = await axios.get(`http://localhost:9999/api/user/doctr`);
+        console.log("API Response:", res.data);
+        if (res.data.doctors) {
+          setDoctors(res.data.doctors);
+        } else if (res.data) {
+          setDoctors(res.data);
+        } else {
+          throw new Error("Invalid response format");
+        }
+      } catch (error) {
+        console.error("Error fetching doctor details:", error);
+      }
+    };
+
+    fetchDoctor();
+  }, []);
+
+  const specialties = [...new Set(doctors.map(doctor => doctor.specialization).filter(Boolean))];
 
   // Filter doctors based on search term and selected specialty
   const filteredDoctors = doctors.filter(doctor => {
-    const fullName = doctor.userId ? doctor.userId.fullname.toLowerCase() : "";
+    const fullName = doctor.name ? doctor.name.toLowerCase() : "";
     return (
       fullName.includes(searchTerm.toLowerCase()) &&
-      (selectedSpecialty === "" || doctor.Specialty === selectedSpecialty)
+      (selectedSpecialization === "" || doctor.specialization === selectedSpecialization)
     );
   });
 
@@ -130,8 +117,8 @@ const DoctorPage = () => {
             </Col>
             <Col md={6}>
               <Form.Select
-                value={selectedSpecialty}
-                onChange={(e) => setSelectedSpecialty(e.target.value)}
+                value={selectedSpecialization}
+                onChange={(e) => setSelectedSpecialization(e.target.value)}
               >
                 <option value="">Tất Cả Chuyên Khoa</option>
                 {specialties.map((specialty, index) => (
@@ -177,16 +164,16 @@ const DoctorPage = () => {
                   <div className="position-relative rounded-top">
                     <img
                       className="img-fluid rounded-top w-100"
-                      src={doctor.ProfileImage}
-                      alt={doctor.userId ? doctor.userId.fullname : 'Doctor'}
+                      src={doctor.avatar}
+                      alt={doctor.name ? doctor.name : 'Doctor'}
                     />
                   </div>
                   <div className="team-text position-relative bg-light text-center rounded-bottom p-4 pt-5">
                     <h4 className="mb-2">
-                      {doctor.userId ? `Bác sĩ ${doctor.userId.fullname}` : 'Bác sĩ không rõ tên'}
+                      {doctor.name ? `Bác sĩ ${doctor.name}` : 'Bác sĩ không rõ tên'}
                     </h4>
                     <p className="mb-2">
-                      <strong>Chuyên ngành:</strong> {doctor.Specialty || 'Không rõ'}
+                      <strong>Chuyên ngành:</strong> {doctor.specialization || 'Không rõ'}
                     </p>
                     <Link to={`/doctr/${doctor._id}`} className="btn btn-primary mt-2">
                       Xem chi tiết

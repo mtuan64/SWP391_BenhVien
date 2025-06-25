@@ -99,7 +99,7 @@ const DoctorDetail = () => {
     return (
       <div className="text-center py-5">
         <h3>{error}</h3>
-        <Link to="/doctor" className="btn btn-primary mt-3">Back to Team</Link>
+        <Link to="/doctr-home" className="btn btn-primary mt-3">Back to Doctor Home</Link>
       </div>
     );
   }
@@ -184,7 +184,7 @@ const DoctorDetail = () => {
                 <p><strong>Experience Years:</strong> {doctor.expYear}</p>
                 <p><strong>Description:</strong> {doctor.description}</p>
                 <p><strong>Status:</strong> {doctor.status}</p>
-                <Link to="/doctr" className="btn btn-secondary mt-3">Back to Team</Link>
+                <Link to="/doctr-home" className="btn btn-secondary mt-3">Back to Doctor Home</Link>
               </div>
             </Col>
           </Row>
