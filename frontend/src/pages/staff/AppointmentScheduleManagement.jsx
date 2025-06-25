@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { Table, Button, Container, Spinner, Modal, Form, InputGroup, FormControl } from "react-bootstrap";
-import { FaEdit, FaTrash } from "react-icons/fa";
+import { Table, Button, Container, Spinner, Modal, Form, InputGroup, FormControl, Pagination, Row, Col } from "react-bootstrap";
+import { FaEdit, FaTrash, FaSearch, FaRedo } from "react-icons/fa";
 import FooterComponent from "../../components/FooterComponent";
 import axios from "axios";
 import "../../assets/css/Homepage.css";
@@ -11,16 +11,29 @@ const AppointmentScheduleManagement = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [schedules, setSchedules] = useState([]);
-  const [selectedTimeSlot, setSelectedTimeSlot] = useState(null);
+  const [availableDoctors, setAvailableDoctors] = useState([]);
+  const [departments, setDepartments] = useState([]);
+  const [users, setUsers] = useState([]);
+  const [profiles, setProfiles] = useState([]);
+  const [formErrors, setFormErrors] = useState({});
+  const [isFormLoading, setIsFormLoading] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [departmentFilter, setDepartmentFilter] = useState("all");
 
-  const [doctors, setDoctors] = useState([]);
-  
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(10);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+
   // Modal & form
   const [showModal, setShowModal] = useState(false);
   const [form, setForm] = useState({
     appointmentDate: "",
-    doctorId: "",
     department: "",
+    doctorId: "",
+    timeSlot: "",
     type: "Offline",
     status: "Booked",
     reminderSent: false,
@@ -28,68 +41,130 @@ const AppointmentScheduleManagement = () => {
     profileId: "",
   });
   const [currentAppointment, setCurrentAppointment] = useState(null);
-
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteAppointmentId, setDeleteAppointmentId] = useState(null);
 
-  const [searchTerm, setSearchTerm] = useState("");
-
   useEffect(() => {
     fetchAppointments();
-    fetchDoctors();
-  }, []);
+    fetchDepartments();
+    fetchUsers();
+  }, [currentPage, statusFilter, departmentFilter, searchTerm]);
 
   useEffect(() => {
-    if (!searchTerm) {
-      setFilteredAppointments(appointments);
+    if (form.userId) {
+      fetchProfilesByUser(form.userId);
     } else {
-      const lowerSearch = searchTerm.toLowerCase();
-      const filtered = appointments.filter((a) => {
-        return (
-          (a.doctorName && a.doctorName.toLowerCase().includes(lowerSearch)) ||
-          (a.userName && a.userName.toLowerCase().includes(lowerSearch)) ||
-          (a.department && a.department.toLowerCase().includes(lowerSearch)) ||
-          (a.status && a.status.toLowerCase().includes(lowerSearch))
-        );
-      });
-      setFilteredAppointments(filtered);
+      setProfiles([]);
     }
-  }, [searchTerm, appointments]);
+  }, [form.userId]);
 
-  const fetchSchedules = async (doctorId) => {
-    try {
-      const res = await axios.get(`http://localhost:9999/api/appointmentScheduleManagement/schedules/${doctorId}`);
-      console.log("Fetched schedules:", res.data); // 👈 kiểm tra có dữ liệu
-      setSchedules(res.data || []);
-    } catch (err) {
-      console.error("Failed to fetch schedules:", err);
+  useEffect(() => {
+    if (form.appointmentDate && form.department) {
+      fetchAvailableDoctors(form.appointmentDate, form.department);
+    } else {
+      setAvailableDoctors([]);
+      setForm((prev) => ({ ...prev, doctorId: "", timeSlot: "" }));
       setSchedules([]);
     }
-  };
+  }, [form.appointmentDate, form.department]);
 
+  useEffect(() => {
+    if (form.doctorId && form.appointmentDate) {
+      fetchSchedules(form.doctorId, form.appointmentDate);
+    } else {
+      setSchedules([]);
+      setForm((prev) => ({ ...prev, timeSlot: "" }));
+    }
+  }, [form.doctorId, form.appointmentDate]);
 
   const fetchAppointments = async () => {
     try {
       setLoading(true);
-      const res = await axios.get("http://localhost:9999/api/appointmentScheduleManagement")
-      setAppointments(res.data.data || res.data);
-      setFilteredAppointments(res.data.data || res.data);
+      const params = { page: currentPage, limit: itemsPerPage, search: searchTerm };
+      if (statusFilter !== "all") params.status = statusFilter;
+      if (departmentFilter !== "all") params.department = departmentFilter;
+
+      const res = await axios.get("http://localhost:9999/api/appointmentScheduleManagement", { params });
+      const { appointments, pagination } = res.data;
+      setAppointments(appointments || []);
+      setFilteredAppointments(appointments || []);
+      setTotalPages(pagination.totalPages || 1);
+      setTotalItems(pagination.total || 0);
       setLoading(false);
     } catch (err) {
       console.error(err);
-      setError("Failed to load appointments.");
+      setError("Failed to load appointments. Please try again.");
       setLoading(false);
     }
   };
 
-const fetchDoctors = async () => {
-  try {
-    const res = await axios.get("http://localhost:9999/api/appointmentScheduleManagement/doctors");
-    setDoctors(res.data); // lưu vào state doctors
-  } catch (error) {
-    console.error("Failed to fetch doctors: ", error);
-  }
-};
+  const fetchDepartments = async () => {
+    try {
+      const res = await axios.get("http://localhost:9999/api/appointmentScheduleManagement/departments");
+      setDepartments(res.data);
+    } catch (error) {
+      console.error("Failed to fetch departments: ", error);
+      setError("Failed to load departments.");
+    }
+  };
+
+  const fetchUsers = async () => {
+    try {
+      const res = await axios.get("http://localhost:9999/api/appointmentScheduleManagement/users");
+      setUsers(res.data);
+    } catch (err) {
+      console.error("Failed to fetch users:", err);
+      setError("Failed to load users.");
+    }
+  };
+
+  const fetchAvailableDoctors = async (date, department) => {
+    try {
+      setIsFormLoading(true);
+      const formattedDate = new Date(date).toISOString().split("T")[0];
+      const res = await axios.get("http://localhost:9999/api/appointmentScheduleManagement/doctors", {
+        params: { department, date: formattedDate }
+      });
+      setAvailableDoctors(res.data || []);
+    } catch (error) {
+      console.error("Failed to fetch doctors:", error);
+      setAvailableDoctors([]);
+      setError("Failed to fetch available doctors.");
+    } finally {
+      setIsFormLoading(false);
+    }
+  };
+
+  const fetchSchedules = async (doctorId, date) => {
+    try {
+      setIsFormLoading(true);
+      const formattedDate = new Date(date).toISOString().split("T")[0];
+      const res = await axios.get(`http://localhost:9999/api/appointmentScheduleManagement/schedules/${doctorId}`, {
+        params: { date: formattedDate }
+      });
+      setSchedules(res.data || []);
+    } catch (err) {
+      console.error("Failed to fetch schedules:", err);
+      setSchedules([]);
+      setError("Failed to fetch schedules.");
+    } finally {
+      setIsFormLoading(false);
+    }
+  };
+
+  const fetchProfilesByUser = async (userId) => {
+    try {
+      if (!/^[0-9a-fA-F]{24}$/.test(userId)) {
+        console.error("Invalid userId format:", userId);
+        return;
+      }
+      const res = await axios.get(`http://localhost:9999/api/appointmentScheduleManagement/profiles/${userId}`);
+      setProfiles(res.data);
+    } catch (err) {
+      console.error("Failed to fetch profiles:", err);
+      setProfiles([]);
+    }
+  };
 
   const formatDateTime = (isoString) => {
     if (!isoString) return "";
@@ -102,173 +177,133 @@ const fetchDoctors = async () => {
       minute: "2-digit",
     });
   };
-const [profiles, setProfiles] = useState([]);
-const [departments, setDepartments] = useState([]);
-const [users, setUsers] = useState([]);
 
-useEffect(() => {
-  fetchAppointments();
-  fetchDoctors();
-  fetchDepartments();
-  fetchUsers();
-}, []);
+  const validateForm = () => {
+    const errors = {};
+    if (!form.appointmentDate) errors.appointmentDate = "Please select an appointment date.";
+    if (!form.department) errors.department = "Please select a department.";
+    if (availableDoctors.length > 0 && !form.doctorId) errors.doctorId = "Please select a doctor.";
+    if (form.doctorId && schedules.length > 0 && !form.timeSlot) errors.timeSlot = "Please select a time slot.";
+    if (!form.userId) errors.userId = "Please select a user.";
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
 
-useEffect(() => {
-  if (form.userId) {
-    fetchProfilesByUser(form.userId);
-  } else {
-    setProfiles([]);
-  }
-}, [form.userId]);
-
-
-const fetchProfilesByUser = async (userId) => {
-  try {
-    console.log("🔍 userId gửi lên:", userId);
-
-    if (!/^[0-9a-fA-F]{24}$/.test(userId)) {
-      console.error("❌ Invalid userId format:", userId);
-      return;
-    }
-
-    const res = await axios.get(`http://localhost:9999/api/appointmentScheduleManagement/profiles/${userId}`);
-    setProfiles(res.data);
-  } catch (err) {
-    console.error("Failed to fetch profiles:", err);
-    setProfiles([]);
-  }
-};
-
-
-const fetchUsers = async () => {
-  try {
-    const res = await axios.get("http://localhost:9999/api/appointmentScheduleManagement/users");
-    setUsers(res.data);
-  } catch (err) {
-    console.error("Failed to fetch users:", err);
-  }
-};
-const fetchDepartments = async () => {
-  try {
-    const res = await axios.get("http://localhost:9999/api/appointmentScheduleManagement/departments");
-    setDepartments(res.data);
-  } catch (error) {
-    console.error("Failed to fetch departments: ", error);
-  }
-};
   function handleAddNew() {
     setCurrentAppointment(null);
     setForm({
       appointmentDate: "",
-      doctorId: "",
       department: "",
+      doctorId: "",
+      timeSlot: "",
       type: "Offline",
       status: "Booked",
       reminderSent: false,
       userId: "",
       profileId: "",
     });
+    setAvailableDoctors([]);
+    setSchedules([]);
+    setFormErrors({});
     setShowModal(true);
   }
 
   function handleEdit(appointment) {
     setCurrentAppointment(appointment);
     setForm({
-      appointmentDate: appointment.appointmentDate ? appointment.appointmentDate.slice(0, 16) : "",
-      doctorId: appointment.doctorId || "",
+      appointmentDate: appointment.appointmentDate ? appointment.appointmentDate.slice(0, 10) : "",
       department: appointment.department || "",
+      doctorId: appointment.doctorId || "",
+      timeSlot: appointment.appointmentDate || "",
       type: appointment.type || "Offline",
       status: appointment.status || "Booked",
       reminderSent: appointment.reminderSent || false,
       userId: appointment.userId || "",
       profileId: appointment.profileId || "",
     });
+    setFormErrors({});
     setShowModal(true);
   }
 
-function handleChange(e) {
-  const { name, value, type, checked } = e.target;
-
-  if (name === "doctorId") {
-    const selectedDoctor = doctors.find(doc => doc._id === value);
-    setForm(prev => ({
-      ...prev,
-      doctorId: value,
-      department: selectedDoctor?.department || ""
-    }));
-
-    // 👉 Gọi sau khi setForm, nhưng vì setForm không chờ được, bạn vẫn có thể gọi trực tiếp:
-    fetchSchedules(value);
-  } 
-  else if (name === "userId") {
-    setForm(prev => ({ ...prev, userId: value }));
-    fetchProfilesByUser(value); // ✅ Gọi luôn khi chọn user
-  } 
-  else {
-    setForm(prev => ({
+  function handleChange(e) {
+    const { name, value, type, checked } = e.target;
+    setForm((prev) => ({
       ...prev,
       [name]: type === "checkbox" ? checked : value,
     }));
+    setFormErrors((prev) => ({ ...prev, [name]: "" }));
   }
-}
 
+  function handleResetForm() {
+    setForm({
+      appointmentDate: "",
+      department: "",
+      doctorId: "",
+      timeSlot: "",
+      type: "Offline",
+      status: "Booked",
+      reminderSent: false,
+      userId: "",
+      profileId: "",
+    });
+    setAvailableDoctors([]);
+    setSchedules([]);
+    setFormErrors({});
+  }
 
+  function handleClearFilters() {
+    setSearchTerm("");
+    setStatusFilter("all");
+    setDepartmentFilter("all");
+    setCurrentPage(1);
+  }
 
-async function handleSubmit() {
-  try {
-    let payload = {
-      ...form,
-      appointmentDate: new Date(form.appointmentDate).toISOString(),
-    };
-
-    // 👉 Nếu user chọn No Profile (rỗng)
-    if (!form.profileId || form.profileId === "") {
-      console.warn("⚠️ Không có profile, sẽ tạo mới");
-
-      const selectedUser = users.find(u => u._id === form.userId);
-
-      const newProfile = await axios.post("http://localhost:9999/api/appointmentScheduleManagement/profiles", {
-        userId: form.userId,
-        name: selectedUser?.name,
-        gender: "Other",
-        dateOfBirth: "2000-01-01",
-        diagnose: "",
-        note: "",
-        issues: "",
-        doctorId: form.doctorId || null,
-        medicine: null,
-      });
-
-      console.log("✅ Profile mới tạo:", newProfile.data);
-      payload.profileId = newProfile.data._id;
-    }
-
-    // 🔐 Kiểm tra profileId đã chắc chắn có chưa
-    if (!payload.profileId) {
-      alert("Không thể tạo cuộc hẹn vì không có profileId.");
+  async function handleSubmit() {
+    if (!validateForm()) {
       return;
     }
-
-    // ✅ Tạo hoặc cập nhật Appointment
-    if (currentAppointment) {
-      await axios.put(`http://localhost:9999/api/AppointmentScheduleManagement/${currentAppointment._id}`, payload);
-    } else {
-      await axios.post("http://localhost:9999/api/AppointmentScheduleManagement", payload);
+    try {
+      setIsFormLoading(true);
+      let payload = {
+        ...form,
+        appointmentDate: new Date(form.timeSlot).toISOString(),
+      };
+      if (!form.profileId || form.profileId === "") {
+        console.warn("No profile selected, creating new");
+        const selectedUser = users.find((u) => u._id === form.userId);
+        const newProfile = await axios.post("http://localhost:9999/api/appointmentScheduleManagement/profiles", {
+          userId: form.userId,
+          name: selectedUser?.name,
+          gender: "Other",
+          dateOfBirth: "2000-01-01",
+          diagnose: "",
+          note: "",
+          issues: "",
+          doctorId: form.doctorId || null,
+          medicine: null,
+        });
+        payload.profileId = newProfile.data._id;
+      }
+      if (!payload.profileId) {
+        alert("Cannot create appointment without a profileId.");
+        return;
+      }
+      if (currentAppointment) {
+        await axios.put(`http://localhost:9999/api/AppointmentScheduleManagement/${currentAppointment._id}`, payload);
+        alert("Appointment updated successfully!");
+      } else {
+        await axios.post("http://localhost:9999/api/AppointmentScheduleManagement", payload);
+        alert("Appointment created successfully!");
+      }
+      setShowModal(false);
+      fetchAppointments();
+    } catch (error) {
+      console.error("Error submitting data:", error);
+      alert("Error creating/updating appointment: " + (error?.response?.data?.message || error.message));
+    } finally {
+      setIsFormLoading(false);
     }
-
-    setShowModal(false);
-    fetchAppointments();
-  } catch (error) {
-    console.error("❌ Lỗi gửi dữ liệu: ", error);
-    alert("Lỗi tạo/cập nhật lịch hẹn: " + (error?.response?.data?.message || error.message));
   }
-}
-
-
-
-
-
-
 
   function handleDeleteClick(appointmentId) {
     setDeleteAppointmentId(appointmentId);
@@ -281,6 +316,7 @@ async function handleSubmit() {
       setShowDeleteModal(false);
       setDeleteAppointmentId(null);
       fetchAppointments();
+      alert("Appointment deleted successfully!");
     } catch (error) {
       alert("Delete failed: " + error.message);
     }
@@ -291,231 +327,471 @@ async function handleSubmit() {
     setDeleteAppointmentId(null);
   }
 
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber);
+  };
+
   return (
     <>
       <Container className="py-5">
-        <h2 className="mb-4">Appointment Schedule Management</h2>
+        <h2 className="mb-4 text-primary fw-bold">Appointment Schedule Management</h2>
 
-        <InputGroup className="mb-3" style={{ maxWidth: "400px" }}>
-          <FormControl
-            placeholder="Search doctor, user, department, status..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-          <Button variant="outline-secondary" onClick={() => setSearchTerm("")}>
-            Search
-          </Button>
-        </InputGroup>
+        <Row className="mb-4 align-items-center">
+          <Col md={4} sm={12} className="mb-2 mb-md-0">
+            <InputGroup className="shadow-sm">
+              <InputGroup.Text className="bg-primary text-white border-0">
+                <FaSearch />
+              </InputGroup.Text>
+              <FormControl
+                placeholder="Search by doctor, user, department, or status..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="border-primary"
+                aria-label="Search appointments"
+              />
+            </InputGroup>
+          </Col>
+          <Col md={3} sm={12} className="mb-2 mb-md-0">
+            <Form.Select
+              value={statusFilter}
+              onChange={(e) => {
+                setStatusFilter(e.target.value);
+                setCurrentPage(1);
+              }}
+              className="shadow-sm"
+              aria-label="Filter by status"
+            >
+              <option value="all">All Statuses</option>
+              <option value="Booked">Booked</option>
+              <option value="In-Progress">In-Progress</option>
+              <option value="Completed">Completed</option>
+              <option value="Canceled">Canceled</option>
+            </Form.Select>
+          </Col>
+          <Col md={3} sm={12} className="mb-2 mb-md-0">
+            <Form.Select
+              value={departmentFilter}
+              onChange={(e) => {
+                setDepartmentFilter(e.target.value);
+                setCurrentPage(1);
+              }}
+              className="shadow-sm"
+              aria-label="Filter by department"
+            >
+              <option value="all">All Departments</option>
+              {departments.map((dept) => (
+                <option key={dept} value={dept}>
+                  {dept}
+                </option>
+              ))}
+            </Form.Select>
+          </Col>
+          <Col md={2} sm={12} className="text-md-end">
+            <Button
+              variant="outline-primary"
+              onClick={handleClearFilters}
+              className="shadow-sm rounded-pill px-3"
+              aria-label="Clear filters"
+            >
+              Clear Filters
+            </Button>
+          </Col>
+        </Row>
 
-        <Button variant="success" className="mb-3" onClick={handleAddNew}>
+        <Button
+          variant="success"
+          className="mb-4 shadow-sm rounded-pill px-4"
+          onClick={handleAddNew}
+          aria-label="Add new appointment"
+        >
           Add Appointment
         </Button>
 
         {loading ? (
           <div className="text-center py-5">
-            <Spinner animation="border" role="status" />
+            <Spinner animation="border" variant="primary" role="status" />
+            <span className="visually-hidden">Loading...</span>
           </div>
         ) : error ? (
           <div className="text-center py-5 text-danger">
             <h5>{error}</h5>
           </div>
         ) : filteredAppointments.length === 0 ? (
-          <p>No appointments found.</p>
+          <p className="text-muted">No appointments found.</p>
         ) : (
-          <Table striped bordered hover responsive className="shadow">
-            <thead className="table-dark">
-              <tr>
-                <th>No</th>
-                <th>Appointment Date</th>
-                <th>Doctor</th>
-                <th>Department</th>
-                <th>Type</th>
-                <th>User</th>
-                <th>Medical Profile</th>
-                <th>Status</th>
-                <th>Reminder</th>
-                <th>Created</th>
-                <th>Updated</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredAppointments.map((appointment, index) => (
-                <tr key={appointment._id}>
-                  <td>{index + 1}</td>
-                  <td>{formatDateTime(appointment.appointmentDate)}</td>
-                  <td>{appointment.doctorName || "N/A"}</td>
-                  <td>{appointment.department}</td>
-                  <td>{appointment.type}</td>
-                  <td>{appointment.userName || "N/A"}</td>
-                  <td>{!appointment.profileId || appointment.profileId === "null" ? "N/A" : appointment.profileId}</td>
-                  <td>{appointment.status}</td>
-                  <td>{appointment.reminderSent ? "Yes" : "No"}</td>
-                  <td>{formatDateTime(appointment.createdAt)}</td>
-                  <td>{formatDateTime(appointment.updatedAt)}</td>
-                  <td>
-                    <div style={{ display: "flex", gap: "8px" }}>
-                      <Button
-                        variant="primary"
-                        size="sm"
-                        className="rounded-circle"
-                        onClick={() => handleEdit(appointment)}
-                        title="Edit Appointment"
-                      >
-                        <FaEdit />
-                      </Button>
-                      <Button
-                        variant="danger"
-                        size="sm"
-                        className="rounded-circle"
-                        onClick={() => handleDeleteClick(appointment._id)}
-                        title="Delete Appointment"
-                      >
-                        <FaTrash />
-                      </Button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </Table>
+          <>
+            <div className="table-responsive shadow-sm rounded">
+              <Table striped hover className="table-bordered">
+                <thead className="table-dark">
+                  <tr>
+                    <th>No</th>
+                    <th>Appointment Date</th>
+                    <th>Doctor</th>
+                    <th>Department</th>
+                    <th>Type</th>
+                    <th>User</th>
+                    <th>Medical Profile</th>
+                    <th>Status</th>
+                    <th>Reminder</th>
+                    <th>Created</th>
+                    <th>Updated</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredAppointments.map((appointment, index) => (
+                    <tr key={appointment._id}>
+                      <td>{(currentPage - 1) * itemsPerPage + index + 1}</td>
+                      <td>{formatDateTime(appointment.appointmentDate)}</td>
+                      <td>{appointment.doctorName || "N/A"}</td>
+                      <td>{appointment.department}</td>
+                      <td>{appointment.type}</td>
+                      <td>{appointment.userName || "N/A"}</td>
+                      <td>{!appointment.profileId || appointment.profileId === "null" ? "N/A" : appointment.profileId}</td>
+                      <td>{appointment.status}</td>
+                      <td>{appointment.reminderSent ? "Yes" : "No"}</td>
+                      <td>{formatDateTime(appointment.createdAt)}</td>
+                      <td>{formatDateTime(appointment.updatedAt)}</td>
+                      <td>
+                        <div className="d-flex gap-2">
+                          <Button
+                            variant="primary"
+                            size="sm"
+                            className="rounded-circle"
+                            onClick={() => handleEdit(appointment)}
+                            title="Edit Appointment"
+                            aria-label="Edit appointment"
+                          >
+                            <FaEdit />
+                          </Button>
+                          <Button
+                            variant="danger"
+                            size="sm"
+                            className="rounded-circle"
+                            onClick={() => handleDeleteClick(appointment._id)}
+                            title="Delete Appointment"
+                            aria-label="Delete appointment"
+                          >
+                            <FaTrash />
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </Table>
+            </div>
+
+            <div className="d-flex justify-content-between align-items-center mt-4">
+              <div className="text-muted">
+                Showing {(currentPage - 1) * itemsPerPage + 1} to{" "}
+                {Math.min(currentPage * itemsPerPage, totalItems)} of {totalItems} appointments
+              </div>
+              <Pagination className="mb-0">
+                <Pagination.Prev
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage === 1}
+                  className="shadow-sm"
+                />
+                {[...Array(totalPages).keys()].map((page) => (
+                  <Pagination.Item
+                    key={page + 1}
+                    active={page + 1 === currentPage}
+                    onClick={() => handlePageChange(page + 1)}
+                    className="shadow-sm"
+                    aria-label={`Go to page ${page + 1}`}
+                  >
+                    {page + 1}
+                  </Pagination.Item>
+                ))}
+                <Pagination.Next
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                  className="shadow-sm"
+                />
+              </Pagination>
+            </div>
+          </>
         )}
       </Container>
 
       {/* Modal Add/Edit */}
-      <Modal show={showModal} onHide={() => setShowModal(false)} centered dialogClassName="modal-update-appointment">
-        <Modal.Header closeButton>
+      <Modal show={showModal} onHide={() => setShowModal(false)} centered className="shadow-lg">
+        <Modal.Header closeButton className="bg-primary text-white">
           <Modal.Title>{currentAppointment ? "Update Appointment" : "Add New Appointment"}</Modal.Title>
         </Modal.Header>
-        <Modal.Body>
+        <Modal.Body className="p-4">
           <Form>
+            <div className="mb-4">
+              <h5 className="fw-bold text-primary mb-3">Appointment Details</h5>
+              <Form.Group className="mb-3" controlId="appointmentDate">
+                <Form.Label className="fw-medium">
+                  Appointment Date <span className="text-danger">*</span>
+                </Form.Label>
+                <Form.Control
+                  type="date"
+                  name="appointmentDate"
+                  value={form.appointmentDate ? form.appointmentDate.split("T")[0] : ""}
+                  onChange={handleChange}
+                  required
+                  className={`shadow-sm ${formErrors.appointmentDate ? "border-danger" : ""}`}
+                  aria-label="Select appointment date"
+                />
+                {formErrors.appointmentDate && (
+                  <div className="text-danger small mt-1">{formErrors.appointmentDate}</div>
+                )}
+              </Form.Group>
 
+              <Form.Group className="mb-3" controlId="department">
+                <Form.Label className="fw-medium">
+                  Department <span className="text-danger">*</span>
+                </Form.Label>
+                <Form.Select
+                  name="department"
+                  value={form.department}
+                  onChange={handleChange}
+                  required
+                  disabled={!form.appointmentDate}
+                  className={`shadow-sm ${formErrors.department ? "border-danger" : ""}`}
+                  aria-label="Select department"
+                >
+                  <option value="">Select department</option>
+                  {departments.map((dept) => (
+                    <option key={dept} value={dept}>
+                      {dept}
+                    </option>
+                  ))}
+                </Form.Select>
+                {formErrors.department && (
+                  <div className="text-danger small mt-1">{formErrors.department}</div>
+                )}
+              </Form.Group>
 
+              {isFormLoading && (
+                <div className="text-center mb-3">
+                  <Spinner animation="border" size="sm" variant="primary" />
+                  <span className="ms-2 text-muted">Loading...</span>
+                </div>
+              )}
 
+              {availableDoctors.length > 0 ? (
+                <>
+                  <Form.Group className="mb-3" controlId="doctorId">
+                    <Form.Label className="fw-medium">
+                      Doctor <span className="text-danger">*</span>
+                    </Form.Label>
+                    <Form.Select
+                      name="doctorId"
+                      value={form.doctorId}
+                      onChange={handleChange}
+                      required
+                      className={`shadow-sm ${formErrors.doctorId ? "border-danger" : ""}`}
+                      aria-label="Select doctor"
+                    >
+                      <option value="">Select doctor</option>
+                      {availableDoctors.map((doc) => (
+                        <option key={doc._id} value={doc._id}>
+                          {doc.name}
+                        </option>
+                      ))}
+                    </Form.Select>
+                    {formErrors.doctorId && (
+                      <div className="text-danger small mt-1">{formErrors.doctorId}</div>
+                    )}
+                  </Form.Group>
 
-            <Form.Group className="mb-3" controlId="doctorId">
-              <Form.Label>Doctor</Form.Label>
-              <Form.Select name="doctorId" value={form.doctorId} onChange={handleChange} required>
-                <option value="">Select doctor</option>
-                {doctors.map((doc) => (
-                  <option key={doc._id} value={doc._id}>
-                    {doc.name}
-                  </option>
-                ))}
-              </Form.Select>
-            </Form.Group>
-<Form.Group className="mb-3" controlId="appointmentDate">
-  <Form.Label>Appointment Date</Form.Label>
-  {schedules.length === 0 ? (
-    <div className="text-muted">No available schedule</div>
-  ) : (
-    <Form.Select
-      value={form.appointmentDate}
-      onChange={(e) =>
-        setForm(prev => ({ ...prev, appointmentDate: e.target.value }))
-      }
-    >
-      <option value="">Select a time slot</option>
-      {schedules.map((s) =>
-        s.timeSlots
-          .filter((slot) => slot.status === "Available")
-          .map((slot, i) => (
-            <option key={i} value={slot.startTime}>
-              {new Date(s.date).toLocaleDateString("en-GB")} |{" "}
-              {new Date(slot.startTime).toLocaleTimeString("en-GB")} -{" "}
-              {new Date(slot.endTime).toLocaleTimeString("en-GB")}
-            </option>
-          ))
-      )}
-    </Form.Select>
-  )}
-</Form.Group>
-<Form.Group className="mb-3" controlId="department">
-  <Form.Label>Department</Form.Label>
-  <Form.Control
-    type="text"
-    name="department"
-    value={form.department}
-    onChange={handleChange}
-    placeholder="Enter Department"
-    readOnly
-  />
-</Form.Group>
+                  <Form.Group className="mb-3" controlId="timeSlot">
+                    <Form.Label className="fw-medium">
+                      Time Slot <span className="text-danger">*</span>
+                    </Form.Label>
+                    <Form.Select
+                      name="timeSlot"
+                      value={form.timeSlot}
+                      onChange={handleChange}
+                      required
+                      disabled={!form.doctorId || schedules.length === 0}
+                      className={`shadow-sm ${formErrors.timeSlot ? "border-danger" : ""}`}
+                      aria-label="Select time slot"
+                    >
+                      <option value="">Select a time slot</option>
+                      {schedules.map((s) =>
+                        s.timeSlots
+                          .filter((slot) => slot.status === "Available")
+                          .map((slot, i) => (
+                            <option key={i} value={slot.startTime}>
+                              {new Date(slot.startTime).toLocaleTimeString("en-GB")} -{" "}
+                              {new Date(slot.endTime).toLocaleTimeString("en-GB")}
+                            </option>
+                          ))
+                      )}
+                    </Form.Select>
+                    {formErrors.timeSlot && (
+                      <div className="text-danger small mt-1">{formErrors.timeSlot}</div>
+                    )}
+                    {form.doctorId && schedules.length === 0 && (
+                      <div className="text-muted small mt-1">
+                        No available time slots for this doctor.
+                      </div>
+                    )}
+                  </Form.Group>
+                </>
+              ) : form.appointmentDate && form.department ? (
+                <div className="text-danger small mb-3">
+                  No doctors available for this department on the selected date.
+                </div>
+              ) : null}
+            </div>
 
+            <hr className="my-4" />
 
-            <Form.Group className="mb-3" controlId="type">
-              <Form.Label>Type</Form.Label>
-              <Form.Select name="type" value={form.type} onChange={handleChange}>
-                <option value="Online">Online</option>
-                <option value="Offline">Offline</option>
-              </Form.Select>
-            </Form.Group>
+            <div className="mb-4">
+              <h5 className="fw-bold text-primary mb-3">User Details</h5>
+              <Form.Group className="mb-3" controlId="userId">
+                <Form.Label className="fw-medium">
+                  User <span className="text-danger">*</span>
+                </Form.Label>
+                <Form.Select
+                  name="userId"
+                  value={form.userId}
+                  onChange={handleChange}
+                  required
+                  className={`shadow-sm ${formErrors.userId ? "border-danger" : ""}`}
+                  aria-label="Select user"
+                >
+                  <option value="">Select user</option>
+                  {users.map((user) => (
+                    <option key={user._id} value={user._id}>
+                      {user.name}
+                    </option>
+                  ))}
+                </Form.Select>
+                {formErrors.userId && (
+                  <div className="text-danger small mt-1">{formErrors.userId}</div>
+                )}
+              </Form.Group>
 
-<Form.Group className="mb-3" controlId="userId">
-  <Form.Label>User</Form.Label>
-  <Form.Select name="userId" value={form.userId} onChange={handleChange} required>
-    <option value="">Select user</option>
-    {users.map((user) => (
-      <option key={user._id} value={user._id}>
-        {user.name}
-      </option>
-    ))}
-  </Form.Select>
-</Form.Group>
+              <Form.Group className="mb-3" controlId="profileId">
+                <Form.Label className="fw-medium">Medical Profile</Form.Label>
+                <Form.Select
+                  name="profileId"
+                  value={form.profileId}
+                  onChange={handleChange}
+                  className="shadow-sm"
+                  aria-label="Select medical profile"
+                >
+                  <option value="">-- No profile (create new) --</option>
+                  {profiles.map((profile) => (
+                    <option key={profile._id} value={profile._id}>
+                      {profile.fullName || profile._id}
+                    </option>
+                  ))}
+                </Form.Select>
+                <div className="text-muted small mt-1">
+                  Leave blank to create a new profile for the user.
+                </div>
+              </Form.Group>
+            </div>
 
+            <hr className="my-4" />
 
-<Form.Group className="mb-3" controlId="profileId">
-  <Form.Label>Medical Profile</Form.Label>
-  <Form.Select name="profileId" value={form.profileId} onChange={handleChange}>
-    <option value="">-- No profile --</option>
-    {profiles.map((profile) => (
-      <option key={profile._id} value={profile._id}>
-        {profile.fullName || profile._id}
-      </option>
-    ))}
-  </Form.Select>
-</Form.Group>
+            <div>
+              <h5 className="fw-bold text-primary mb-3">Additional Details</h5>
+              <Form.Group className="mb-3" controlId="type">
+                <Form.Label className="fw-medium">Type</Form.Label>
+                <Form.Select
+                  name="type"
+                  value={form.type}
+                  onChange={handleChange}
+                  className="shadow-sm"
+                  aria-label="Select appointment type"
+                >
+                  <option value="Online">Online</option>
+                  <option value="Offline">Offline</option>
+                </Form.Select>
+              </Form.Group>
 
+              <Form.Group className="mb-3" controlId="status">
+                <Form.Label className="fw-medium">Status</Form.Label>
+                <Form.Select
+                  name="status"
+                  value={form.status}
+                  onChange={handleChange}
+                  className="shadow-sm"
+                  aria-label="Select appointment status"
+                >
+                  <option value="Booked">Booked</option>
+                  <option value="In-Progress">In-Progress</option>
+                  <option value="Completed">Completed</option>
+                  <option value="Canceled">Canceled</option>
+                </Form.Select>
+              </Form.Group>
 
-
-
-            <Form.Group className="mb-3" controlId="status">
-              <Form.Label>Status</Form.Label>
-              <Form.Select name="status" value={form.status} onChange={handleChange}>
-                <option value="Booked">Booked</option>
-                <option value="In-Progress">In-Progress</option>
-                <option value="Completed">Completed</option>
-                <option value="Canceled">Canceled</option>
-              </Form.Select>
-            </Form.Group>
-
-            <Form.Group className="mb-3" controlId="reminderSent">
-              <Form.Check type="checkbox" label="Reminder Sent" name="reminderSent" checked={form.reminderSent} onChange={handleChange} />
-            </Form.Group>
+              <Form.Group className="mb-3" controlId="reminderSent">
+                <Form.Check
+                  type="checkbox"
+                  label="Reminder Sent"
+                  name="reminderSent"
+                  checked={form.reminderSent}
+                  onChange={handleChange}
+                  aria-label="Toggle reminder sent"
+                />
+              </Form.Group>
+            </div>
           </Form>
         </Modal.Body>
-
-        <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowModal(false)}>
+        <Modal.Footer className="border-top-0">
+          <Button
+            variant="secondary"
+            onClick={handleResetForm}
+            className="rounded-pill px-3 shadow-sm"
+            aria-label="Reset form"
+          >
+            <FaRedo className="me-1" /> Reset
+          </Button>
+          <Button
+            variant="danger"
+            onClick={() => setShowModal(false)}
+            className="rounded-pill px-3 shadow-sm"
+            aria-label="Cancel"
+          >
             Cancel
           </Button>
-          <Button variant="primary" onClick={handleSubmit}>
+          <Button
+            variant="primary"
+            onClick={handleSubmit}
+            disabled={isFormLoading || !form.timeSlot}
+            className="rounded-pill px-4 shadow-sm"
+            aria-label={currentAppointment ? "Save appointment" : "Add appointment"}
+          >
+            {isFormLoading ? <Spinner animation="border" size="sm" className="me-2" /> : null}
             {currentAppointment ? "Save" : "Add"}
           </Button>
         </Modal.Footer>
       </Modal>
 
       {/* Modal Delete */}
-      <Modal show={showDeleteModal} onHide={cancelDelete} centered>
-        <Modal.Header closeButton>
+      <Modal show={showDeleteModal} onHide={cancelDelete} centered className="shadow-lg">
+        <Modal.Header closeButton className="bg-danger text-white">
           <Modal.Title>Confirm Delete</Modal.Title>
         </Modal.Header>
-        <Modal.Body>Are you sure you want to delete this appointment?</Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={cancelDelete}>
+        <Modal.Body className="p-4">
+          Are you sure you want to delete this appointment?
+        </Modal.Body>
+        <Modal.Footer className="border-top-0">
+          <Button
+            variant="secondary"
+            onClick={cancelDelete}
+            className="rounded-pill px-3 shadow-sm"
+            aria-label="Cancel delete"
+          >
             Cancel
           </Button>
-          <Button variant="danger" onClick={confirmDelete}>
+          <Button
+            variant="danger"
+            onClick={confirmDelete}
+            className="rounded-pill px-3 shadow-sm"
+            aria-label="Confirm delete"
+          >
             Delete
           </Button>
         </Modal.Footer>
