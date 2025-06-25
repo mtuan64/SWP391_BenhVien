@@ -1,10 +1,8 @@
 const express = require('express');
-const { DoctorInfo } = require('../../controller/user/userService');
 const userRouter = express.Router();
+const userController = require("../../controller/user/userService");
 
-userRouter.get('/', (req, res) => {
-  res.send("User route is working!");
-});
-
+userRouter.get('/doctr', userController.getAllDoctors);
+userRouter.get('/doctr/:doctorId', userController.getDoctorById);
 
 module.exports = userRouter;

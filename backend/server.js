@@ -38,7 +38,7 @@ const staffRouter = require("./routers/Staff/staff.route");
 // Mount routers
 app.use("/api/user", userRouter);
 app.use("/api/user-profile",userMedicalProfile);
-app.use("/api/work-schedule",workschedule )
+app.use("/api/work-schedule",workschedule );
 app.use("/api/admin", adminRouter);
 app.use("/api/auth", authRouter);
 app.use("/api/doctor", doctorRouter);

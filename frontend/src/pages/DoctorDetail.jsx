@@ -16,7 +16,7 @@ const DoctorDetail = () => {
     const fetchDoctor = async () => {
       try {
         console.log(`Fetching doctor with ID: ${doctorId}`);
-        const res = await axios.get(`http://localhost:9999/api/doctr/${doctorId}`);
+        const res = await axios.get(`http://localhost:9999/api/user/doctr/${doctorId}`);
         console.log("API Response:", res.data);
         if (res.data.doctor) {
           setDoctor(res.data.doctor);
@@ -169,8 +169,8 @@ const DoctorDetail = () => {
               <div className="bg-light rounded p-5 h-100 d-flex align-items-center justify-content-center">
                 <img
                   className="img-fluid rounded"
-                  src={doctor.ProfileImage}
-                  alt={doctor.Degree}
+                  src={doctor.avatar}
+                  alt={doctor.degree}
                   style={{ maxHeight: "100%", width: "100%", objectFit: "cover" }}
                 />
               </div>
@@ -178,12 +178,12 @@ const DoctorDetail = () => {
             <Col lg={6} className="wow fadeInUp" data-wow-delay="0.3s">
               <div className="bg-light rounded p-5 h-100">
                 <h2 className="mb-4">Doctor Details</h2>
-                <p><strong>Name:</strong> {doctor.Name}</p>
-                <p><strong>Specialty:</strong> {doctor.Specialty}</p>
-                <p><strong>Degree:</strong> {doctor.Degree}</p>
-                <p><strong>Experience Years:</strong> {doctor.ExperienceYears}</p>
-                <p><strong>Description:</strong> {doctor.Description}</p>
-                <p><strong>Status:</strong> {doctor.Status}</p>
+                <p><strong>Name:</strong> {doctor.name}</p>
+                <p><strong>Specialty:</strong> {doctor.specialization}</p>
+                <p><strong>Degree:</strong> {doctor.degree}</p>
+                <p><strong>Experience Years:</strong> {doctor.expYear}</p>
+                <p><strong>Description:</strong> {doctor.description}</p>
+                <p><strong>Status:</strong> {doctor.status}</p>
                 <Link to="/doctr" className="btn btn-secondary mt-3">Back to Team</Link>
               </div>
             </Col>

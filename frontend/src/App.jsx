@@ -169,7 +169,7 @@ const App = () => {
           {/* Public routes */}
           <Route path="/home" element={<HomePage />} />
           <Route path="/service" element={<ServicePage />} />
-          <Route path="/doctor-home" element={<DoctorPage />} />
+          <Route path="/doctr-home" element={<DoctorPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/about" element={<AboutPage />} />
@@ -180,7 +180,7 @@ const App = () => {
             </PrivateRoute>
           } />
           <Route path="/not-found" element={<NotFoundPage />} />
-          <Route path="/doctor/:doctorId" element={<DoctorDetail />} />
+          <Route path="/doctr/:doctorId" element={<DoctorDetail />} />
 
           <Route path="/changepass" element={<Changepass />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
