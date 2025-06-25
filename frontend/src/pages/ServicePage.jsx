@@ -1,4 +1,5 @@
-import React, { Fragment, useEffect } from 'react';
+import React, { Fragment, useEffect, useState } from 'react';
+import axios from "axios";
 import '../assets/css/ServicePage.css';
 
 // Placeholder images (using Unsplash for demo purposes)
@@ -35,66 +36,27 @@ const FancyBox = ({ fancyboxImage, fancyboxTitle, fancyboxDesc, buttonUrl }) => 
 );
 
 const ServicePage = () => {
+  const [fancyBoxData, setFancyBoxData] = useState([]);
   useEffect(() => {
+    const fetchService = async () => {
+      try {
+        const res = await axios.get(`http://localhost:9999/api/user/service`);
+        console.log("API Response:", res.data);
+        if (res.data.services) {
+          setFancyBoxData(res.data.services);
+        } else if (res.data) {
+          setFancyBoxData(res.data);
+        } else {
+          throw new Error("Invalid response format");
+        }
+      } catch (error) {
+        console.error("Error fetching doctor details:", error);
+      }
+    };
+
+    fetchService();
     window.scrollTo(0, 0);
   }, []);
-
-  const fancyBoxData = [
-    {
-      fancyboxImage: internalMedicine,
-      fancyboxTitle: "Khám Nội Tổng Quát",
-      fancyboxDesc: "Đánh giá toàn diện sức khỏe với đội ngũ bác sĩ nội khoa giàu kinh nghiệm.",
-      buttonUrl: "/service/internal-medicine"
-    },
-    {
-      fancyboxImage: pediatrics,
-      fancyboxTitle: "Nhi Khoa",
-      fancyboxDesc: "Chăm sóc sức khỏe trẻ em từ sơ sinh đến tuổi thiếu niên với sự tận tâm.",
-      buttonUrl: "/service/pediatrics"
-    },
-    {
-      fancyboxImage: obgyn,
-      fancyboxTitle: "Phụ Sản",
-      fancyboxDesc: "Dịch vụ chăm sóc sức khỏe phụ nữ, từ thai kỳ đến sinh nở và sau sinh.",
-      buttonUrl: "/service/obgyn"
-    },
-    {
-      fancyboxImage: imaging,
-      fancyboxTitle: "Chẩn Đoán Hình Ảnh",
-      fancyboxDesc: "Hệ thống X-quang, CT, MRI hiện đại hỗ trợ chẩn đoán chính xác.",
-      buttonUrl: "/service/imaging"
-    },
-    {
-      fancyboxImage: surgery,
-      fancyboxTitle: "Phẫu Thuật Ngoại Khoa",
-      fancyboxDesc: "Thực hiện các ca phẫu thuật phức tạp với công nghệ tiên tiến.",
-      buttonUrl: "/service/surgery"
-    },
-    {
-      fancyboxImage: lab,
-      fancyboxTitle: "Xét Nghiệm Y Khoa",
-      fancyboxDesc: "Phòng xét nghiệm tự động cung cấp kết quả nhanh chóng và đáng tin cậy.",
-      buttonUrl: "/service/laboratory"
-    },
-    {
-      fancyboxImage: emergency,
-      fancyboxTitle: "Cấp Cứu 24/7",
-      fancyboxDesc: "Dịch vụ cấp cứu khẩn cấp với đội ngũ y tế sẵn sàng mọi lúc.",
-      buttonUrl: "/service/emergency"
-    },
-    {
-      fancyboxImage: checkup,
-      fancyboxTitle: "Khám Sức Khỏe Định Kỳ",
-      fancyboxDesc: "Gói khám tổng quát giúp phát hiện sớm và phòng ngừa bệnh tật.",
-      buttonUrl: "/service/checkup"
-    },
-    {
-      fancyboxImage: pharmacy,
-      fancyboxTitle: "Nhà Thuốc KiwiCare",
-      fancyboxDesc: "Cung cấp thuốc chất lượng cao với tư vấn từ dược sĩ chuyên môn.",
-      buttonUrl: "/service/pharmacy"
-    }
-  ];
 
   return (
     <Fragment>
