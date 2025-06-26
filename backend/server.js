@@ -25,6 +25,7 @@ app.use("/api/doctor", require("./routers/Doctor/doctor.route"));
 app.use("/api/staff", require("./routers/Staff/staff.route"));
 app.use("/api/appointmentScheduleManagement", require("./routers/Staff/appointmentScheduleManagement.route"));
 app.use("/api/users", require("./routers/Staff/userManagement.route"));
+app.use("/api/services", require("./routers/Staff/serviceManagement.route"));
 
 const PORT = process.env.PORT || 9999;
 app.listen(PORT, () => {
