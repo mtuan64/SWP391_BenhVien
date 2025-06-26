@@ -10,7 +10,7 @@ const BlogListPage = () => {
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
-  const [blogsPerPage] = useState(9);
+  const [blogsPerPage] = useState(6);
   const [currentLatestIndex, setCurrentLatestIndex] = useState(0);
 
   const carouselIntervalRef = useRef(null);
@@ -189,7 +189,7 @@ const BlogListPage = () => {
         <div className="carousel-inner">
           <div className="carousel-item active">
             <img
-              src="https://kientrucbenhvien.com/wp-content/uploads/2019/12/thiet-ke-noi-that-phong-kham-da-khoa-son-duong-04.jpg"
+              src="https://img4.thuthuatphanmem.vn/uploads/2020/07/05/background-y-te_034617740.jpg"
               className="d-block w-100"
               alt="KiwiCare Doctors Banner"
               style={{ objectFit: 'cover', height: '80vh' }}
@@ -206,8 +206,8 @@ const BlogListPage = () => {
               }}
             >
               <div className="text-center text-white">
-                <h1 className="display-3 fw-bold">Tin tức</h1>
-                <p className="lead mt-3">Bài viết, cẩm nang sức khỏe</p>
+                <h1 className="display-3 fw-bold">Blogs</h1>
+                <p className="lead mt-3">Bài viết, thông tin về sức khỏe, y tế, cộng đồng</p>
               </div>
             </div>
           </div>

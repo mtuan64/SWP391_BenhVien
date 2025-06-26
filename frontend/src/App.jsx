@@ -38,6 +38,8 @@ import UserManagement from "./pages/staff/UserManagement";
 import MedicalRecord from "./pages/staff/MedicalRecord";
 import MedicineManagement from "./pages/staff/MedicineManagement";
 import BlogListPage from "./pages/BlogListPage";
+import NewsListPage from "./pages/NewsListPage";
+import NewsDetail from "./pages/NewsDetail";
 import BlogDetail from "./pages/BlogDetail";
 import Header from "./components/HeaderComponent";
 import MenuComponent from "./components/MenuComponent";
@@ -152,7 +154,9 @@ const App = () => {
           <Route path="/" element={<HomePage />} />
           <Route path="/services" element={<ServicePage />} />
           <Route path="/blogs" element={<BlogListPage />} />
+          <Route path="/news" element={<NewsListPage />} />
           <Route path="/blog/:slug" element={<BlogDetail />} />
+          <Route path="/news/:slug" element={<NewsDetail />} />
           <Route path="/doctor" element={<DoctorPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />

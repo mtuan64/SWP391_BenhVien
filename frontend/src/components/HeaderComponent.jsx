@@ -101,10 +101,27 @@ const Header = ({ onMenuClick }) => {
             <InfoCircleOutlined style={{ marginRight: 8 }} />
             About
           </Link>
-          <Link to="/blog" className="nav-item nav-link">
-            <BookOutlined style={{ marginRight: 8 }} />
-            Blog
-          </Link>
+          <Dropdown
+            menu={{
+              items: [
+                {
+                  key: "blogs",
+                  label: <Link to="/blogs">Blogs</Link>,
+                },
+                {
+                  key: "news",
+                  label: <Link to="/news">News</Link>,
+                },
+              ],
+            }}
+            trigger={["click"]}
+          >
+            <div className="nav-item nav-link d-flex align-items-center" style={{ cursor: "pointer" }}>
+              <BookOutlined style={{ marginRight: 8 }} />
+              Post
+            </div>
+          </Dropdown>
+
           <Link to="/services" className="nav-item nav-link">
             <MedicineBoxOutlined style={{ marginRight: 8 }} />
             Services

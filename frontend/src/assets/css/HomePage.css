@@ -280,23 +280,7 @@ p {
     font-size: 1.1rem;
 }
 
-/* Custom Doctors Carousel */
-.doctors-carousel {
-    position: relative;
-    overflow: hidden;
-}
-
-.doctors-carousel-inner {
-    display: flex;
-    transition: transform 0.5s ease-in-out;
-}
-
-.doctors-carousel .col-lg-3 {
-    flex: 0 0 25%;
-    max-width: 25%;
-}
-
-/* Carousel controls */
+/********** Carousel Controls (Shared) **********/
 .carousel-control-prev,
 .carousel-control-next {
     width: 5%;
@@ -318,16 +302,68 @@ p {
     height: 30px;
 }
 
-/* Responsive adjustments */
+/********** Doctors Carousel **********/
+.doctors-carousel {
+    position: relative;
+    overflow: hidden;
+}
+
+.doctors-carousel-inner {
+    display: flex;
+    transition: transform 0.5s ease-in-out;
+}
+
+.doctors-carousel .col-lg-3 {
+    flex: 0 0 25%;
+    max-width: 25%;
+}
+
+/********** Blogs Carousel **********/
+.blogs-carousel {
+    position: relative;
+    overflow: hidden;
+}
+
+.blogs-carousel-inner {
+    display: flex;
+    transition: transform 0.5s ease-in-out;
+}
+
+.blogs-carousel .col-lg-3 {
+    flex: 0 0 25%;
+    max-width: 25%;
+}
+
+/********** News Carousel **********/
+.news-carousel {
+    position: relative;
+    overflow: hidden;
+}
+
+.news-carousel-inner {
+    display: flex;
+    transition: transform 0.5s ease-in-out;
+}
+
+.news-carousel .col-lg-3 {
+    flex: 0 0 25%;
+    max-width: 25%;
+}
+
+/* Responsive adjustments for carousels */
 @media (max-width: 991.98px) {
-    .doctors-carousel .col-lg-3 {
+    .doctors-carousel .col-lg-3,
+    .blogs-carousel .col-lg-3,
+    .news-carousel .col-lg-3 {
         flex: 0 0 50%;
         max-width: 50%;
     }
 }
 
 @media (max-width: 575.98px) {
-    .doctors-carousel .col-lg-3 {
+    .doctors-carousel .col-lg-3,
+    .blogs-carousel .col-lg-3,
+    .news-carousel .col-lg-3 {
         flex: 0 0 100%;
         max-width: 100%;
     }
@@ -361,7 +397,7 @@ p {
 
 /* Doctor card */
 .doctor-card {
-    background-color: var(--light-blue);
+    background-color: var(--light  -blue);
     border-radius: 50%;
     overflow: hidden;
     padding: 20px;
@@ -566,55 +602,30 @@ p {
 }
 
 /********** Blog Section **********/
-.blog-item {
+.blog-card,
+.news-card {
     transition: transform 0.3s ease, box-shadow 0.3s ease;
     border-radius: 12px;
     overflow: hidden;
     background-color: var(--white);
 }
 
-.blog-item:hover {
+.blog-card:hover,
+.news-card:hover {
     transform: translateY(-10px);
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
 }
 
-.blog-item img {
-    border-radius: 12px 12px 0 0;
-}
-
-.blog-item .btn {
-    font-size: 0.95rem;
-    padding: 8px 20px;
-}
-.blog-container {
-    display: flex;
-    justify-content: space-between;
-    gap: 20px;
-    /* Space between cards */
-}
-
-.blog-item {
-    flex: 1 1 calc(33.33% - 13.33px);
-    /* Adjust for 3 columns with gap */
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    /* Ensure full height */
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    border-radius: 12px;
-    overflow: hidden;
-    background-color: var(--white);
-}
-
-.blog-item img {
+.blog-image,
+.news-image {
     width: 100%;
-    height: 220px;
-    /* Fixed height for images */
+    height: 150px;
     object-fit: cover;
     border-radius: 12px 12px 0 0;
 }
 
-.blog-item .p-3 {
+.blog-card .p-3,
+.news-card .p-3 {
     flex-grow: 1;
     padding: 20px;
     display: flex;
@@ -622,42 +633,40 @@ p {
     justify-content: space-between;
 }
 
-.blog-item h5 {
+.blog-title,
+.news-title {
     font-size: 1.25rem;
     margin-bottom: 10px;
     color: var(--dark);
 }
 
-.blog-item p {
-    flex-grow: 1;
+.blog-excerpt,
+.news-excerpt {
     font-size: 0.95rem;
     color: var(--gray);
     margin-bottom: 15px;
 }
 
-.blog-item .btn {
+.blog-card .btn,
+.news-card .btn {
     font-size: 0.95rem;
     padding: 8px 20px;
-    align-self: flex-start;
-    /* Align button to the left or start */
 }
 
+/* Responsive design for blog and news cards */
 @media (max-width: 991.98px) {
-    .blog-item {
-        flex: 1 1 calc(50% - 10px);
-        /* 2 columns on medium screens */
+    .blog-card,
+    .news-card {
+        flex: 0 0 50%;
+        max-width: 50%;
     }
 }
 
 @media (max-width: 575.98px) {
-    .blog-container {
-        flex-direction: column;
-        gap: 20px;
-    }
-
-    .blog-item {
-        flex: 1 1 100%;
-        /* 1 column on small screens */
+    .blog-card,
+    .news-card {
+        flex: 0 0 100%;
+        max-width: 100%;
     }
 }
 

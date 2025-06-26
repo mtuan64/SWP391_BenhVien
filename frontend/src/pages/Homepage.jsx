@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Container, Row, Col, Button } from "react-bootstrap";
 import { Link } from "react-router-dom";
+import axios from "axios";
 import MilestoneSection from "../components/MilestoneSection";
 import "../assets/css/HomePage.css";
 
@@ -85,11 +86,36 @@ const services = [
 
 const HomePage = () => {
   const [carouselIndex, setCarouselIndex] = useState(0);
+  const [blogCarouselIndex, setBlogCarouselIndex] = useState(0);
+  const [newsCarouselIndex, setNewsCarouselIndex] = useState(0);
+  const [topViewedBlogs, setTopViewedBlogs] = useState([]);
+  const [prioritizedNews, setPrioritizedNews] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // Truncate text for titles and excerpts
+  const truncateText = (text, maxLength) => {
+    if (!text || text.length <= maxLength) return text || "";
+    return text.substring(0, maxLength - 3) + "...";
+  };
+
+  // Get content summary for blogs
+  const getBlogContentSummary = (content) => {
+    if (!Array.isArray(content) || content.length === 0)
+      return "Không có nội dung";
+    const firstItem = content[0];
+    return truncateText(firstItem.text, 50);
+  };
+
+  // Get content summary for news
+  const getNewsContentSummary = (content) => {
+    return truncateText(content, 50);
+  };
 
   // Filter active doctors
   const activeDoctors = doctors.filter((doctor) => doctor.Status !== "inactive");
 
-  // Handle carousel navigation
+  // Handle carousel navigation for doctors
   const handleNext = () => {
     setCarouselIndex((prevIndex) => (prevIndex + 1) % activeDoctors.length);
   };
@@ -97,6 +123,28 @@ const HomePage = () => {
   const handlePrev = () => {
     setCarouselIndex((prevIndex) =>
       prevIndex === 0 ? activeDoctors.length - 1 : prevIndex - 1
+    );
+  };
+
+  // Handle carousel navigation for blogs
+  const handleBlogNext = () => {
+    setBlogCarouselIndex((prevIndex) => (prevIndex + 1) % topViewedBlogs.length);
+  };
+
+  const handleBlogPrev = () => {
+    setBlogCarouselIndex((prevIndex) =>
+      prevIndex === 0 ? topViewedBlogs.length - 1 : prevIndex - 1
+    );
+  };
+
+  // Handle carousel navigation for news
+  const handleNewsNext = () => {
+    setNewsCarouselIndex((prevIndex) => (prevIndex + 1) % prioritizedNews.length);
+  };
+
+  const handleNewsPrev = () => {
+    setNewsCarouselIndex((prevIndex) =>
+      prevIndex === 0 ? prioritizedNews.length - 1 : prevIndex - 1
     );
   };
 
@@ -109,6 +157,63 @@ const HomePage = () => {
     }
     return visibleDoctors;
   };
+
+  // Get the blogs to display based on blogCarouselIndex
+  const getVisibleBlogs = () => {
+    const visibleBlogs = [];
+    for (let i = 0; i < 4; i++) {
+      const index = (blogCarouselIndex + i) % topViewedBlogs.length;
+      visibleBlogs.push(topViewedBlogs[index]);
+    }
+    return visibleBlogs;
+  };
+
+  // Get the news to display based on newsCarouselIndex
+  const getVisibleNews = () => {
+    const visibleNews = [];
+    for (let i = 0; i < 4; i++) {
+      const index = (newsCarouselIndex + i) % prioritizedNews.length;
+      visibleNews.push(prioritizedNews[index]);
+    }
+    return visibleNews;
+  };
+
+  // Fetch top viewed blogs and prioritized news
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const headers = token ? { Authorization: `Bearer ${token}` } : {};
+
+        // Fetch top viewed blogs and prioritized news
+        const [blogResponse, newsResponse] = await Promise.all([
+          axios.get("http://localhost:9999/api/staff/blogs/top-viewed", { headers }),
+          axios.get("http://localhost:9999/api/staff/news/priority", { headers }),
+        ]);
+
+        setTopViewedBlogs(blogResponse.data.data || blogResponse.data);
+        setPrioritizedNews(newsResponse.data.data || []);
+        setLoading(false);
+      } catch (err) {
+        console.error("Lỗi khi tải dữ liệu:", err);
+        setError(
+          err.response?.data?.message ||
+            "Không thể tải bài viết hoặc tin tức. Vui lòng kiểm tra API."
+        );
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  if (loading) {
+    return <div className="homepage-loading">Đang tải...</div>;
+  }
+
+  if (error) {
+    return <div className="homepage-error">Lỗi: {error}</div>;
+  }
 
   return (
     <>
@@ -251,6 +356,7 @@ const HomePage = () => {
                 src="https://images.unsplash.com/photo-1584982751601-97dcc096659c"
                 className="d-block w-100"
                 alt="Máy chụp CT"
+                Ascending: true
                 style={{ objectFit: 'cover', height: '50vh', borderRadius: '8px' }}
               />
               <div
@@ -363,6 +469,204 @@ const HomePage = () => {
               </Col>
             ))}
           </Row>
+        </Container>
+      </Container>
+
+      {/* Most Viewed Blogs Section */}
+      <Container className="py-5">
+        <h2 className="text-center text-primary fw-bold mb-5">Bài Viết Được Xem Nhiều</h2>
+        {topViewedBlogs.length <= 4 ? (
+          <Row>
+            {topViewedBlogs.map((blog, index) => (
+              <Col key={index} md={6} lg={3} className="mb-4">
+                <div className="blog-card bg-white rounded shadow h-100">
+                  <Link to={`/blog/${blog.slug}`}>
+                    <img
+                      src={blog.image || "https://via.placeholder.com/100x100"}
+                      alt={blog.title}
+                      className="blog-image img-fluid w-100"
+                      style={{ height: "150px", objectFit: "cover" }}
+                      onError={(e) => (e.target.src = "https://via.placeholder.com/100x100")}
+                    />
+                  </Link>
+                  <div className="p-3">
+                    <Link
+                      to={`/blog/${blog.slug}`}
+                      className="text-decoration-none"
+                    >
+                      <h5 className="blog-title mb-2">
+                        {truncateText(blog.title, 20)}
+                      </h5>
+                    </Link>
+                    <p className="blog-excerpt text-muted mb-2">
+                      {getBlogContentSummary(blog.content)}
+                    </p>
+                    <Link
+                      to={`/blog/${blog.slug}`}
+                      className="btn btn-outline-primary btn-sm"
+                    >
+                      Đọc bài viết
+                    </Link>
+                  </div>
+                </div>
+              </Col>
+            ))}
+          </Row>
+        ) : (
+          <div className="blogs-carousel">
+            <Row className="flex-nowrap blogs-carousel-inner">
+              {getVisibleBlogs().map((blog, index) => (
+                <Col key={index} md={6} lg={3} className="mb-4">
+                  <div className="blog-card bg-white rounded shadow h-100">
+                    <Link to={`/blog/${blog.slug}`}>
+                      <img
+                        src={blog.image || "https://via.placeholder.com/100x100"}
+                        alt={blog.title}
+                        className="blog-image img-fluid w-100"
+                        style={{ height: "150px", objectFit: "cover" }}
+                        onError={(e) => (e.target.src = "https://via.placeholder.com/100x100")}
+                      />
+                    </Link>
+                    <div className="p-3">
+                      <Link
+                        to={`/blog/${blog.slug}`}
+                        className="text-decoration-none"
+                      >
+                        <h5 className="blog-title mb-2">
+                          {truncateText(blog.title, 20)}
+                        </h5>
+                      </Link>
+                      <p className="blog-excerpt text-muted mb-2">
+                        {getBlogContentSummary(blog.content)}
+                      </p>
+                      <Link
+                        to={`/blog/${blog.slug}`}
+                        className="btn btn-outline-primary btn-sm"
+                      >
+                        Đọc bài viết
+                      </Link>
+                    </div>
+                  </div>
+                </Col>
+              ))}
+            </Row>
+            <button
+              className="carousel-control-prev"
+              type="button"
+              onClick={handleBlogPrev}
+            >
+              <span className="carousel-control-prev-icon" aria-hidden="true"></span>
+              <span className="visually-hidden">Previous</span>
+            </button>
+            <button
+              className="carousel-control-next"
+              type="button"
+              onClick={handleBlogNext}
+            >
+              <span className="carousel-control-next-icon" aria-hidden="true"></span>
+              <span className="visually-hidden">Next</span>
+            </button>
+          </div>
+        )}
+      </Container>
+
+      {/* Priority News Section */}
+      <Container fluid className="bg-light py-5">
+        <Container>
+          <h2 className="text-center text-primary fw-bold mb-5">Tin Tức Nổi Bật</h2>
+          {prioritizedNews.length <= 4 ? (
+            <Row>
+              {prioritizedNews.map((news, index) => (
+                <Col key={index} md={6} lg={3} className="mb-4">
+                  <div className="news-card bg-white rounded shadow h-100">
+                    <Link to={`/news/${news.slug}`}>
+                      <img
+                        src={news.thumbnail || "https://via.placeholder.com/100x100"}
+                        alt={news.title}
+                        className="news-image img-fluid w-100"
+                        style={{ height: "150px", objectFit: "cover" }}
+                        onError={(e) => (e.target.src = "https://via.placeholder.com/100x100")}
+                      />
+                    </Link>
+                    <div className="p-3">
+                      <Link
+                        to={`/news/${news.slug}`}
+                        className="text-decoration-none"
+                      >
+                        <h5 className="news-title mb-2">
+                          {truncateText(news.title, 20)}
+                        </h5>
+                      </Link>
+                      <p className="news-excerpt text-muted mb-2">
+                        {getNewsContentSummary(news.content)}
+                      </p>
+                      <Link
+                        to={`/news/${news.slug}`}
+                        className="btn btn-outline-primary btn-sm"
+                      >
+                        Đọc bài viết
+                      </Link>
+                    </div>
+                  </div>
+                </Col>
+              ))}
+            </Row>
+          ) : (
+            <div className="news-carousel">
+              <Row className="flex-nowrap news-carousel-inner">
+                {getVisibleNews().map((news, index) => (
+                  <Col key={index} md={6} lg={3} className="mb-4">
+                    <div className="news-card bg-white rounded shadow h-100">
+                      <Link to={`/news/${news.slug}`}>
+                        <img
+                          src={news.thumbnail || "https://via.placeholder.com/100x100"}
+                          alt={news.title}
+                          className="news-image img-fluid w-100"
+                          style={{ height: "150px", objectFit: "cover" }}
+                          onError={(e) => (e.target.src = "https://via.placeholder.com/100x100")}
+                        />
+                      </Link>
+                      <div className="p-3">
+                        <Link
+                          to={`/news/${news.slug}`}
+                          className="text-decoration-none"
+                        >
+                          <h5 className="news-title mb-2">
+                            {truncateText(news.title, 20)}
+                          </h5>
+                        </Link>
+                        <p className="news-excerpt text-muted mb-2">
+                          {getNewsContentSummary(news.content)}
+                        </p>
+                        <Link
+                          to={`/news/${news.slug}`}
+                          className="btn btn-outline-primary btn-sm"
+                        >
+                          Đọc bài viết
+                        </Link>
+                      </div>
+                    </div>
+                  </Col>
+                ))}
+              </Row>
+              <button
+                className="carousel-control-prev"
+                type="button"
+                onClick={handleNewsPrev}
+              >
+                <span className="carousel-control-prev-icon" aria-hidden="true"></span>
+                <span className="visually-hidden">Previous</span>
+              </button>
+              <button
+                className="carousel-control-next"
+                type="button"
+                onClick={handleNewsNext}
+              >
+                <span className="carousel-control-next-icon" aria-hidden="true"></span>
+                <span className="visually-hidden">Next</span>
+              </button>
+            </div>
+          )}
         </Container>
       </Container>
 
