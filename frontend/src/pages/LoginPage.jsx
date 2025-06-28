@@ -17,19 +17,18 @@ const LoginPage = () => {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ email:email, password:password }),
+        body: JSON.stringify({ email: email, password: password }),
       });
 
       const data = await response.json();
       if (response.ok) {
         console.log("Login successful, user data:", data.user);
 
-
         localStorage.setItem("user", JSON.stringify(data.user));
         localStorage.setItem("token", data.token);
 
         // Update auth context
-        login(data.user);
+        login(data.user, data.token);
 
         // Slight delay to ensure context update propagates
         setTimeout(() => navigate("/"), 0);
