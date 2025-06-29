@@ -45,7 +45,7 @@ exports.replyQA = async (req, res) => {
 };
 
 exports.getAllQA = async (req, res) => {
-  const { sort, searchId, statusfilter, page = 1, limit = 10 } = req.body;
+  const { sort, searchId, statusfilter, page = 1, limit = 10 } = req.query; //Dùng req.query
 
   try {
     let filter = {};
@@ -66,17 +66,13 @@ exports.getAllQA = async (req, res) => {
       sortOption = { createdAt: -1 };
     }
 
-    // Tính toán offset để phân trang
     const skip = (page - 1) * limit;
-
-    // Lấy tổng số bản ghi thỏa filter (để frontend biết tổng số trang)
     const total = await Question.countDocuments(filter);
 
-    // Lấy dữ liệu với phân trang
     const QAs = await Question.find(filter)
       .sort(sortOption)
       .skip(skip)
-      .limit(limit);
+      .limit(Number(limit)); // Chuyển limit thành số
 
     res.status(200).json({
       success: true,
