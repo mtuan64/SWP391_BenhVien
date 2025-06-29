@@ -5,41 +5,83 @@ import "../assets/css/QAHistories.css";
 
 const QAHistories = () => {
   const [qaHistory, setQAHistory] = useState([]);
-  const [historyLoading, setHistoryLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [sort, setSort] = useState("createdAt_desc");
+  const [statusFilter, setStatusFilter] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+
   const navigate = useNavigate();
 
-  const fetchQAHistory = async (userId) => {
-    setHistoryLoading(true);
+  const fetchQAHistory = async () => {
+    const user = JSON.parse(localStorage.getItem("user"));
+    if (!user || !user._id) return;
+
+    setLoading(true);
     try {
       const res = await axios.get("/api/user/qahistory", {
-        params: { idUser: userId, page: 1, limit: 10 },
+        params: {
+          idUser: user._id,
+          sort,
+          statusfilter: statusFilter,
+          search: searchTerm,
+          page,
+          limit: 10,
+        },
       });
+
       setQAHistory(res.data.data || []);
-    } catch (error) {
-      console.error("Lỗi khi tải lịch sử QA:", error);
+      setTotalPages(res.data.totalPages || 1);
+    } catch (err) {
+      console.error("Lỗi khi tải QA:", err);
     } finally {
-      setHistoryLoading(false);
+      setLoading(false);
     }
   };
 
   useEffect(() => {
-    const user = JSON.parse(localStorage.getItem("user"));
-    if (user && user._id) {
-      fetchQAHistory(user._id);
-    }
-  }, []);
+    fetchQAHistory();
+  }, [sort, statusFilter, page]);
 
-  const handleCreateNewQA = () => {
-    navigate("/qa"); // Điều hướng sang trang tạo QA mới
+  const handleSearch = () => {
+    setPage(1); // reset về trang 1 khi tìm kiếm mới
+    fetchQAHistory();
   };
+
+  const handleCreateNewQA = () => navigate("/qa");
+
+  const handlePrevPage = () => setPage((prev) => Math.max(prev - 1, 1));
+  const handleNextPage = () => setPage((prev) => Math.min(prev + 1, totalPages));
 
   return (
     <div className="sendqa-container">
       <h2 className="sendqa-title">Lịch Sử Câu Hỏi & Hỗ Trợ</h2>
 
+      <div className="filter-bar">
+        <input
+          type="text"
+          placeholder="Tìm kiếm tiêu đề..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+        <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
+          <option value="">Tất cả trạng thái</option>
+          <option value="answered">Đã phản hồi</option>
+          <option value="pending">Chờ xử lý</option>
+        </select>
+        <select value={sort} onChange={(e) => setSort(e.target.value)}>
+          <option value="createdAt_desc">Mới nhất</option>
+          <option value="createdAt_asc">Cũ nhất</option>
+          <option value="title_asc">Tiêu đề A-Z</option>
+          <option value="title_desc">Tiêu đề Z-A</option>
+        </select>
+        <button onClick={handleSearch}>Tìm</button>
+      </div>
+
       <div className="animate-fade-in">
-        {historyLoading ? (
-          <p className="text-center text-gray-600">Đang tải lịch sử...</p>
+        {loading ? (
+          <p className="text-center text-gray-600">Đang tải...</p>
         ) : qaHistory.length > 0 ? (
           <>
             <div className="overflow-x-auto">
@@ -69,6 +111,17 @@ const QAHistories = () => {
               </table>
             </div>
 
+            {/* Pagination */}
+            <div className="pagination">
+              <button onClick={handlePrevPage} disabled={page === 1}>
+                ◀ Trang trước
+              </button>
+              <span>Trang {page} / {totalPages}</span>
+              <button onClick={handleNextPage} disabled={page === totalPages}>
+                Trang sau ▶
+              </button>
+            </div>
+
             <button
               className="sendqa-create-new-btn"
               onClick={handleCreateNewQA}
@@ -79,7 +132,9 @@ const QAHistories = () => {
           </>
         ) : (
           <>
-            <p className="sendqa-history-empty">Chưa có yêu cầu nào.</p>
+            <p className="sendqa-history-empty">
+              {searchTerm ? "Không tìm thấy kết quả phù hợp." : "Chưa có yêu cầu nào."}
+            </p>
             <button
               className="sendqa-create-new-btn"
               onClick={handleCreateNewQA}

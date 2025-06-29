@@ -55,30 +55,26 @@ exports.sendQA = async (req, res) => {
 };
 
 module.exports.getAllQAUser = async (req, res) => {
-  const { sort, statusfilter, page = 1, limit = 10, idUser } = req.query; // Use query parameters
+  const { sort, statusfilter, search, page = 1, limit = 10, idUser } = req.query;
 
   try {
-    const userId = idUser;
-    if (!userId) {
+    if (!idUser) {
       return res.status(401).json({ success: false, message: "Chưa đăng nhập." });
     }
 
-    let filter = { userId };
+    const filter = { userId: idUser };
+    if (statusfilter) filter.status = statusfilter;
+    if (search) filter.title = { $regex: search, $options: "i" };
 
-    if (statusfilter) {
-      filter.status = statusfilter;
-    }
-
-    let sortOption = { createdAt: -1 }; // Default sort
+    const sortOption = {};
     if (sort) {
       const [field, order] = sort.split('_');
-      if (field && order) {
-        sortOption[field] = order === 'asc' ? 1 : -1;
-      }
+      sortOption[field] = order === 'asc' ? 1 : -1;
+    } else {
+      sortOption.createdAt = -1;
     }
 
     const skip = (parseInt(page) - 1) * parseInt(limit);
-
     const total = await Question.countDocuments(filter);
 
     const QAs = await Question.find(filter)
@@ -88,17 +84,14 @@ module.exports.getAllQAUser = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      page: parseInt(page),
-      limit: parseInt(limit),
+      data: QAs,
       total,
+      page: parseInt(page),
       totalPages: Math.ceil(total / limit),
-      data: QAs
     });
   } catch (error) {
     console.error("Lỗi khi lấy danh sách Q&A:", error);
-    res.status(500).json({
-      success: false,
-      message: "Đã xảy ra lỗi, vui lòng thử lại sau."
-    });
+    res.status(500).json({ success: false, message: "Đã xảy ra lỗi máy chủ." });
   }
 };
+
