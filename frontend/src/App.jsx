@@ -78,11 +78,13 @@ const RoleRedirect = () => {
 
     if (role === "Admin" && !path.startsWith("/admin")) {
       navigate("/admin", { replace: true });
-    } else if (role === "Staff" && !path.startsWith("/staff")) {
-      navigate("/staff", { replace: true });
-    } else if (role === "Doctor" && !path.startsWith("/doctor")) {
-      navigate("/doctor", { replace: true });
-    } else if (
+    } 
+    // else if (role === "Staff" && !path.startsWith("/staff")) {
+    //   navigate("/staff", { replace: true });
+    // } else if (role === "Doctor" && !path.startsWith("/doctor")) {
+    //   navigate("/doctor", { replace: true });
+    // } 
+    else if (
       role === "patient" &&
       (path.startsWith("/admin") || path.startsWith("/staff"))
     ) {

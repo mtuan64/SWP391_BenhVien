@@ -234,6 +234,10 @@ const ProfileDoctor = () => {
             <button type="submit" className="btn btn-primary mt-3" disabled={loading}>
               {loading ? "Đang Lưu..." : "Lưu Thay Đổi"}
             </button>
+             <br></br>
+            <button type="button" onClick={() => navigate("/changepass")} className="btn btn-primary mt-3">
+              Change password
+            </button>
           </form>
         </div>
       </div>
