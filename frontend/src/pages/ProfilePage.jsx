@@ -131,7 +131,18 @@ const ProfilePage = () => {
                   disabled
                 />
               </div>
-
+              <div className="col-md-6 mb-3">
+                <label htmlFor="email" className="form-label">
+                  User code
+                </label>
+                <input
+                  type="text"
+                  id="Usercode"
+                  value={user?.user_code || ""}
+                  className="form-control"
+                  disabled
+                />
+              </div>
               <div className="col-md-6 mb-3">
                 <label htmlFor="role" className="form-label">
                   Vai Trò

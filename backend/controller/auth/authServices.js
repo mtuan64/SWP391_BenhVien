@@ -4,6 +4,8 @@ const mongoose = require('mongoose');
 const nodemailer = require('nodemailer');
 const Employee = require('../../models/Employee');
 const bcrypt = require('bcrypt');
+const Counter = require('../../models/Counter');
+
 require('dotenv').config();
 const Login = async (req, res) => {
   const { email, password } = req.body;
@@ -18,7 +20,7 @@ const Login = async (req, res) => {
     // So sánh mật khẩu
     const target = user || employee;
     const isMatch = await bcrypt.compare(password, target.password);
-    // const isMatch = (password === target.password);
+    
     if (!isMatch) {
       return res.status(400).json({ message: "Invalid password" });
     }
@@ -75,7 +77,9 @@ const salt = await bcrypt.genSalt(10); // tạo salt
     res.status(200).json({ message: "Dang ky thanh cong" });
   } catch (error) {
 
-    res.status(500).json({ message: "Lỗi máy chủ" });
+    
+res.status(500).json({ message: "Lỗi máy chủ", error: error.message });
+
   }
 };
 const check = async (req, res) => {
@@ -91,13 +95,6 @@ const changePassword = async (req, res) => {
       return res.status(400).json({ message: "email and new password are required" });
     }
 
-    // Kiểm tra xem email là email hay số điện thoại hợp lệ
-    // const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-    // const isPhone = /^\+?[1-9]\d{1,14}$/.test(email);
-
-    // if (!isEmail && !isPhone) {
-    //     return res.status(400).json({ message: "Invalid email or phone number format" });
-    // }
 
     // Tìm người dùng trong cơ sở dữ liệu
     const user = await User.findOne({ email: email });
@@ -110,10 +107,7 @@ const changePassword = async (req, res) => {
 
     // // Cập nhật mật khẩu mới và xóa OTP
     user.password = hashedPassword;
-    // user.emailVerificationCode = null;
-    // user.phoneVerificationCode = null;
-    // user.isEmailVerified = false; // Reset trạng thái xác minh
-// user.isPhoneVerified = false;
+
     await user.save();
 
     return res.status(200).json({ message: "Password changed successfully" });
@@ -122,51 +116,7 @@ const changePassword = async (req, res) => {
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
-//  const forgotPassword = async (req, res) => {
-//     try {
-//         const { email } = req.body;
 
-//         // Kiểm tra nếu là email hợp lệ
-
-//         if (!email) {
-//             return res.status(400).json({ message: "Invalid email format" });
-//         }
-
-//         // Tìm người dùng theo email 
-//         const user = await User.findOne({ email: email });
-
-//         if (!user) {
-//             return res.status(404).json({ message: "Email not registered" });
-//         }
-
-//         // Generate OTP
-//         const otp = generateVerificationCode();
-//         const expirationTime = new Date(Date.now() + 15 * 60 * 1000); // OTP hết hạn sau 15 phút
-
-//         // Cập nhật OTP vào người dùng
-//         if (email) {
-//             user.emailVerificationCode = otp;
-//         } else {
-//             user.phoneVerificationCode = otp;
-//         }
-//         user.verificationExpires = expirationTime;
-
-//         // Lưu lại thay đổi trên cơ sở dữ liệu
-//         await user.save();
-
-//         // Gửi OTP qua email hoặc SMS
-//         if (email) {
-//             await email.sendVerificationEmail(contact, otp);
-//         } else {
-//             await sendVerificationSMS(contact, otp); // Sử dụng dịch vụ SMS
-//         }
-
-//         return res.status(200).json({ message: "OTP sent successfully" });
-//     } catch (error) {
-//         console.error("Error in forgotPassword: ", error);
-//         res.status(500).json({ message: "Server error", error: error.message });
-//     }
-// };
 // Cấu hình Nodemailer
 const transporter = nodemailer.createTransport({
   host: process.env.EMAIL_HOST,
