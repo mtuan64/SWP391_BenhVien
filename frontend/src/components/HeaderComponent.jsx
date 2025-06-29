@@ -10,7 +10,7 @@ const Header = ({ onMenuClick }) => {
 
   const handleLogout = () => {
     logout();
-    navigate("/"); // ✅ Điều hướng về trang chủ
+    navigate("/login");
   };
 
   return (

@@ -43,70 +43,76 @@ import MedicalRecord from "./pages/MedicalRecord";
 import Header from "./components/HeaderComponent";
 import MenuComponent from "./components/MenuComponent";
 import FooterComponent from "./components/FooterComponent";
-import { PrivateRoute, PrivateRouteNotAllowUser,PrivateRouteByRole } from "./components/PrivateRoute"
+import {
+  PrivateRoute,
+  PrivateRouteNotAllowUser,
+  PrivateRouteByRole,
+} from "./components/PrivateRoute";
 import "antd/dist/reset.css";
 import NotFoundPage from "./pages/NotFoundPage";
 import QAHistories from "./pages/QAHistories";
+
 const DRAWER_WIDTH = 240;
 
-
-
+// Redirect logic based on role and current path
 const RoleRedirect = () => {
-  const navigate = useNavigate(); 
+  const navigate = useNavigate();
   const location = useLocation();
 
-  const user = JSON.parse(localStorage.getItem("user"));
-  const role = user?.role || "patient";
-
   useEffect(() => {
-    if (!user) return;
-
+    const user = JSON.parse(localStorage.getItem("user"));
+    const role = user?.role || "patient";
     const path = location.pathname;
 
+    if (!user) return;
+
     if (path === "/") {
-      // Điều hướng ban đầu
-      if (role === "Admin") navigate("/admin/");
-      else if (role === "Staff") navigate("/staff/");
-      else if (role === "Doctor") navigate("/doctor");
-      else navigate("/home");
-    } else {
-      // Nếu đã vào nhầm layout (sai path so với role) thì redirect lại
-      if (role === "Admin" && !path.startsWith("/admin")) navigate("/admin/");
-      if (role === "Staff" && !path.startsWith("/staff")) navigate("/staff/");
-      if (role === "Doctor" && !path.startsWith("/doctor")) navigate("/doctor");
-      if (role === "patient" && (path.startsWith("/admin") || path.startsWith("/staff") || path.startsWith("/doctor")))
-        navigate("/home");
+      if (role === "Admin") navigate("/admin", { replace: true });
+      else if (role === "Staff") navigate("/staff", { replace: true });
+      else if (role === "Doctor") navigate("/doctor", { replace: true });
+      else navigate("/home", { replace: true });
+      return;
     }
-  }, [navigate, location.pathname]);
+
+    if (role === "Admin" && !path.startsWith("/admin")) {
+      navigate("/admin", { replace: true });
+    } else if (role === "Staff" && !path.startsWith("/staff")) {
+      navigate("/staff", { replace: true });
+    } else if (role === "Doctor" && !path.startsWith("/doctor")) {
+      navigate("/doctor", { replace: true });
+    } else if (
+      role === "patient" &&
+      (path.startsWith("/admin") || path.startsWith("/staff"))
+    ) {
+      navigate("/home", { replace: true });
+    }
+  }, [navigate, location]);
 
   return null;
 };
-const getRole = () => {
-  try {
-    const user = JSON.parse(localStorage.getItem("user"));
-    const role = user?.role;
-    return role || "patient";
-  } catch {
-    return "patient";
-  }
-};
 
-
-const App = () => {
+// Main routes + layout
+const AppRoutes = () => {
   const [menuOpen, setMenuOpen] = useState(false);
-
-  const role = getRole();
-  const isPatient = role === "patient";
-  const user = JSON.parse(localStorage.getItem("user"));
+  const [role, setRole] = useState("patient");
+  const [user, setUser] = useState(null);
+  const location = useLocation();
 
   const toggleMenu = () => setMenuOpen((open) => !open);
 
-  return (
-    <Router>
-      {isPatient && (
-        <Header onMenuClick={toggleMenu} menuOpen={menuOpen} />
-      )}
+  useEffect(() => {
+    const storedUser = JSON.parse(localStorage.getItem("user"));
+    const userRole = storedUser?.role?.toLowerCase() || "patient";
 
+    setUser(storedUser);
+    setRole(userRole);
+  }, [location.pathname]);
+
+  const isPatient = role === "patient";
+
+  return (
+    <>
+      {isPatient && <Header onMenuClick={toggleMenu} menuOpen={menuOpen} />}
       {isPatient && user && (
         <MenuComponent
           isOpen={menuOpen}
@@ -125,17 +131,29 @@ const App = () => {
         <RoleRedirect />
 
         <Routes>
-          {/* Admin Layout Routes */}
-          <Route path="/admin/*" element={<PrivateRouteByRole allowedRoles={["Admin"]}><AdminLayout /></PrivateRouteByRole>}>
+          {/* Admin */}
+          <Route
+            path="/admin/*"
+            element={
+              <PrivateRouteByRole allowedRoles={["Admin"]}>
+                <AdminLayout />
+              </PrivateRouteByRole>
+            }
+          >
             <Route index element={<Dashboard />} />
             <Route path="accounts" element={<AccountManagement />} />
             <Route path="employees" element={<EmployeeManagement />} />
           </Route>
 
-          {/* Staff Layout Routes */}
-          <Route path="/staff/*" element={<PrivateRouteByRole allowedRoles={["Staff"]}>
-      <StaffLayout />
-    </PrivateRouteByRole>}>
+          {/* Staff */}
+          <Route
+            path="/staff/*"
+            element={
+              <PrivateRouteByRole allowedRoles={["Staff"]}>
+                <StaffLayout />
+              </PrivateRouteByRole>
+            }
+          >
             <Route index element={<BlogManagement />} />
             <Route path="blogs" element={<BlogManagement />} />
             <Route path="services" element={<ServiceManagement />} />
@@ -145,7 +163,10 @@ const App = () => {
             <Route path="news" element={<NewsManagement />} />
             <Route path="feedback" element={<FeedbackManagement />} />
             <Route path="qna" element={<QnAView />} />
-            <Route path="appointments" element={<AppointmentScheduleManagement />} />
+            <Route
+              path="appointments"
+              element={<AppointmentScheduleManagement />}
+            />
             <Route path="notifications" element={<NotificationManagement />} />
             <Route path="users" element={<UserManagement />} />
             <Route path="medicines" element={<MedicineManagement />} />
@@ -159,31 +180,44 @@ const App = () => {
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/myprofile" element={<ProfilePage />} />
-                    <Route path="/qahistory" element={<QAHistories />} />
-
-          <Route path="/appointment" element={
-            <PrivateRoute>
-              <AppointmentPage />
-            </PrivateRoute>
-          } />
-          <Route path="/medicalrecords" element={
-            <PrivateRoute>
-              <MedicalRecord />
-            </PrivateRoute>
-          } />
-          <Route path="/not-found" element={<NotFoundPage/>}/>
-          <Route path="/qa" element={<SendQAForm/>}/>
-
-          <Route path="/doctor/:doctorId" element={<DoctorDetail />} />
+          <Route path="/qahistory" element={<QAHistories />} />
+          <Route path="/qa" element={<SendQAForm />} />
           <Route path="/changepass" element={<Changepass />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/not-found" element={<NotFoundPage />} />
+          <Route path="/doctor/:doctorId" element={<DoctorDetail />} />
+
+          {/* Protected routes */}
+          <Route
+            path="/appointment"
+            element={
+              <PrivateRoute>
+                <AppointmentPage />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/medicalrecords"
+            element={
+              <PrivateRoute>
+                <MedicalRecord />
+              </PrivateRoute>
+            }
+          />
         </Routes>
       </div>
-{isPatient && (
-        <FooterComponent />
-      )}
-      
+
+      {isPatient && <FooterComponent />}
+    </>
+  );
+};
+
+// Root App component that wraps with <Router>
+const App = () => {
+  return (
+    <Router>
+      <AppRoutes />
     </Router>
   );
 };
