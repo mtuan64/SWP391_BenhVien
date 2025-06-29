@@ -51,7 +51,9 @@ import {
 import "antd/dist/reset.css";
 import NotFoundPage from "./pages/NotFoundPage";
 import QAHistories from "./pages/QAHistories";
-
+import ProfileStaff from "./pages/staff/ProfileStaff";
+import ProfileDoctor from "./pages/ProfileDoctor";
+import DoctorLayout from "./layout/DoctorLayout";
 const DRAWER_WIDTH = 240;
 
 // Redirect logic based on role and current path
@@ -163,6 +165,7 @@ const AppRoutes = () => {
             <Route path="news" element={<NewsManagement />} />
             <Route path="feedback" element={<FeedbackManagement />} />
             <Route path="qna" element={<QnAView />} />
+            <Route path="profile" element={<ProfileStaff />} />
             <Route
               path="appointments"
               element={<AppointmentScheduleManagement />}
@@ -172,8 +175,17 @@ const AppRoutes = () => {
             <Route path="medicines" element={<MedicineManagement />} />
           </Route>
 
+
+            <Route path="/doctor" element={<PrivateRouteByRole allowedRoles={["Doctor"]}><DoctorLayout /></PrivateRouteByRole>}>
+                    {/* <Route path="medical-profile" element={<UserMedicalProfile />} /> */}
+                    <Route path="medicine" element={<div>View Medicine Page</div>} />
+                    <Route path="appointments" element={<div>Appointment List Page</div>} />
+                    <Route path="notifications" element={<div>Notifications Page</div>} />
+                    {/* <Route path="work-schedule" element={<WorkSchedulePage />} /> */}
+                       <Route path="profile" element={<ProfileDoctor />} />
+          </Route>
           {/* Public routes */}
-          <Route path="/home" element={<HomePage />} />
+          <Route path="/home" element={ <HomePage />} />
           <Route path="/service" element={<ServicePage />} />
           <Route path="/doctor" element={<DoctorPage />} />
           <Route path="/login" element={<LoginPage />} />
