@@ -6,7 +6,7 @@ const Employee = require("../../models/Employee");
 const Schedule = require('../../models/Schedule');
 const Profile = require('../../models/Profile');
 
-// Lấy danh sách lịch hẹn có kèm tên bác sĩ và người dùng với phân trang
+// Lấy danh sách lịch hẹn có kèm tên bác sĩ, người dùng và số điện thoại với phân trang
 exports.getAllAppointments = async (req, res) => {
   try {
     const { search = "", page = 1, limit = 10, status, department } = req.query;
@@ -30,21 +30,22 @@ exports.getAllAppointments = async (req, res) => {
     const userIds = [...new Set(appointments.map(a => a.userId?.toString()))];
 
     const doctors = await Employee.find({ _id: { $in: doctorIds } }, { _id: 1, name: 1 });
-    const users = await User.find({ _id: { $in: userIds } }, { _id: 1, name: 1 });
+    const users = await User.find({ _id: { $in: userIds } }, { _id: 1, name: 1, phone: 1 });
 
     const doctorMap = doctors.reduce((acc, doc) => {
       acc[doc._id.toString()] = doc.name;
       return acc;
     }, {});
     const userMap = users.reduce((acc, user) => {
-      acc[user._id.toString()] = user.name;
+      acc[user._id.toString()] = { name: user.name, phone: user.phone || "N/A" };
       return acc;
     }, {});
 
     let enrichedAppointments = appointments.map(a => ({
       ...a._doc,
       doctorName: doctorMap[a.doctorId?.toString()] || "Unknown Doctor",
-      userName: userMap[a.userId?.toString()] || "Unknown User"
+      userName: userMap[a.userId?.toString()]?.name || "Unknown User",
+      userPhone: userMap[a.userId?.toString()]?.phone || "N/A"
     }));
 
     if (search.trim() !== "") {
@@ -52,6 +53,7 @@ exports.getAllAppointments = async (req, res) => {
       enrichedAppointments = enrichedAppointments.filter(a =>
         (a.doctorName && a.doctorName.toLowerCase().includes(searchLower)) ||
         (a.userName && a.userName.toLowerCase().includes(searchLower)) ||
+        (a.userPhone && a.userPhone.toLowerCase().includes(searchLower)) ||
         (a.department && a.department.toLowerCase().includes(searchLower)) ||
         (a.status && a.status.toLowerCase().includes(searchLower))
       );
@@ -152,7 +154,7 @@ exports.getAllDepartments = async (req, res) => {
 // Lấy danh sách tất cả user
 exports.getAllUsers = async (req, res) => {
   try {
-    const users = await User.find({}, { _id: 1, name: 1 });
+    const users = await User.find({}, { _id: 1, name: 1, phone: 1 });
     res.status(200).json(users);
   } catch (error) {
     res.status(500).json({ message: "Lỗi server", error: error.message });
