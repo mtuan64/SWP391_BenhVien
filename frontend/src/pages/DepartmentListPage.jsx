@@ -1,21 +1,25 @@
 import React, { useEffect, useState, Fragment } from "react";
 import { Link } from "react-router-dom";
+import { Container, Row, Col } from "react-bootstrap";
 import axios from "axios";
-import "../assets/css/ServicePage.css"; // Tận dụng lại style
+import "../assets/css/DepartmentPage.css";
+import HeroBanner from "../components/HeroBanner";
 
-const DepartmentBox = ({ name, description, buttonUrl }) => (
-  <div className="fancybox">
-    <div className="fancybox-content">
-      <div className="fancybox-image-container">
-        <img 
-          src="https://vinmec-prod.s3.amazonaws.com/images/20210505_161643_674313_Khoa-noi-tong-quat.max-1800x1800.jpg"
+const DEPT_BANNER = "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=facearea&w=1600&q=80";
+
+const DepartmentBox = ({ name, description, image, buttonUrl }) => (
+  <div className="departmentbox">
+    <div className="departmentbox-content">
+      <div className="departmentbox-image-container">
+        <img
+          src={image}
           alt={name}
-          className="fancybox-image"
+          className="departmentbox-image"
         />
       </div>
-      <h3 className="fancybox-title">{name}</h3>
-      <p className="fancybox-desc">{description}</p>
-      <Link to={buttonUrl} className="fancybox-button">Xem chi tiết</Link>
+      <h3 className="departmentbox-title">{name}</h3>
+      <p className="departmentbox-desc">{description}</p>
+      <Link to={buttonUrl} className="departmentbox-button">Xem chi tiết</Link>
     </div>
   </div>
 );
@@ -44,29 +48,58 @@ const DepartmentPage = () => {
   }, []);
 
   return (
-    <Fragment>
-      <div className="service-section">
-        <div className="service-container">
-          <div className="service-header">
-            <h2 className="service-header-title">Chuyên Khoa Bệnh Viện</h2>
-            <p className="service-header-desc">
-              Danh sách các chuyên khoa, phòng ban hàng đầu tại bệnh viện
-            </p>
-          </div>
-          <div className="service-grid">
-            {departments.map((item, index) => (
-              <div key={item._id || index} className="service-grid-item">
-                <DepartmentBox
-                  name={item.name}
-                  description={item.description}
-                  buttonUrl={`/department/${item._id}`}
-                />
-              </div>
-            ))}
+    <>
+      {/* Topbar */}
+      <div className="bg-light py-2 px-5 d-none d-lg-block">
+        <Row className="align-items-center justify-content-between">
+          <Col md={6} className="text-start">
+            <small>
+              <i className="far fa-clock text-primary me-2"></i>
+              Opening Hours: Mon - Tues : 6.00 am - 10.00 pm, Sunday Closed
+            </small>
+          </Col>
+          <Col md={6} className="text-end">
+            <small className="me-4">
+              <i className="fa fa-envelope-open text-primary me-2"></i>
+              info@example.com
+            </small>
+            <small>
+              <i className="fa fa-phone-alt text-primary me-2"></i>
+              +012 345 6789
+            </small>
+          </Col>
+        </Row>
+      </div>
+      <Fragment>
+        <HeroBanner
+          image={DEPT_BANNER}
+          title="Chuyên Khoa Bệnh Viện"
+          subtitle="Danh sách các chuyên khoa – phòng ban – đội ngũ chuyên gia hàng đầu"
+        />
+        <div className="department-section">
+          <div className="department-container">
+            <div className="department-header">
+              <h2 className="department-header-title">Chuyên Khoa Bệnh Viện</h2>
+              <p className="department-header-desc">
+                Danh sách các chuyên khoa, phòng ban hàng đầu tại bệnh viện
+              </p>
+            </div>
+            <div className="department-grid">
+              {departments.map((item, index) => (
+                <div key={item._id || index} className="department-grid-item">
+                  <DepartmentBox
+                    name={item.name}
+                    description={item.description}
+                    image={item.image}
+                    buttonUrl={`/department/${item._id}`}
+                  />
+                </div>
+              ))}
+            </div>
           </div>
         </div>
-      </div>
-    </Fragment>
+      </Fragment>
+    </>
   );
 };
 

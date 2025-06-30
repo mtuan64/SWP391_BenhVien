@@ -4,6 +4,9 @@ import { Link } from "react-router-dom";
 import axios from "axios";
 import "../assets/css/MedicineListPage.css";
 import HeaderComponent from "../components/HeaderComponent";
+import HeroBanner from "../components/HeroBanner";
+
+const MEDICINE_BANNER = "https://images.unsplash.com/photo-1511174511562-5f97f4f4eab6?auto=format&fit=facearea&w=1600&q=80";
 
 const ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
 
@@ -63,6 +66,12 @@ const MedicineListPage = () => {
             </div>
 
             <HeaderComponent />
+            {/* Hero Carousel */}
+            <HeroBanner
+                image={MEDICINE_BANNER}
+                title="Danh Mục Thuốc"
+                subtitle="Tra cứu thông tin, tác dụng, chỉ định và giá thuốc tại KiwiCare"
+            />
             <div className="medicine-container">
                 <div className="medicine-search-bar">
                     <h2 className="medicine-title">Tra cứu tên thuốc</h2>

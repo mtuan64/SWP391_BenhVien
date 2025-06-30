@@ -3,8 +3,10 @@ import { Container, Row, Col, Form, InputGroup } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import axios from "axios";
 import HeaderComponent from "../components/HeaderComponent";
-import FooterComponent from "../components/FooterComponent";
 import "../assets/css/DoctorPage.css";
+import HeroBanner from "../components/HeroBanner";
+
+const DEPT_BANNER = "https://images.unsplash.com/photo-1579684453423-f84349ef60b0";
 
 const DoctorPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -69,34 +71,11 @@ const DoctorPage = () => {
       <HeaderComponent />
 
       {/* Hero Carousel */}
-      <div id="heroCarousel" className="carousel slide carousel-fade" data-bs-ride="carousel">
-        <div className="carousel-inner">
-          <div className="carousel-item active">
-            <img
-              src="https://images.unsplash.com/photo-1579684453423-f84349ef60b0"
-              className="d-block w-100"
-              alt="KiwiCare Doctors Banner"
-              style={{ objectFit: 'cover', height: '80vh' }}
-            />
-            <div
-              className="carousel-caption d-flex flex-column justify-content-center align-items-center"
-              style={{
-                backgroundColor: 'rgba(0, 0, 0, 0.5)',
-                top: 0,
-                bottom: 0,
-                left: 0,
-                right: 0,
-                position: 'absolute'
-              }}
-            >
-              <div className="text-center text-white">
-                <h1 className="display-3 fw-bold">Đội Ngũ Bác Sĩ KiwiCare</h1>
-                <p className="lead mt-3">Những chuyên gia tận tâm vì sức khỏe của bạn</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+      <HeroBanner
+          image={DEPT_BANNER}
+          title="Đội Ngũ Bác Sĩ KiwiCare"
+          subtitle="Những chuyên gia tận tâm vì sức khỏe của bạn"
+        />
 
       {/* Search and Filter Section */}
       <div className="container-fluid py-4">
@@ -185,8 +164,6 @@ const DoctorPage = () => {
           </Row>
         </Container>
       </div>
-
-      <FooterComponent />
     </>
   );
 };

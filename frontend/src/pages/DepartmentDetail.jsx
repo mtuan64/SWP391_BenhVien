@@ -1,7 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
+import { Container, Row, Col } from "react-bootstrap";
 import axios from "axios";
-import "../assets/css/ServiceDetail.css"; // Tận dụng lại style của service
+import "../assets/css/DepartmentDetail.css";
+import HeroBanner from "../components/HeroBanner";
+
+const DEPT_BANNER = "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=facearea&w=1600&q=80";
 
 const DepartmentDetail = () => {
     const { departmentId } = useParams();
@@ -34,33 +38,65 @@ const DepartmentDetail = () => {
     }, [departmentId]);
 
     if (loading) {
-            return (
-                <div className="text-center py-5">
-                    <h3>Loading...</h3>
-                </div>
-            );
-        }
-    
-        if (error) {
-            return (
-                <div className="text-center py-5">
-                    <h3>{error}</h3>
-                    <Link to="/department" className="btn btn-primary mt-3">Back to Department Home</Link>
-                </div>
-            );
-        }
+        return (
+            <div className="text-center py-5">
+                <h3>Loading...</h3>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="text-center py-5">
+                <h3>{error}</h3>
+                <Link to="/department" className="btn btn-primary mt-3">Back to Department Home</Link>
+            </div>
+        );
+    }
 
     return (
-        <div className="service-detail-container">
-            <h1 className="service-detail-title">{department.name}</h1>
-            <div className="service-detail-desc">
-                <b>Mô tả chuyên khoa:</b>
-                <div>{department.description || "Chưa cập nhật mô tả."}</div>
+        <>
+            {/* Topbar */}
+            <div className="bg-light py-2 px-5 d-none d-lg-block">
+                <Row className="align-items-center justify-content-between">
+                    <Col md={6} className="text-start">
+                        <small>
+                            <i className="far fa-clock text-primary me-2"></i>
+                            Opening Hours: Mon - Tues : 6.00 am - 10.00 pm, Sunday Closed
+                        </small>
+                    </Col>
+                    <Col md={6} className="text-end">
+                        <small className="me-4">
+                            <i className="fa fa-envelope-open text-primary me-2"></i>
+                            info@example.com
+                        </small>
+                        <small>
+                            <i className="fa fa-phone-alt text-primary me-2"></i>
+                            +012 345 6789
+                        </small>
+                    </Col>
+                </Row>
             </div>
-            <Link className="btn btn-secondary mt-4" to="/department">
-                Quay lại danh sách chuyên khoa
-            </Link>
-        </div>
+
+            {/* Hero Carousel */}
+            <HeroBanner
+                image={DEPT_BANNER}
+                title="Chuyên Khoa Bệnh Viện"
+                subtitle="Danh sách các chuyên khoa – phòng ban – đội ngũ chuyên gia hàng đầu"
+            />
+            {/* Department Detail Section */}
+            <div className="department-detail-container">
+                <h1 className="department-detail-title">{department.name}</h1>
+                <div className="department-detail-desc">
+                    <b>Mô tả chuyên khoa:</b>
+                    <div>{department.description || "Chưa cập nhật mô tả."}</div>
+                </div>
+                <Link className="btn btn-secondary mt-4" to="/department">
+                    Quay lại danh sách chuyên khoa
+                </Link>
+            </div>
+        </>
+
     );
 };
 

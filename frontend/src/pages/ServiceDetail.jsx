@@ -3,6 +3,9 @@ import { Container, Row, Col } from "react-bootstrap";
 import axios from "axios";
 import { Link, useParams } from "react-router-dom";
 import "../assets/css/ServiceDetail.css";
+import HeroBanner from "../components/HeroBanner";
+
+const DEPT_BANNER = "https://xdcs.cdnchinhphu.vn/446259493575335936/2024/1/13/bv-1705119640880430272769.jpg";
 
 const ServiceDetail = () => {
     const { serviceId } = useParams();
@@ -75,6 +78,13 @@ const ServiceDetail = () => {
                     </Col>
                 </Row>
             </div>
+
+            {/* Hero Carousel */}
+            <HeroBanner
+                image={DEPT_BANNER}
+                title="Dịch Vụ Y Tế KiwiCare"
+                subtitle="Chăm sóc sức khỏe toàn diện với các chuyên khoa hàng đầu"
+            />
 
             <div className="service-detail-container">
                 <h1 className="service-detail-title">{service.name}</h1>

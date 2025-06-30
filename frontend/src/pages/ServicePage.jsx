@@ -1,23 +1,27 @@
 import React, { Fragment, useEffect, useState } from 'react';
 import { Link } from "react-router-dom";
+import { Container, Row, Col } from "react-bootstrap";
 import axios from "axios";
 import '../assets/css/ServicePage.css';
+import HeroBanner from "../components/HeroBanner";
 
-const FancyBox = ({ fancyboxImage, fancyboxTitle, fancyboxDesc, buttonUrl }) => (
-  <div className="fancybox">
-    <div className="fancybox-content">
-      <div className="fancybox-image-container">
-        <img 
-          src={fancyboxImage} 
-          alt={fancyboxTitle} 
-          className="fancybox-image"
+const DEPT_BANNER = "https://xdcs.cdnchinhphu.vn/446259493575335936/2024/1/13/bv-1705119640880430272769.jpg";
+
+const ServiceBox = ({ image, title, description, buttonUrl }) => (
+  <div className="servicebox">
+    <div className="servicebox-content">
+      <div className="servicebox-image-container">
+        <img
+          src={image}
+          alt={title}
+          className="servicebox-image"
         />
       </div>
-      <h3 className="fancybox-title">{fancyboxTitle}</h3>
-      <p className="fancybox-desc">{fancyboxDesc}</p>
+      <h3 className="servicebox-title">{title}</h3>
+      <p className="servicebox-desc">{description}</p>
       <Link
         to={buttonUrl}
-        className="fancybox-button"
+        className="servicebox-button"
       >
         Tìm Hiểu Thêm
       </Link>
@@ -27,21 +31,21 @@ const FancyBox = ({ fancyboxImage, fancyboxTitle, fancyboxDesc, buttonUrl }) => 
 
 
 const ServicePage = () => {
-  const [fancyBoxData, setFancyBoxData] = useState([]);
+  const [services, setServices] = useState([]);
   useEffect(() => {
     const fetchService = async () => {
       try {
         const res = await axios.get(`http://localhost:9999/api/user/service`);
         console.log("API Response:", res.data);
         if (Array.isArray(res.data.data)) {
-          setFancyBoxData(res.data.data);
+          setServices(res.data.data);
         } else if (Array.isArray(res.data.services)) {
-          setFancyBoxData(res.data.services);
+          setServices(res.data.services);
         } else {
-          setFancyBoxData([]);
+          setServices([]);
         }
       } catch (error) {
-        setFancyBoxData([]);
+        setServices([]);
         console.error("Error fetching doctor details:", error);
       }
     };
@@ -51,57 +55,58 @@ const ServicePage = () => {
   }, []);
 
   return (
-    <Fragment>
-      {/* Hero Section */}
-      <div id="heroCarousel" className="carousel slide carousel-fade" data-bs-ride="carousel" data-bs-interval="4000">
-        <div className="carousel-inner">
-          <div className="carousel-item active">
-            <img
-              src="https://xdcs.cdnchinhphu.vn/446259493575335936/2024/1/13/bv-1705119640880430272769.jpg"
-              className="d-block w-100"
-              alt="KiwiCare Banner"
-              style={{ objectFit: 'cover', height: '80vh', borderRadius: '8px' }}
-            />
-            <div
-              className="carousel-caption d-flex flex-column justify-content-center align-items-center"
-              style={{
-                backgroundColor: 'rgba(0, 0, 0, 0.6)',
-                top: 0,
-                bottom: 0,
-                left: 0,
-                right: 0,
-                position: 'absolute',
-                borderRadius: '8px'
-              }}
-            >
-              <h1 className="display-3 fw-bold text-white mb-3">Dịch Vụ Y Tế KiwiCare</h1>
-              <p className="text-white fs-5">Chăm sóc sức khỏe toàn diện với các chuyên khoa hàng đầu</p>
+    <>
+      {/* Topbar */}
+      <div className="bg-light py-2 px-5 d-none d-lg-block">
+        <Row className="align-items-center justify-content-between">
+          <Col md={6} className="text-start">
+            <small>
+              <i className="far fa-clock text-primary me-2"></i>
+              Opening Hours: Mon - Tues : 6.00 am - 10.00 pm, Sunday Closed
+            </small>
+          </Col>
+          <Col md={6} className="text-end">
+            <small className="me-4">
+              <i className="fa fa-envelope-open text-primary me-2"></i>
+              info@example.com
+            </small>
+            <small>
+              <i className="fa fa-phone-alt text-primary me-2"></i>
+              +012 345 6789
+            </small>
+          </Col>
+        </Row>
+      </div>
+      <Fragment>
+        <HeroBanner
+          image={DEPT_BANNER}
+          title="Dịch Vụ Y Tế KiwiCare"
+          subtitle="Chăm sóc sức khỏe toàn diện với các chuyên khoa hàng đầu"
+        />
+
+        <div className="service-section">
+          <div className="service-container">
+            <div className="service-header">
+              <h2 className="service-header-title">Khám Phá Dịch Vụ Của KiwiCare</h2>
+              <p className="service-header-desc">Giải pháp y tế toàn diện, cá nhân hóa cho mọi nhu cầu sức khỏe</p>
+            </div>
+            <div className="service-grid">
+              {services.map((item, index) => (
+                <div key={item._id || index} className="service-grid-item">
+                  <ServiceBox
+                    image={item.image}
+                    title={item.name}
+                    description={item.description}
+                    buttonUrl={`/service/${item._id}`}
+                  />
+                </div>
+              ))}
             </div>
           </div>
         </div>
-      </div>
+      </Fragment>
+    </>
 
-      <div className="service-section">
-        <div className="service-container">
-          <div className="service-header">
-            <h2 className="service-header-title">Khám Phá Dịch Vụ Của KiwiCare</h2>
-            <p className="service-header-desc">Giải pháp y tế toàn diện, cá nhân hóa cho mọi nhu cầu sức khỏe</p>
-          </div>
-          <div className="service-grid">
-            {fancyBoxData.map((item, index) => (
-              <div key={item._id || index} className="service-grid-item">
-                <FancyBox
-                  fancyboxImage={item.fancyboxImage}
-                  fancyboxTitle={item.name}
-                  fancyboxDesc={item.description}
-                  buttonUrl={`/service/${item._id}`}
-                />
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    </Fragment>
   );
 };
 
