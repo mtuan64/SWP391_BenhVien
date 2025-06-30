@@ -430,11 +430,10 @@ const AppointmentScheduleManagement = () => {
                     <th>Department</th>
                     <th>Type</th>
                     <th>User</th>
+                    <th>Phone</th>
                     <th>Medical Profile</th>
                     <th>Status</th>
                     <th>Reminder</th>
-                    <th>Created</th>
-                    <th>Updated</th>
                     <th>Actions</th>
                   </tr>
                 </thead>
@@ -447,11 +446,10 @@ const AppointmentScheduleManagement = () => {
                       <td>{appointment.department}</td>
                       <td>{appointment.type}</td>
                       <td>{appointment.userName || "N/A"}</td>
+                      <td>{appointment.userPhone || "N/A"}</td>
                       <td>{!appointment.profileId || appointment.profileId === "null" ? "N/A" : appointment.profileId}</td>
                       <td>{appointment.status}</td>
                       <td>{appointment.reminderSent ? "Yes" : "No"}</td>
-                      <td>{formatDateTime(appointment.createdAt)}</td>
-                      <td>{formatDateTime(appointment.updatedAt)}</td>
                       <td>
                         <div className="d-flex gap-2">
                           <Button
