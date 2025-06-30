@@ -71,6 +71,12 @@ const Header = ({ onMenuClick }) => {
                   <Link to="/myprofile" className="dropdown-item">Profile</Link>
                 </li>
                 <li>
+                  <Link to="/profilemanage" className="dropdown-item">Profile Manage</Link>
+                </li>
+                <li>
+                  <Link to="/appointmentmanage" className="dropdown-item">Appointment Manage</Link>
+                </li>
+                <li>
                   <Link to="/changepass" className="dropdown-item">Change password</Link>
                 </li>
                 <li>
