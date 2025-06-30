@@ -1,10 +1,10 @@
 const User = require("../../models/User");
 const jwt = require("jsonwebtoken");
-const mongoose = require('mongoose');
-const nodemailer = require('nodemailer');
-const Employee = require('../../models/Employee');
-const bcrypt = require('bcrypt');
-require('dotenv').config();
+const mongoose = require("mongoose");
+const nodemailer = require("nodemailer");
+const Employee = require("../../models/Employee");
+const bcrypt = require("bcrypt");
+require("dotenv").config();
 const Login = async (req, res) => {
   const { email, password } = req.body;
   try {
@@ -29,10 +29,19 @@ const Login = async (req, res) => {
       email: target.email,
       name: target.name,
       role: target.role || "patient", // optional
+      status: target.status,
     };
 
+    if (target.status === "inactive") {
+      return res
+        .status(403)
+        .json({ message: "You are banned from the system" });
+    }
+
     // Tạo JWT
-    const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "1h" });
+    const token = jwt.sign(payload, process.env.JWT_SECRET, {
+      expiresIn: "1h",
+    });
 
     return res.status(200).json({
       message: "OK",
@@ -45,9 +54,7 @@ const Login = async (req, res) => {
   }
 };
 
-
 const Signup = async (req, res) => {
-
   if (!req.body) {
     return res.status(400).json({ error: "Missing request body" });
   }
@@ -55,16 +62,16 @@ const Signup = async (req, res) => {
   try {
     const emailExist = await User.findOne({ email });
     if (emailExist) {
-      return res.status(400).json({ message: 'Email da ton tai' });
+      return res.status(400).json({ message: "Email da ton tai" });
     }
-const salt = await bcrypt.genSalt(10); // tạo salt
+    const salt = await bcrypt.genSalt(10); // tạo salt
     const hashedPassword = await bcrypt.hash(password, salt);
     const newUser = new User({
       email,
-      password:hashedPassword,
+      password: hashedPassword,
       name,
       phone,
-      status: 'active',
+      status: "active",
       emailVerificationCode: null, // Lưu code reset
       verificationExpires: null, // Thời gian hết hạn
     });
@@ -74,7 +81,6 @@ const salt = await bcrypt.genSalt(10); // tạo salt
 
     res.status(200).json({ message: "Dang ky thanh cong" });
   } catch (error) {
-
     res.status(500).json({ message: "Lỗi máy chủ" });
   }
 };
@@ -88,7 +94,9 @@ const changePassword = async (req, res) => {
 
     // Kiểm tra thông tin đầu vào
     if (!email) {
-      return res.status(400).json({ message: "email and new password are required" });
+      return res
+        .status(400)
+        .json({ message: "email and new password are required" });
     }
 
     // Kiểm tra xem email là email hay số điện thoại hợp lệ
@@ -113,7 +121,7 @@ const changePassword = async (req, res) => {
     // user.emailVerificationCode = null;
     // user.phoneVerificationCode = null;
     // user.isEmailVerified = false; // Reset trạng thái xác minh
-// user.isPhoneVerified = false;
+    // user.isPhoneVerified = false;
     await user.save();
 
     return res.status(200).json({ message: "Password changed successfully" });
@@ -132,7 +140,7 @@ const changePassword = async (req, res) => {
 //             return res.status(400).json({ message: "Invalid email format" });
 //         }
 
-//         // Tìm người dùng theo email 
+//         // Tìm người dùng theo email
 //         const user = await User.findOne({ email: email });
 
 //         if (!user) {
@@ -189,13 +197,13 @@ const forgotPassword = async (req, res) => {
 
     // Validate email
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      return res.status(400).json({ message: 'Invalid email format' });
+      return res.status(400).json({ message: "Invalid email format" });
     }
 
     // Tìm user
     const user = await User.findOne({ email });
     if (!user) {
-      return res.status(404).json({ message: 'Email not registered' });
+      return res.status(404).json({ message: "Email not registered" });
     }
 
     // Tạo OTP
@@ -210,8 +218,8 @@ const forgotPassword = async (req, res) => {
     // Gửi email
     const mailOptions = {
       from: process.env.EMAIL_USER,
-to: email,
-      subject: 'Mã xác minh đặt lại mật khẩu',
+      to: email,
+      subject: "Mã xác minh đặt lại mật khẩu",
       html: `
         <h3>Mã xác minh</h3>
         <p>Mã xác minh của bạn là: <strong>${otp}</strong></p>
@@ -221,10 +229,12 @@ to: email,
     };
 
     await transporter.sendMail(mailOptions);
-    return res.status(200).json({ message: 'OTP sent successfully' });
+    return res.status(200).json({ message: "OTP sent successfully" });
   } catch (error) {
-    console.error('Error in forgotPassword:', error);
-    return res.status(500).json({ message: 'Server error', error: error.message });
+    console.error("Error in forgotPassword:", error);
+    return res
+      .status(500)
+      .json({ message: "Server error", error: error.message });
   }
 };
 const resetPassword = async (req, res) => {
@@ -232,11 +242,13 @@ const resetPassword = async (req, res) => {
     const { email, code, newPassword } = req.body;
 
     if (!email || !code || !newPassword) {
-      return res.status(400).json({ message: 'Email, code, and new password are required' });
+      return res
+        .status(400)
+        .json({ message: "Email, code, and new password are required" });
     }
 
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      return res.status(400).json({ message: 'Invalid email format' });
+      return res.status(400).json({ message: "Invalid email format" });
     }
 
     const user = await User.findOne({
@@ -246,7 +258,7 @@ const resetPassword = async (req, res) => {
     });
 
     if (!user) {
-      return res.status(400).json({ message: 'Invalid or expired OTP' });
+      return res.status(400).json({ message: "Invalid or expired OTP" });
     }
 
     const hashedPassword = await bcrypt.hash(newPassword, 10);
@@ -255,14 +267,20 @@ const resetPassword = async (req, res) => {
     user.verificationExpires = null;
     await user.save();
 
-    return res.status(200).json({ message: 'Password reset successfully' });
+    return res.status(200).json({ message: "Password reset successfully" });
   } catch (error) {
-    console.error('Error in resetPassword:', error);
-    return res.status(500).json({ message: 'Server error', error: error.message });
+    console.error("Error in resetPassword:", error);
+    return res
+      .status(500)
+      .json({ message: "Server error", error: error.message });
   }
 };
 
-
 module.exports = {
-  Login, Signup, check, changePassword, forgotPassword, resetPassword
-}
+  Login,
+  Signup,
+  check,
+  changePassword,
+  forgotPassword,
+  resetPassword,
+};

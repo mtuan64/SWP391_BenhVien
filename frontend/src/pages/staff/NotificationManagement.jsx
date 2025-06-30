@@ -10,6 +10,7 @@ import {
   message,
   Space,
   Tag,
+  AutoComplete,
 } from "antd";
 import { PlusOutlined, ExclamationCircleOutlined } from "@ant-design/icons";
 import axios from "axios";
@@ -26,6 +27,22 @@ const NotificationManagement = () => {
   const [loading, setLoading] = useState(false);
   const [form] = Form.useForm();
   const [showModal, setShowModal] = useState(false);
+  const [userEmails, setUserEmails] = useState([]);
+  const [filteredOptions, setFilteredOptions] = useState([]);
+
+  const fetchUserEmails = async () => {
+    try {
+      const res = await axios.get(
+        "http://localhost:9999/api/staff/getAllUserEmails",
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      setUserEmails(res.data);
+    } catch (err) {
+      message.error("Failed to fetch user emails");
+    }
+  };
 
   const fetchNotifications = async () => {
     setLoading(true);
@@ -192,7 +209,13 @@ const NotificationManagement = () => {
           </Button>
         </Form.Item>
         <Form.Item>
-          <Button icon={<PlusOutlined />} onClick={() => setShowModal(true)}>
+          <Button
+            icon={<PlusOutlined />}
+            onClick={() => {
+              setShowModal(true);
+              fetchUserEmails();
+            }}
+          >
             New Notification
           </Button>
         </Form.Item>
@@ -224,8 +247,24 @@ const NotificationManagement = () => {
             <Input.TextArea rows={4} />
           </Form.Item>
           <Form.Item name="receiverEmail" label="Receiver Email (optional)">
-            <Input placeholder="Leave empty for all users" />
+            <AutoComplete
+              options={filteredOptions}
+              onSearch={(value) => {
+                if (value) {
+                  const filtered = userEmails
+                    .filter((email) =>
+                      email.toLowerCase().includes(value.toLowerCase())
+                    )
+                    .map((email) => ({ value: email }));
+                  setFilteredOptions(filtered);
+                } else {
+                  setFilteredOptions([]);
+                }
+              }}
+              placeholder="Type email — leave empty for all"
+            />
           </Form.Item>
+
           <Form.Item name="isUrgent" valuePropName="checked">
             <Switch checkedChildren="Urgent" unCheckedChildren="Normal" />
           </Form.Item>

@@ -1,4 +1,5 @@
 const Notification = require("../../models/Notification");
+const User = require("../../models/User");
 
 // 📌 Create notification (staff)
 exports.createNotification = async (req, res) => {
@@ -107,5 +108,15 @@ exports.markAsRead = async (req, res) => {
     res.json({ message: "Marked as read." });
   } catch (err) {
     res.status(500).json({ error: err.message });
+  }
+};
+
+exports.getAllUserEmails = async (req, res) => {
+  try {
+    const users = await User.find({}, "email").lean();
+    const emails = users.map((u) => u.email);
+    res.json(emails);
+  } catch (error) {
+    res.status(500).json({ message: "Failed to fetch emails" });
   }
 };
