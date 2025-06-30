@@ -55,6 +55,9 @@ import FooterComponent from "./components/FooterComponent";
 import { PrivateRoute, PrivateRouteNotAllowUser, PrivateRouteByRole } from "./components/PrivateRoute"
 import "antd/dist/reset.css";
 import NotFoundPage from "./pages/NotFoundPage";
+import MedicineListPage from "./pages/MedicineListPage.jsx";
+import MedicineDetail from "./pages/MedicineDetail";
+import ServiceDetail from "./pages/ServiceDetail.jsx";
 const DRAWER_WIDTH = 240;
 
 const RoleRedirect = () => {
@@ -173,6 +176,7 @@ const App = () => {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/about" element={<AboutPage />} />
+          <Route path="/medicines-home" element={<MedicineListPage />} />
           <Route path="/myprofile" element={<ProfilePage />} />
           <Route path="/appointment" element={
             <PrivateRoute>
@@ -181,6 +185,9 @@ const App = () => {
           } />
           <Route path="/not-found" element={<NotFoundPage />} />
           <Route path="/doctr/:doctorId" element={<DoctorDetail />} />
+          <Route path="/medicines/:medicineId" element={<MedicineDetail />} />
+          <Route path="service/:serviceId" element={<ServiceDetail />} />
+
 
           <Route path="/changepass" element={<Changepass />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />

@@ -1,17 +1,7 @@
 import React, { Fragment, useEffect, useState } from 'react';
+import { Link } from "react-router-dom";
 import axios from "axios";
 import '../assets/css/ServicePage.css';
-
-// Placeholder images (using Unsplash for demo purposes)
-const internalMedicine = 'https://images.unsplash.com/photo-1579684453423-f84349ef60b0';
-const pediatrics = 'https://images.unsplash.com/photo-1532938911079-1b06ac7ceec7';
-const obgyn = 'https://images.unsplash.com/photo-1559839914-17aae19cec71';
-const imaging = 'https://images.unsplash.com/photo-1605721911519-3d63e7812345';
-const surgery = 'https://images.unsplash.com/photo-1579154396358-90c2b29340bf';
-const lab = 'https://images.unsplash.com/photo-1538108149393-fbbd81895907';
-const emergency = 'https://images.unsplash.com/photo-1585435465945-bef5a93d1df1';
-const checkup = 'https://images.unsplash.com/photo-1584982751601-97dcc096659c';
-const pharmacy = 'https://images.unsplash.com/photo-1584302179602-e4c3d3fd629d';
 
 const FancyBox = ({ fancyboxImage, fancyboxTitle, fancyboxDesc, buttonUrl }) => (
   <div className="fancybox">
@@ -25,15 +15,16 @@ const FancyBox = ({ fancyboxImage, fancyboxTitle, fancyboxDesc, buttonUrl }) => 
       </div>
       <h3 className="fancybox-title">{fancyboxTitle}</h3>
       <p className="fancybox-desc">{fancyboxDesc}</p>
-      <a
-        href={buttonUrl}
+      <Link
+        to={buttonUrl}
         className="fancybox-button"
       >
         Tìm Hiểu Thêm
-      </a>
+      </Link>
     </div>
   </div>
 );
+
 
 const ServicePage = () => {
   const [fancyBoxData, setFancyBoxData] = useState([]);
@@ -42,14 +33,15 @@ const ServicePage = () => {
       try {
         const res = await axios.get(`http://localhost:9999/api/user/service`);
         console.log("API Response:", res.data);
-        if (res.data.services) {
+        if (Array.isArray(res.data.data)) {
+          setFancyBoxData(res.data.data);
+        } else if (Array.isArray(res.data.services)) {
           setFancyBoxData(res.data.services);
-        } else if (res.data) {
-          setFancyBoxData(res.data);
         } else {
-          throw new Error("Invalid response format");
+          setFancyBoxData([]);
         }
       } catch (error) {
+        setFancyBoxData([]);
         console.error("Error fetching doctor details:", error);
       }
     };
@@ -97,12 +89,12 @@ const ServicePage = () => {
           </div>
           <div className="service-grid">
             {fancyBoxData.map((item, index) => (
-              <div key={index} className="service-grid-item">
+              <div key={item._id || index} className="service-grid-item">
                 <FancyBox
                   fancyboxImage={item.fancyboxImage}
-                  fancyboxTitle={item.fancyboxTitle}
-                  fancyboxDesc={item.fancyboxDesc}
-                  buttonUrl={item.buttonUrl}
+                  fancyboxTitle={item.name}
+                  fancyboxDesc={item.description}
+                  buttonUrl={`/service/${item._id}`}
                 />
               </div>
             ))}
