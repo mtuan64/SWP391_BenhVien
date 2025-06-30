@@ -1,150 +1,155 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Row, Col } from "react-bootstrap";
 import Flatpickr from "react-flatpickr";
-import axios from 'axios';
 import "flatpickr/dist/themes/material_green.css";
 import "../assets/css/AppointmentPage.css";
-
-// Hardcoded doctor data
-const doctorData = [
-  {
-    id: "1",
-    name: "Nguyễn Văn An",
-    specialty: "Nội Tổng Quát",
-    experienceYears: 10,
-    profileImage: "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d",
-  },
-  {
-    id: "2",
-    name: "Trần Thị Bình",
-    specialty: "Nhi Khoa",
-    experienceYears: 8,
-    profileImage: "https://images.unsplash.com/photo-1594824476967-48c8b964273f",
-  },
-  {
-    id: "3",
-    name: "Lê Minh Châu",
-    specialty: "Phụ Sản",
-    experienceYears: 12,
-    profileImage: "https://images.unsplash.com/photo-1598257006626-48b0c252070d",
-  },
-  {
-    id: "4",
-    name: "Phạm Quốc Đạt",
-    specialty: "Ngoại Khoa",
-    experienceYears: 15,
-    profileImage: "https://images.unsplash.com/photo-1622253692010-333f2b7c2f96",
-  },
-];
+import api from "../../api/axiosInstance";
 
 const AppointmentPage = () => {
-  const [step, setStep] = useState("doctor");
-  const [selectedDoctor, setSelectedDoctor] = useState(null);
+  const [profiles, setProfiles] = useState([]);
+  const [selectedProfile, setSelectedProfile] = useState(null);
+  const [departmentData, setDepartmentData] = useState([
+    { id: "dept1", name: "Nội tổng quát" },
+    { id: "dept2", name: "Nhi" },
+    { id: "dept3", name: "Sản" },
+    { id: "dept4", name: "Ngoại" },
+  ]);
   const [selectedDepartment, setSelectedDepartment] = useState(null);
+  const [doctors, setDoctors] = useState([]);
+  const [selectedDoctor, setSelectedDoctor] = useState(null);
   const [selectedDate, setSelectedDate] = useState(null);
   const [selectedTime, setSelectedTime] = useState(null);
-  const [selectedPayment, setSelectedPayment] = useState(null);
-
-  const serviceData = [
-    { id: "service1", title: "Khám Nội Tổng Quát", price: "500.000 VNĐ" },
-    { id: "service2", title: "Khám Nhi Khoa", price: "300.000 VNĐ" },
-    { id: "service3", title: "Khám Phụ Sản", price: "400.000 VNĐ" },
-    { id: "service4", title: "Chẩn Đoán Hình Ảnh", price: "700.000 VNĐ" },
+  const [step, setStep] = useState("profile");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(false);
+  const navigate = useNavigate();
+  const steps = [
+    { id: 'profile', title: 'Chọn hồ sơ', desc: '' },
+    { id: 'department', title: 'Chọn khoa', desc: '' },
+    { id: 'doctor', title: 'Chọn bác sĩ', desc: '' },
+    { id: 'datetime', title: 'Chọn ngày giờ', desc: '' },
+    { id: 'confirm', title: 'Xác nhận', desc: '' }
   ];
 
   const timeSlots = [
-    "08:00 Sáng", "09:00 Sáng", "10:00 Sáng", "11:00 Sáng", "12:00 Trưa",
+    "08:00 Sáng", "09:00 Sáng", "10:00 Sáng", "11:00 Sáng",
     "01:00 Chiều", "02:00 Chiều", "03:00 Chiều", "04:00 Chiều"
   ];
 
-  const paymentData = [
-    { id: "pay1", name: "Thanh Toán Sau" },
-    { id: "pay2", name: "Thanh Toán Trực Tuyến" },
-    { id: "pay3", name: "Thẻ Tín Dụng" },
-  ];
+  useEffect(() => {
+    const fetchProfiles = async () => {
+      try {
+        const res = await api.get("/profile/user");
+        setProfiles(res.data);
+      } catch (err) {
+        console.error("Error fetching profiles:", err);
+      }
+    };
+    fetchProfiles();
+  }, []);
 
-  const steps = [
-    { id: "doctor", title: "Chọn Bác Sĩ", desc: "Lựa chọn bác sĩ" },
-    { id: "service", title: "Chọn Dịch Vụ", desc: "Lựa chọn dịch vụ" },
-    { id: "datetime", title: "Ngày và Giờ", desc: "Chọn thời gian" },
-    { id: "payment", title: "Thanh Toán", desc: "Chọn phương thức thanh toán" },
-    { id: "confirm", title: "Xác Nhận", desc: "Đặt lịch hoàn tất" },
-  ];
+  useEffect(() => {
+    const fetchDoctors = async () => {
+      try {
+        const res = await api.get("/doctor/doctor");
+        setDoctors(res.data);
+      } catch (err) {
+        console.error("Error fetching doctors:", err);
+      }
+    };
+    fetchDoctors();
+  }, []);
+
+  const buildAppointmentDate = (selectedDate, selectedTime) => {
+    if (!selectedDate || !selectedTime) return null;
+    const [timePart, period] = selectedTime.split(" ");
+    let [hours, minutes] = timePart.split(":").map(Number);
+    if (period === "Chiều" && hours < 12) hours += 12;
+    if (period === "Sáng" && hours === 12) hours = 0;
+    const appointmentDate = new Date(selectedDate);
+    appointmentDate.setHours(hours, minutes, 0, 0);
+    return appointmentDate;
+  };
+
+  const handleCreateAppointment = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const appointmentDate = buildAppointmentDate(selectedDate, selectedTime);
+      const res = await api.post("/user/create", {
+        profileId: selectedProfile,
+        doctorId: selectedDoctor,
+        department: selectedDepartment,
+        appointmentDate,
+        type: "Offline",
+      });
+      console.log("Appointment created:", res.data);
+      setSuccess(true);
+      setStep("confirm");
+    } catch (err) {
+      console.error("Error creating appointment:", err);
+      setError("Đặt lịch thất bại.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const renderStepContent = () => {
     switch (step) {
-      case "doctor":
+      case "profile":
+        if (profiles.length === 0) {
+          return (
+            <div className="p-4 bg-white rounded shadow-sm text-center">
+              <h3 className="text-primary fw-bold mb-3">Chưa Có Hồ Sơ</h3>
+              <p className="text-muted">Vui lòng thêm hồ sơ mới trước khi tiếp tục đặt lịch.</p>
+              <button className="btn btn-primary mt-3" onClick={() => setStep("addProfile")}>Thêm Hồ Sơ</button>
+            </div>
+          );
+        }
         return (
           <div className="p-4 bg-white rounded shadow-sm">
-            <h3 className="text-primary fw-bold mb-4">Chọn Bác Sĩ</h3>
+            <h3 className="text-primary fw-bold mb-4">Chọn Hồ Sơ</h3>
             <Row>
-              {doctorData.length === 0 ? (
-                <Col className="text-center">Không có bác sĩ nào hoạt động</Col>
-              ) : (
-                doctorData.map((doctor) => (
-                  <Col key={doctor.id} xs={12} sm={6} md={4} lg={4} className="mb-4">
-                    <label
-                      className={`doctor-card ${selectedDoctor === doctor.id ? 'selected' : ''}`}
-                      onClick={() => setSelectedDoctor(doctor.id)}
-                    >
-                      <input type="radio" name="doctor" className="d-none" />
-                      <div className="doctor-image-container">
-                        {doctor.profileImage ? (
-                          <img
-                            src={doctor.profileImage}
-                            alt={doctor.name}
-                            className="doctor-image"
-                          />
-                        ) : (
-                          <div
-                            className="doctor-image"
-                            style={{
-                              backgroundColor: '#e0e0e0',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              fontSize: '1.5rem',
-                              color: '#6c757d'
-                            }}
-                          >
-                            {doctor.name.charAt(0)}
-                          </div>
-                        )}
-                      </div>
-                      <h5 className="doctor-name">{doctor.name}</h5>
-                      <p className="doctor-specialty">{doctor.specialty}</p>
-                      <p className="doctor-experience">{doctor.experienceYears} năm kinh nghiệm</p>
-                    </label>
-                  </Col>
-                ))
-              )}
+              {profiles.map((profile) => (
+                <Col key={profile._id} md={6} className="mb-4">
+                  <label
+                    className={`border p-4 rounded text-center cursor-pointer hover:bg-light ${selectedProfile === profile._id ? 'border-primary' : ''}`}
+                    onClick={() => setSelectedProfile(profile._id)}
+                  >
+                    <input type="radio" name="profile" className="d-none" />
+                    <h5 className="fw-semibold">{profile.name}</h5>
+                    <p className="text-muted small">{profile.gender} - {new Date(profile.dateOfBirth).toLocaleDateString()}</p>
+                  </label>
+                </Col>
+              ))}
             </Row>
             <div className="text-end mt-4">
               <button
                 className="btn btn-primary"
-                onClick={() => setStep("service")}
-                disabled={!selectedDoctor}
+                onClick={() => setStep("department")}
+                disabled={!selectedProfile}
               >
                 Tiếp Theo
               </button>
             </div>
           </div>
         );
-      case "service":
+
+      case "department":
         return (
           <div className="p-4 bg-white rounded shadow-sm">
-            <h3 className="text-primary fw-bold mb-4">Chọn Dịch Vụ</h3>
+            <h3 className="text-primary fw-bold mb-4">Chọn Chuyên Khoa</h3>
             <Row>
-              {serviceData.map((service) => (
-                <Col key={service.id} md={6} className="mb-4">
+              {departmentData.map((dep) => (
+                <Col key={dep.id} md={6} className="mb-4">
                   <label
-                    className={`border p-4 rounded text-center cursor-pointer hover:bg-light ${selectedDepartment === service.id ? 'border-primary' : ''}`}
-                    onClick={() => setSelectedDepartment(service.id)}
+                    className={`border p-4 rounded text-center cursor-pointer hover:bg-light ${selectedDepartment === dep.id ? 'border-primary' : ''}`}
+                    onClick={() => setSelectedDepartment(dep.id)}
                   >
-                    <input type="radio" name="service" className="d-none" />
-                    <h5 className="fw-semibold">{service.title}</h5>
-                    <p className="text-muted small">{service.price}</p>
+                    <input type="radio" name="department" className="d-none" />
+                    <h5 className="fw-semibold">{dep.name}</h5>
                   </label>
                 </Col>
               ))}
@@ -152,13 +157,13 @@ const AppointmentPage = () => {
             <div className="d-flex justify-content-between mt-4">
               <button
                 className="btn btn-outline-secondary"
-                onClick={() => setStep("doctor")}
+                onClick={() => setStep("profile")}
               >
                 Quay Lại
               </button>
               <button
                 className="btn btn-primary"
-                onClick={() => setStep("datetime")}
+                onClick={() => setStep("doctor")}
                 disabled={!selectedDepartment}
               >
                 Tiếp Theo
@@ -166,6 +171,46 @@ const AppointmentPage = () => {
             </div>
           </div>
         );
+
+      case "doctor":
+        const filteredDoctors = doctors.filter(d => d.department === selectedDepartment);
+        return (
+          <div className="p-4 bg-white rounded shadow-sm">
+            <h3 className="text-primary fw-bold mb-4">Chọn Bác Sĩ</h3>
+            <Row>
+              {filteredDoctors.length === 0 ? (
+                <Col className="text-center">Không có bác sĩ trong chuyên khoa này</Col>
+              ) : (
+                filteredDoctors.map((doctor) => (
+                  <Col key={doctor._id} xs={12} sm={6} md={4} lg={4} className="mb-4">
+                    <label
+                      className={`doctor-card ${selectedDoctor === doctor._id ? 'selected' : ''}`}
+                      onClick={() => setSelectedDoctor(doctor._id)}
+                    >
+                      <input type="radio" name="doctor" className="d-none" />
+                      <div className="doctor-image-container">
+                        {doctor.avatar ? (
+                          <img src={doctor.avatar} alt={doctor.name} className="doctor-image" />
+                        ) : (
+                          <div className="doctor-image bg-light d-flex align-items-center justify-content-center">
+                            {doctor.name.charAt(0)}
+                          </div>
+                        )}
+                      </div>
+                      <h5 className="doctor-name">{doctor.name}</h5>
+                      <p className="doctor-experience">{doctor.expYear} năm kinh nghiệm</p>
+                    </label>
+                  </Col>
+                ))
+              )}
+            </Row>
+            <div className="d-flex justify-content-between mt-4">
+              <button className="btn btn-outline-secondary" onClick={() => setStep("department")}>Quay Lại</button>
+              <button className="btn btn-primary" onClick={() => setStep("datetime")} disabled={!selectedDoctor}>Tiếp Theo</button>
+            </div>
+          </div>
+        );
+
       case "datetime":
         return (
           <div className="p-4 bg-white rounded shadow-sm">
@@ -193,77 +238,12 @@ const AppointmentPage = () => {
               </Col>
             </Row>
             <div className="d-flex justify-content-between mt-4">
-              <button
-                className="btn btn-outline-secondary"
-                onClick={() => setStep("service")}
-              >
-                Quay Lại
-              </button>
-              <button
-                className="btn btn-primary"
-                onClick={() => setStep("payment")}
-                disabled={!selectedDate || !selectedTime}
-              >
-                Tiếp Theo
-              </button>
+              <button className="btn btn-outline-secondary" onClick={() => setStep("doctor")}>Quay Lại</button>
+              <button className="btn btn-primary" onClick={() => handleCreateAppointment()} disabled={!selectedDate || !selectedTime}>Xác Nhận</button>
             </div>
           </div>
         );
-      case "payment":
-        return (
-          <div className="p-4 bg-white rounded shadow-sm">
-            <h3 className="text-primary fw-bold mb-4">Chọn Phương Thức Thanh Toán</h3>
-            <Row>
-              <Col md={6}>
-                <h5 className="text-muted mb-3">Chọn Thanh Toán</h5>
-                {paymentData.map((payment) => (
-                  <div
-                    key={payment.id}
-                    className={`border p-3 mb-2 rounded cursor-pointer hover:bg-light ${selectedPayment === payment.id ? 'border-primary' : ''}`}
-                    onClick={() => setSelectedPayment(payment.id)}
-                  >
-                    <input type="radio" name="payment" className="me-2" />
-                    {payment.name}
-                  </div>
-                ))}
-              </Col>
-              <Col md={6}>
-                <h5 className="text-muted mb-3">Tóm Tắt Lịch Hẹn</h5>
-                <div className="border p-3 rounded">
-                  <p className="small">Bác Sĩ: {doctorData.find(d => d.id === selectedDoctor)?.name || "N/A"}</p>
-                  <p className="small">Ngày: {selectedDate ? selectedDate.toLocaleDateString('vi-VN') : "N/A"}</p>
-                  <p className="small">Giờ: {selectedTime}</p>
-                  <div className="mt-3 p-3 bg-light rounded">
-                    <h6 className="small fw-bold">Dịch Vụ</h6>
-                    <div className="d-flex justify-content-between small">
-                      <span>{serviceData.find(s => s.id === selectedDepartment)?.title}</span>
-                      <span>{serviceData.find(s => s.id === selectedDepartment)?.price}</span>
-                    </div>
-                  </div>
-                  <div className="mt-3 d-flex justify-content-between small">
-                    <strong>Tổng Chi Phí</strong>
-                    <strong className="text-primary">{serviceData.find(s => s.id === selectedDepartment)?.price}</strong>
-                  </div>
-                </div>
-              </Col>
-            </Row>
-            <div className="d-flex justify-content-between mt-4">
-              <button
-                className="btn btn-outline-secondary"
-                onClick={() => setStep("datetime")}
-              >
-                Quay Lại
-              </button>
-              <button
-                className="btn btn-primary"
-                onClick={() => setStep("confirm")}
-                disabled={!selectedPayment}
-              >
-                Xác Nhận
-              </button>
-            </div>
-        </div>
-      );
+
       case "confirm":
         return (
           <div className="p-4 bg-white rounded shadow-sm text-center">
@@ -272,20 +252,18 @@ const AppointmentPage = () => {
               <path className="checkmark__check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8" />
             </svg>
             <h3 className="text-primary fw-bold mb-3">Đặt Lịch Hẹn Thành Công!</h3>
-            <p className="text-muted small">Vui lòng kiểm tra email để xác nhận.</p>
+            <p className="text-muted small">Cảm ơn bạn đã sử dụng dịch vụ.</p>
             <div className="mt-4 d-flex justify-content-center gap-3">
-              <button
-                className="btn btn-primary"
-                onClick={() => setStep("doctor")}
-              >
-                Đặt Thêm Lịch Hẹn
+              <button className="btn btn-primary" onClick={() => setStep("profile")}>
+                Đặt Thêm Lịch
               </button>
-              <button className="btn btn-outline-secondary">
-                In Chi Tiết
+              <button className="btn btn-outline-secondary" onClick={() => navigate("/appointmentmanage")}>
+                Quản lý Lịch
               </button>
             </div>
           </div>
         );
+
       default:
         return null;
     }
