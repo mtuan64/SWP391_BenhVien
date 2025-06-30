@@ -58,6 +58,8 @@ import NotFoundPage from "./pages/NotFoundPage";
 import MedicineListPage from "./pages/MedicineListPage.jsx";
 import MedicineDetail from "./pages/MedicineDetail";
 import ServiceDetail from "./pages/ServiceDetail.jsx";
+import DepartmentPage from "./pages/DepartmentListPage.jsx";
+import DepartmentDetail from "./pages/DepartmentDetail.jsx";
 const DRAWER_WIDTH = 240;
 
 const RoleRedirect = () => {
@@ -177,6 +179,7 @@ const App = () => {
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/medicines-home" element={<MedicineListPage />} />
+          <Route path="/department" element={<DepartmentPage />} />
           <Route path="/myprofile" element={<ProfilePage />} />
           <Route path="/appointment" element={
             <PrivateRoute>
@@ -187,6 +190,7 @@ const App = () => {
           <Route path="/doctr/:doctorId" element={<DoctorDetail />} />
           <Route path="/medicines/:medicineId" element={<MedicineDetail />} />
           <Route path="service/:serviceId" element={<ServiceDetail />} />
+          <Route path="/department/:departmentId" element={<DepartmentDetail />} />
 
 
           <Route path="/changepass" element={<Changepass />} />

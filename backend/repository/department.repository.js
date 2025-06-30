@@ -5,7 +5,7 @@ async function getAllDepartment() {
 }
 
 async function getDepartmentById(id) {
-    return await Department.find(id);
+    return await Department.findById(id);
 }
 
 module.exports = {
