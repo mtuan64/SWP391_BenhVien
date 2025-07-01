@@ -22,7 +22,6 @@ import ProfileManagePage from "./pages/ProfileManagePage";
 import AppointmentManagePage from "./pages/AppointmentManagePage";
 import MedicalLabPage from "./pages/BlogTestPage.jsx";
 import TestPageDetails from "./pages/TestPageDetails.jsx";
-import WorkSchedulePage from "./pages/WorkSchedule";
 import WorkSchedulePage from "./pages/WorkSchedulePage";
 import StaffScheduleManager from "./pages/staff/StaffScheduleManager";
 import Changepass from "./pages/ChangePassword";
@@ -246,10 +245,7 @@ const App = () => {
           <Route path="/invoice" element={<InvoiceUser />} />
           <Route path="/profilemanage" element={<ProfileManagePage />} />
           <Route path="/appointment" element={<AppointmentPage />} />
-          <Route
-            path="/appointmentmanage"
-            element={<AppointmentManagePage />}
-          />
+          <Route path="/appointmentmanage" element={<AppointmentManagePage />} />
           <Route path="/not-found" element={<NotFoundPage />} />
           <Route path="/doctor/:doctorId" element={<DoctorDetail />} />
 

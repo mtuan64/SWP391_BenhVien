@@ -29,7 +29,7 @@ const Header = ({ onMenuClick }) => {
 
     const fetchUnreadCount = async () => {
       try {
-        const res = await axios.get("/api/user/getNoti", {
+        const res = await axios.get("http://localhost:9999/api/user/getNoti", {
           headers: { Authorization: `Bearer ${token}` },
         });
         setUnreadCount(res.data.unreadCount);

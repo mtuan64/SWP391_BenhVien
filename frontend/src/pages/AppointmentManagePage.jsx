@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
-import api from "../../api/axiosInstance";
+import axios from "axios";
+import { useAuth } from "../context/authContext";
 import { Table, Button, Spinner, Alert, Form } from "react-bootstrap";
 
 const AppointmentManagePage = () => {
@@ -7,10 +8,14 @@ const AppointmentManagePage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [filterStatus, setFilterStatus] = useState("booked"); // "all" | "booked"
-
+  const { token } = useAuth();
   const fetchAppointments = async () => {
     try {
-      const res = await api.get("/user/user");
+      const res = await axios.get("http://localhost:9999/api/user/user", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       setAppointments(res.data);
     } catch (err) {
       console.error("Failed to fetch appointments", err);
@@ -23,7 +28,15 @@ const AppointmentManagePage = () => {
   const handleCancel = async (id) => {
     if (!window.confirm("Bạn có chắc muốn hủy lịch hẹn này?")) return;
     try {
-      await api.put(`/user/cancel/${id}`);
+      await axios.post(
+        `http://localhost:9999/api/user/cancel/${id}`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
       setAppointments((prev) =>
         prev.map((a) => (a._id === id ? { ...a, status: "Canceled" } : a))
       );
@@ -55,7 +68,7 @@ const AppointmentManagePage = () => {
           style={{ width: "200px" }}
         >
           <option value="all">Tất cả lịch hẹn</option>
-          <option value="booked">Chỉ lịch đang đặt</option>
+          <option value="booked">Lịch đang đặt</option>
         </Form.Select>
       </div>
 

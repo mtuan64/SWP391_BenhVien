@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
-import api from "../../api/axiosInstance";
+import axios from "axios";
+import { useAuth } from "../context/authContext";
 import { Button, Modal, Form, Row, Col } from "react-bootstrap";
 
 const ProfileManagerPage = () => {
@@ -11,11 +12,16 @@ const ProfileManagerPage = () => {
         dateOfBirth: "",
         gender: "Male"
     });
-
+    const {token } = useAuth();
+    
     // Load profiles
     const fetchProfiles = async () => {
         try {
-            const res = await api.get("/profile/user");
+            const res = await axios.get("http://localhost:9999/api/profile/user", {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
             setProfiles(res.data);
         } catch (err) {
             console.error("Failed to fetch profiles", err);
@@ -36,9 +42,17 @@ const ProfileManagerPage = () => {
     const handleSubmit = async () => {
         try {
             if (editingProfile) {
-                await api.put(`/profile/update/${editingProfile._id}`, formData);
+                await axios.put(`http://localhost:9999/api/profile/update/${editingProfile._id}`, formData, {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                });
             } else {
-                await api.post("/profile/create", formData);
+                await axios.post("http://localhost:9999/api/profile/create", formData, {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                });
             }
             setShowModal(false);
             setEditingProfile(null);
@@ -55,7 +69,11 @@ const ProfileManagerPage = () => {
     const handleDelete = async (id) => {
         if (!window.confirm("Bạn có chắc chắn muốn xoá?")) return;
         try {
-            await api.delete(`/profile/delete/${id}`);
+            await axios.delete(`http://localhost:9999/api/profile/delete/${id}`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
             fetchProfiles();
         } catch (err) {
             console.error("Error deleting profile", err);
@@ -151,6 +169,7 @@ const ProfileManagerPage = () => {
                             >
                                 <option value="Male">Nam</option>
                                 <option value="Female">Nữ</option>
+                                <option value="Other">Khác</option>
                             </Form.Select>
                         </Form.Group>
                     </Form>

@@ -5,9 +5,11 @@ import { Row, Col } from "react-bootstrap";
 import Flatpickr from "react-flatpickr";
 import "flatpickr/dist/themes/material_green.css";
 import "../assets/css/AppointmentPage.css";
-import api from "../../api/axiosInstance";
+import axios from "axios";
+import { useAuth } from "../context/authContext";
 
 const AppointmentPage = () => {
+  const { token } = useAuth();
   const [profiles, setProfiles] = useState([]);
   const [selectedProfile, setSelectedProfile] = useState(null);
   const [profileName, setProfileName] = useState("");
@@ -51,7 +53,11 @@ const AppointmentPage = () => {
   useEffect(() => {
     const fetchProfiles = async () => {
       try {
-        const res = await api.get("/profile/user");
+        const res = await axios.get("http://localhost:9999/api/profile/user", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
         setProfiles(res.data);
       } catch (err) {
         console.error("Error fetching profiles:", err);
@@ -63,7 +69,11 @@ const AppointmentPage = () => {
   useEffect(() => {
     const fetchDoctors = async () => {
       try {
-        const res = await api.get("/doctor/doctor");
+        const res = await axios.get("http://localhost:9999/api/doctor/doctor", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
         setDoctors(res.data);
       } catch (err) {
         console.error("Error fetching doctors:", err);
@@ -77,15 +87,23 @@ const AppointmentPage = () => {
     setError(null);
 
     try {
-      const res = await api.post("/profile/create", {
+      const res = await axios.post("http://localhost:9999/api/profile/create", {
         name: profileName,
         gender: profileGender,
         dateOfBirth: profileDateOfBirth,
+      }, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       });
 
       console.log("Profile created:", res.data);
       setSelectedProfile(res._id);
-      const updated = await api.get("/profile/user");
+      const updated = await axios.get("http://localhost:9999/api/profile/user", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       setProfiles(updated.data);
 
       setSuccess(true);
@@ -114,12 +132,16 @@ const AppointmentPage = () => {
     setError(null);
     try {
       const appointmentDate = buildAppointmentDate(selectedDate, selectedTime);
-      const res = await api.post("/user/create", {
+      const res = await axios.post("http://localhost:9999/api/user/create", {
         profileId: selectedProfile,
         doctorId: selectedDoctor,
         department: selectedDepartment,
         appointmentDate,
         type: "Offline",
+      }, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       });
       console.log("Appointment created:", res.data);
       setSuccess(true);
@@ -205,9 +227,8 @@ const AppointmentPage = () => {
               {profiles.map((profile) => (
                 <Col key={profile._id} md={6} className="mb-4">
                   <label
-                    className={`border p-4 rounded text-center cursor-pointer hover:bg-light ${
-                      selectedProfile === profile._id ? "border-primary" : ""
-                    }`}
+                    className={`border p-4 rounded text-center cursor-pointer hover:bg-light ${selectedProfile === profile._id ? "border-primary" : ""
+                      }`}
                     onClick={() => setSelectedProfile(profile._id)}
                   >
                     <input type="radio" name="profile" className="d-none" />
@@ -240,9 +261,8 @@ const AppointmentPage = () => {
               {departmentData.map((dep) => (
                 <Col key={dep.id} md={6} className="mb-4">
                   <label
-                    className={`border p-4 rounded text-center cursor-pointer hover:bg-light ${
-                      selectedDepartment === dep.id ? "border-primary" : ""
-                    }`}
+                    className={`border p-4 rounded text-center cursor-pointer hover:bg-light ${selectedDepartment === dep.id ? "border-primary" : ""
+                      }`}
                     onClick={() => setSelectedDepartment(dep.id)}
                   >
                     <input type="radio" name="department" className="d-none" />
@@ -292,9 +312,8 @@ const AppointmentPage = () => {
                     className="mb-4"
                   >
                     <label
-                      className={`doctor-card ${
-                        selectedDoctor === doctor._id ? "selected" : ""
-                      }`}
+                      className={`doctor-card ${selectedDoctor === doctor._id ? "selected" : ""
+                        }`}
                       onClick={() => setSelectedDoctor(doctor._id)}
                     >
                       <input type="radio" name="doctor" className="d-none" />
@@ -355,9 +374,8 @@ const AppointmentPage = () => {
                   {timeSlots.map((time) => (
                     <button
                       key={time}
-                      className={`btn btn-outline-primary btn-sm ${
-                        selectedTime === time ? "btn-primary text-white" : ""
-                      }`}
+                      className={`btn btn-outline-primary btn-sm ${selectedTime === time ? "btn-primary text-white" : ""
+                        }`}
                       onClick={() => setSelectedTime(time)}
                     >
                       {time}
@@ -519,16 +537,14 @@ const AppointmentPage = () => {
                   {steps.map((s, index) => (
                     <li
                       key={s.id}
-                      className={`d-flex align-items-center mb-3 ${
-                        step === s.id ? "fw-bold" : ""
-                      }`}
+                      className={`d-flex align-items-center mb-3 ${step === s.id ? "fw-bold" : ""
+                        }`}
                     >
                       <span
-                        className={`d-inline-block rounded-circle text-center me-2 ${
-                          steps.findIndex((st) => st.id === step) >= index
-                            ? "bg-white text-primary"
-                            : "bg-light text-white"
-                        }`}
+                        className={`d-inline-block rounded-circle text-center me-2 ${steps.findIndex((st) => st.id === step) >= index
+                          ? "bg-white text-primary"
+                          : "bg-light text-white"
+                          }`}
                         style={{
                           width: "24px",
                           height: "24px",

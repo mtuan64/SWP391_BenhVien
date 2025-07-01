@@ -4,7 +4,7 @@ const User = require("../../models/User");
 exports.createProfile = async (req, res) => {
     try {
         const { name, dateOfBirth, gender } = req.body;
-        const userId = req.cc.id;
+        const userId = req.user.id;
 
         const birthDate = new Date(dateOfBirth);
         const now = new Date();
@@ -12,11 +12,13 @@ exports.createProfile = async (req, res) => {
         if (birthDate > now) {
             return res.status(400).json({ message: 'Date of birth cannot be in the future' });
         }
+        
+        const newProfile = new Profile({ userId, name, dateOfBirth, gender });
+        await newProfile.save();
+
         await User.findByIdAndUpdate(userId, {
             $push: { profiles: newProfile._id }
         });
-        const newProfile = new Profile({ userId, name, dateOfBirth, gender });
-        await newProfile.save();
 
         res.status(201).json({ message: 'Profile created successfully', profile: newProfile });
     } catch (err) {
@@ -27,7 +29,7 @@ exports.createProfile = async (req, res) => {
 // Lấy danh sách hồ sơ của chính người dùng
 exports.getProfilesByUser = async (req, res) => {
     try {
-        const userId = req.cc._id || req.cc.id;
+        const userId = req.user.id;
         const profiles = await Profile.find({ userId });
 
         res.status(200).json(profiles);
@@ -40,7 +42,7 @@ exports.getProfilesByUser = async (req, res) => {
 exports.updateProfile = async (req, res) => {
     const { id } = req.params;
     const { name, dateOfBirth, gender } = req.body;
-    const userId = req.cc.id;
+    const userId = req.user.id;
 
     try {
         const birthDate = new Date(dateOfBirth);
@@ -69,7 +71,7 @@ exports.updateProfile = async (req, res) => {
 // Xóa hồ sơ bệnh nhân
 exports.deleteProfile = async (req, res) => {
     const { id } = req.params;
-    const userId = req.cc._id || req.cc.id;
+    const userId = req.user.id;
 
     try {
         const profile = await Profile.findOneAndDelete({ _id: id, userId });
