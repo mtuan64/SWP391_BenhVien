@@ -19,11 +19,9 @@ import ProfilePage from "./pages/ProfilePage";
 import HomePage from "./pages/Homepage";
 import AppointmentPage from "./pages/AppointmentPage";
 
-import "antd/dist/reset.css";
 import MedicalLabPage from "./pages/BlogTestPage.jsx";
 import TestPageDetails from "./pages/TestPageDetails.jsx";
 import WorkSchedulePage from "./pages/WorkSchedule";
-import "antd/dist/reset.css"; // hoặc 'antd/dist/antd.css' nếu bạn dùng antd v4
 import Changepass from "./pages/ChangePassword";
 import ResetPassword from "./pages/ResetPassword";
 import ForgotPassword from "./pages/ForgotPassword";
@@ -33,11 +31,11 @@ import Dashboard from "./pages/admin/Dashboard";
 import AccountManagement from "./pages/admin/AccountManagement";
 import EmployeeManagement from "./pages/admin/EmployessManagement";
 
-import StaffLayout from "./components/Staff/StaffLayout";
+import StaffLayout from "./components/staff/StaffLayout";
 import BlogManagement from "./pages/staff/BlogManagement";
 import ServiceManagement from "./pages/staff/ServiceManagement";
 import SpecialtyManagement from "./pages/staff/SpecialtyManagement";
-import InvoiceManagement from "./pages/staff/InvoiceManagement";
+import InvoiceUser from "./pages/InvoiceManagement";
 import PaymentView from "./pages/staff/PaymentView";
 import NewsManagement from "./pages/staff/NewsManagement";
 import FeedbackManagement from "./pages/staff/FeedbackManagement";
@@ -46,19 +44,24 @@ import AppointmentScheduleManagement from "./pages/staff/AppointmentScheduleMana
 import NotificationManagement from "./pages/staff/NotificationManagement";
 import UserManagement from "./pages/staff/UserManagement";
 import MedicineManagement from "./pages/staff/MedicineManagement";
-
+import InvoiceList from "./components/InvoiceList";
+import PaymentSuccess from "./components/PaymentSuccess";
+import PaymentFail from "./components/PaymentFail";
+import CreateInvoice from "./components/staff/CreateInvoice";
 import Header from "./components/HeaderComponent";
 import MenuComponent from "./components/MenuComponent";
 import FooterComponent from "./components/FooterComponent";
-import {
-  PrivateRoute,
-  PrivateRouteNotAllowUser,
-  PrivateRouteByRole,
-} from "./components/PrivateRoute";
-import "antd/dist/reset.css";
 import NotFoundPage from "./pages/NotFoundPage";
 import NotificationCenter from "./pages/NotificationCenter";
 import NotificationDetail from "./pages/NotificationDetail";
+import { PrivateRoute, PrivateRouteNotAllowUser, PrivateRouteByRole } from "./components/PrivateRoute"
+import "antd/dist/reset.css";
+import NotFoundPage from "./pages/NotFoundPage";
+import AddMedicalRecord from "./components/AddMedicalRecord";
+import ViewMedicalRecords from "./components/ViewMedicalRecord";
+import CreateServicePage from "./components/staff/CreateServicePage";
+import EditServicePage from "./components/staff/EditService";
+import HealthCalculatorPage from "./pages/HealthCalculatorPage";
 const DRAWER_WIDTH = 240;
 
 const RoleRedirect = () => {
@@ -114,7 +117,7 @@ const App = () => {
   const user = JSON.parse(localStorage.getItem("user"));
 
   const toggleMenu = () => setMenuOpen((open) => !open);
-
+  console.log(isPatient);
   return (
     <Router>
       {isPatient && <Header onMenuClick={toggleMenu} menuOpen={menuOpen} />}
@@ -177,11 +180,17 @@ const App = () => {
           >
             <Route index element={<BlogManagement />} />
             <Route path="blogs" element={<BlogManagement />} />
+            <Route path="invoices/create" element={<CreateInvoice />}></Route>
             <Route path="services" element={<ServiceManagement />} />
+            <Route path="services/create" element={<CreateServicePage />} />
+            <Route path="services/edit/:id" element={<EditServicePage />} />
             <Route path="specialties" element={<SpecialtyManagement />} />
-            <Route path="invoices" element={<InvoiceManagement />} />
+            <Route path="invoices" element={<InvoiceList />} />
             <Route path="payments" element={<PaymentView />} />
             <Route path="news" element={<NewsManagement />} />
+            <Route path="add/medicalrecords" element={<AddMedicalRecord />} />
+            <Route path="view/medicalrecords" element={<ViewMedicalRecords />} />
+
             <Route path="feedback" element={<FeedbackManagement />} />
             <Route path="qna" element={<QnAView />} />
             <Route
@@ -201,18 +210,24 @@ const App = () => {
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/myprofile" element={<ProfilePage />} />
-          <Route
-            path="/appointment"
-            element={
-              <PrivateRoute>
-                <AppointmentPage />
-              </PrivateRoute>
-            }
-          />
+          <Route path="/invoice" element={<InvoiceUser />} />
+          <Route path="/appointment" element={
+            <PrivateRoute>
+              <AppointmentPage />
+            </PrivateRoute>
+          } />
           <Route path="/not-found" element={<NotFoundPage />} />
           <Route path="/doctor/:doctorId" element={<DoctorDetail />} />
 
-          <Route path="/changepass" element={<Changepass />} />
+          {/* <Route path="/medicalrecord" element={<AddMedicalRecord />} />
+          <Route path="/medicalrecords" element={<ViewMedicalRecords />} /> */}
+          <Route path="/payment" element={<InvoiceList />} />
+          <Route path="/payment/success" element={<PaymentSuccess />} />
+          <Route path="/payment/fail" element={<PaymentFail />} />
+          {/* <Route path="/labtests" element={<LabtestResult />} /> */}
+          <Route path="/health/calculator" element={<HealthCalculatorPage />} />
+
+          
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
 

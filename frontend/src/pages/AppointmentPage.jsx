@@ -1,43 +1,65 @@
 import React, { useState } from 'react';
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Row, Col } from "react-bootstrap";
 import Flatpickr from "react-flatpickr";
 import "flatpickr/dist/themes/material_green.css";
 import "../assets/css/AppointmentPage.css";
-
+import axios from 'axios';
 // Hardcoded doctor data
-const doctorData = [
-  {
-    id: "1",
-    name: "Nguyễn Văn An",
-    specialty: "Nội Tổng Quát",
-    experienceYears: 10,
-    profileImage: "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d",
-  },
-  {
-    id: "2",
-    name: "Trần Thị Bình",
-    specialty: "Nhi Khoa",
-    experienceYears: 8,
-    profileImage: "https://images.unsplash.com/photo-1594824476967-48c8b964273f",
-  },
-  {
-    id: "3",
-    name: "Lê Minh Châu",
-    specialty: "Phụ Sản",
-    experienceYears: 12,
-    profileImage: "https://images.unsplash.com/photo-1598257006626-48b0c252070d",
-  },
-  {
-    id: "4",
-    name: "Phạm Quốc Đạt",
-    specialty: "Ngoại Khoa",
-    experienceYears: 15,
-    profileImage: "https://images.unsplash.com/photo-1622253692010-333f2b7c2f96",
-  },
-];
+// const doctorData = [
+//   {
+//     id: "1",
+//     name: "Nguyễn Văn An",
+//     specialty: "Nội Tổng Quát",
+//     experienceYears: 10,
+//     profileImage: "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d",
+//   },
+//   {
+//     id: "2",
+//     name: "Trần Thị Bình",
+//     specialty: "Nhi Khoa",
+//     experienceYears: 8,
+//     profileImage: "https://images.unsplash.com/photo-1594824476967-48c8b964273f",
+//   },
+//   {
+//     id: "3",
+//     name: "Lê Minh Châu",
+//     specialty: "Phụ Sản",
+//     experienceYears: 12,
+//     profileImage: "https://images.unsplash.com/photo-1598257006626-48b0c252070d",
+//   },
+//   {
+//     id: "4",
+//     name: "Phạm Quốc Đạt",
+//     specialty: "Ngoại Khoa",
+//     experienceYears: 15,
+//     profileImage: "https://images.unsplash.com/photo-1622253692010-333f2b7c2f96",
+//   },
+// ];
+
+
+//
 
 const AppointmentPage = () => {
+  const [doctorData, setDoctorData] = useState([]);
+  useEffect(() => {
+    const fetchDoctors = async () => {
+
+      try {
+        let res = await axios.get('http://localhost:9999/api/apm/doctors');
+        setDoctorData(res.data.data);
+      } catch (err) {
+        console.error('Error fetching doctors:', {
+        });
+
+      }
+    };
+
+    fetchDoctors();
+  }, []);
+
+
   const [step, setStep] = useState("doctor");
   const [selectedDoctor, setSelectedDoctor] = useState(null);
   const [selectedService, setSelectedService] = useState(null);
@@ -82,10 +104,10 @@ const AppointmentPage = () => {
                 <Col className="text-center">Không có bác sĩ nào hoạt động</Col>
               ) : (
                 doctorData.map((doctor) => (
-                  <Col key={doctor.id} xs={12} sm={6} md={4} lg={4} className="mb-4">
+                  <Col key={doctor._id} xs={12} sm={6} md={4} lg={4} className="mb-4">
                     <label
-                      className={`doctor-card ${selectedDoctor === doctor.id ? 'selected' : ''}`}
-                      onClick={() => setSelectedDoctor(doctor.id)}
+                      className={`doctor-card ${selectedDoctor === doctor._id ? 'selected' : ''}`}
+                      onClick={() => setSelectedDoctor(doctor._id)}
                     >
                       <input type="radio" name="doctor" className="d-none" />
                       <div className="doctor-image-container">
@@ -112,8 +134,8 @@ const AppointmentPage = () => {
                         )}
                       </div>
                       <h5 className="doctor-name">{doctor.name}</h5>
-                      <p className="doctor-specialty">{doctor.specialty}</p>
-                      <p className="doctor-experience">{doctor.experienceYears} năm kinh nghiệm</p>
+                      <p className="doctor-specialty">{doctor.specialization}</p>
+                      <p className="doctor-experience">{doctor.experienceYears ? doctor.experienceYears : 10} năm kinh nghiệm</p>
                     </label>
                   </Col>
                 ))
@@ -229,7 +251,7 @@ const AppointmentPage = () => {
               <Col md={6}>
                 <h5 className="text-muted mb-3">Tóm Tắt Lịch Hẹn</h5>
                 <div className="border p-3 rounded">
-                  <p className="small">Bác Sĩ: {doctorData.find(d => d.id === selectedDoctor)?.name || "N/A"}</p>
+                  <p className="small">Bác Sĩ: {doctorData.find(d => d._id === selectedDoctor)?.name || "N/A"}</p>
                   <p className="small">Ngày: {selectedDate ? selectedDate.toLocaleDateString('vi-VN') : "N/A"}</p>
                   <p className="small">Giờ: {selectedTime}</p>
                   <div className="mt-3 p-3 bg-light rounded">
@@ -261,8 +283,8 @@ const AppointmentPage = () => {
                 Xác Nhận
               </button>
             </div>
-        </div>
-      );
+          </div>
+        );
       case "confirm":
         return (
           <div className="p-4 bg-white rounded shadow-sm text-center">

@@ -219,7 +219,7 @@ const forgotPassword = async (req, res) => {
     const mailOptions = {
       from: process.env.EMAIL_USER,
       to: email,
-      subject: "Mã xác minh đặt lại mật khẩu",
+      subject: 'Mã xác minh đặt lại mật khẩu',
       html: `
         <h3>Mã xác minh</h3>
         <p>Mã xác minh của bạn là: <strong>${otp}</strong></p>
@@ -277,10 +277,5 @@ const resetPassword = async (req, res) => {
 };
 
 module.exports = {
-  Login,
-  Signup,
-  check,
-  changePassword,
-  forgotPassword,
-  resetPassword,
-};
+  Login, Signup, check, changePassword, forgotPassword, resetPassword
+}
