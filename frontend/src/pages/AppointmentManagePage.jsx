@@ -28,11 +28,15 @@ const AppointmentManagePage = () => {
   const handleCancel = async (id) => {
     if (!window.confirm("Bạn có chắc muốn hủy lịch hẹn này?")) return;
     try {
-      await axios.put(`http://localhost:9999/api/user/cancel/${id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      await axios.post(
+        `http://localhost:9999/api/user/cancel/${id}`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
       setAppointments((prev) =>
         prev.map((a) => (a._id === id ? { ...a, status: "Canceled" } : a))
       );
@@ -64,7 +68,7 @@ const AppointmentManagePage = () => {
           style={{ width: "200px" }}
         >
           <option value="all">Tất cả lịch hẹn</option>
-          <option value="booked">Chỉ lịch đang đặt</option>
+          <option value="booked">Lịch đang đặt</option>
         </Form.Select>
       </div>
 

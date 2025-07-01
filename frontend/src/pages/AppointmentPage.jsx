@@ -99,7 +99,11 @@ const AppointmentPage = () => {
 
       console.log("Profile created:", res.data);
       setSelectedProfile(res._id);
-      const updated = await axios.get("http://localhost:9999/api/profile/user");
+      const updated = await axios.get("http://localhost:9999/api/profile/user", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       setProfiles(updated.data);
 
       setSuccess(true);

@@ -7,7 +7,7 @@ const Employee = require("../../models/Employee");
 // Đặt lịch khám
 exports.createAppointment = async (req, res) => {
     const { profileId, doctorId, department, appointmentDate, type } = req.body;
-    const userId = req.cc.id;
+    const userId = req.user.id;
 
     try {
         // Kiểm tra xem bác sĩ đã có lịch vào giờ này chưa
@@ -65,7 +65,7 @@ exports.createAppointment = async (req, res) => {
 
 // Hiển thị toàn bộ danh sách đặt lịch của chính người dùng
 exports.getAppointmentsByUser = async (req, res) => {
-    const userId = req.cc.id;
+    const userId = req.user.id;
 
     try {
         const appointments = await Appointment.find({ userId })
@@ -81,7 +81,7 @@ exports.getAppointmentsByUser = async (req, res) => {
 // Hủy lịch hẹn
 exports.cancelAppointment = async (req, res) => {
     const { id } = req.params;
-    const userId = req.cc.id;
+    const userId = req.user.id;
 
     try {
         const appointment = await Appointment.findOne({ _id: id, userId });
