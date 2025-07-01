@@ -69,7 +69,10 @@ const StaffLayout = () => {
           <Menu.Item key="11" icon={<UserOutlined />}>
             <Link to="/staff/users">Manage Users</Link>
           </Menu.Item>
-          <Menu.Item key="12" icon={<PlusCircleOutlined />}>
+          <Menu.Item key="12" icon={<FileTextOutlined />}>
+            <Link to="/staff/medicalrecord">Medical Record</Link>
+          </Menu.Item>
+          <Menu.Item key="13" icon={<PlusCircleOutlined />}>
             <Link to="/staff/medicines">Manage Medicines</Link>
           </Menu.Item>
           <Menu.Item key="4" icon={<DollarOutlined />}>

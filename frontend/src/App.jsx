@@ -25,12 +25,10 @@ import WorkSchedulePage from "./pages/WorkSchedule";
 import Changepass from "./pages/ChangePassword";
 import ResetPassword from "./pages/ResetPassword";
 import ForgotPassword from "./pages/ForgotPassword";
-
 import AdminLayout from "./components/admin/AdminLayout";
 import Dashboard from "./pages/admin/Dashboard";
 import AccountManagement from "./pages/admin/AccountManagement";
 import EmployeeManagement from "./pages/admin/EmployessManagement";
-
 import StaffLayout from "./components/staff/StaffLayout";
 import BlogManagement from "./pages/staff/BlogManagement";
 import ServiceManagement from "./pages/staff/ServiceManagement";
@@ -43,6 +41,7 @@ import QnAView from "./pages/staff/QnAView";
 import AppointmentScheduleManagement from "./pages/staff/AppointmentScheduleManagement";
 import NotificationManagement from "./pages/staff/NotificationManagement";
 import UserManagement from "./pages/staff/UserManagement";
+import MedicalRecord from "./pages/staff/MedicalRecord";
 import MedicineManagement from "./pages/staff/MedicineManagement";
 import InvoiceList from "./components/InvoiceList";
 import PaymentSuccess from "./components/PaymentSuccess";
@@ -61,6 +60,18 @@ import ViewMedicalRecords from "./components/ViewMedicalRecord";
 import CreateServicePage from "./components/staff/CreateServicePage";
 import EditServicePage from "./components/staff/EditService";
 import HealthCalculatorPage from "./pages/HealthCalculatorPage";
+import BlogListPage from "./pages/BlogListPage";
+import NewsListPage from "./pages/NewsListPage";
+import NewsDetail from "./pages/NewsDetail";
+import BlogDetail from "./pages/BlogDetail";
+import ViewMedicalRecord from "./pages/ViewMedicalRecord";
+import Header from "./components/HeaderComponent";
+import MenuComponent from "./components/MenuComponent";
+import FooterComponent from "./components/FooterComponent";
+import { PrivateRoute, PrivateRouteByRole } from "./components/PrivateRoute";
+import "antd/dist/reset.css";
+import NotFoundPage from "./pages/NotFoundPage";
+
 const DRAWER_WIDTH = 240;
 
 const RoleRedirect = () => {
@@ -80,7 +91,7 @@ const RoleRedirect = () => {
       if (role === "Admin") navigate("/admin/");
       else if (role === "Staff") navigate("/staff/");
       else if (role === "Doctor") navigate("/doctor");
-      else navigate("/home");
+      else navigate("/");
     } else {
       // Nếu đã vào nhầm layout (sai path so với role) thì redirect lại
       if (role === "Admin" && !path.startsWith("/admin")) navigate("/admin/");
@@ -98,6 +109,7 @@ const RoleRedirect = () => {
 
   return null;
 };
+
 const getRole = () => {
   try {
     const user = JSON.parse(localStorage.getItem("user"));
@@ -198,6 +210,7 @@ const App = () => {
             />
             <Route path="notifications" element={<NotificationManagement />} />
             <Route path="users" element={<UserManagement />} />
+            <Route path="medicalrecord" element={<MedicalRecord />} />
             <Route path="medicines" element={<MedicineManagement />} />
           </Route>
 
@@ -205,6 +218,21 @@ const App = () => {
           <Route path="/home" element={<HomePage />} />
           <Route path="/service" element={<ServicePage />} />
           <Route path="/doctor-home" element={<DoctorPage />} />
+          
+        
+          <Route path="/blogs" element={<BlogListPage />} />
+          <Route path="/news" element={<NewsListPage />} />
+          <Route path="/blog/:slug" element={<BlogDetail />} />
+          <Route path="/news/:slug" element={<NewsDetail />} />
+          <Route
+            path="/view_medicalrecord"
+            element={
+              <PrivateRouteByRole allowedRoles={["patient"]}>
+                <ViewMedicalRecord />
+              </PrivateRouteByRole>
+            }
+          />
+          <Route path="/doctors" element={<DoctorPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/about" element={<AboutPage />} />
