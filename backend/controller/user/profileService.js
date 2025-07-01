@@ -27,7 +27,7 @@ exports.createProfile = async (req, res) => {
 // Lấy danh sách hồ sơ của chính người dùng
 exports.getProfilesByUser = async (req, res) => {
     try {
-        const userId = req.cc._id || req.cc.id;
+        const userId = req.user.id || req.user.id;
         const profiles = await Profile.find({ userId });
 
         res.status(200).json(profiles);

@@ -74,7 +74,7 @@ exports.markUrgent = async (req, res) => {
 // 📌 User: Get notifications (polling)
 exports.getUserNotifications = async (req, res) => {
   try {
-    const userId = req.cc.id;
+    const userId = req.user.id;
     const notifications = await Notification.find({
       $or: [{ receiver: null }, { receiver: userId }],
     }).sort({ createdAt: -1 });
@@ -93,7 +93,7 @@ exports.getUserNotifications = async (req, res) => {
 exports.markAsRead = async (req, res) => {
   try {
     const { id } = req.params;
-    const userId = req.cc.id;
+    const userId = req.user.id;
     const notify = await Notification.findById(id);
 
     if (!notify) {
