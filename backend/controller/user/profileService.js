@@ -1,5 +1,5 @@
 const Profile = require("../../models/Profile");
-
+const User = require("../../models/User");
 // Tạo hồ sơ bệnh nhân
 exports.createProfile = async (req, res) => {
     try {
