@@ -1,4 +1,3 @@
-
 const mongoose = require('mongoose'); // Thêm dòng này
 const Employee = require("../../models/Employee");
 const User = require("../../models/User");
@@ -266,7 +265,7 @@ module.exports.delEmployees = async (req, res) => {
     }
 };
 
-exports.getAllDoctorsForApm = async (req, res) => {
+module.exports.getAllDoctorsForApm = async (req, res) => {
     try {
         const doctors = await Employee.find({ role: 'Doctor', status: 'active' })
             .select('name department expYear avatar'); // CHỈ lấy các trường cần thiết

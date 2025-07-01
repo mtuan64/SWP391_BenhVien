@@ -14,7 +14,6 @@ const {
   getAppointmentsByUser,
   cancelAppointment,
 } = require("../../controller/user/userService");
-const { authMiddleware } = require("../../middleware/auth.middleware");
 
 userRouter.get(
   "/getNoti",
