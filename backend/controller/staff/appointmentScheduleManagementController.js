@@ -6,10 +6,10 @@ const Employee = require("../../models/Employee");
 const Schedule = require('../../models/Schedule');
 const Profile = require('../../models/Profile');
 
-// Lấy danh sách lịch hẹn có kèm tên bác sĩ, người dùng và số điện thoại với phân trang
+// Lấy danh sách lịch hẹn có kèm tên bác sĩ, người dùng, số điện thoại và user_code với phân trang
 exports.getAllAppointments = async (req, res) => {
   try {
-    const { search = "", page = 1, limit = 10, status, department } = req.query;
+    const { search = "", page = 1, limit = 10, status, department, startDate, endDate } = req.query;
     const pageNum = parseInt(page, 10);
     const limitNum = parseInt(limit, 10);
     const skip = (pageNum - 1) * limitNum;
@@ -22,22 +22,36 @@ exports.getAllAppointments = async (req, res) => {
     if (department) {
       query.department = department;
     }
+    if (startDate || endDate) {
+      query.appointmentDate = {};
+      if (startDate && !isNaN(new Date(startDate).getTime())) {
+        query.appointmentDate.$gte = new Date(startDate);
+      }
+      if (endDate && !isNaN(new Date(endDate).getTime())) {
+        query.appointmentDate.$lte = new Date(new Date(endDate).setHours(23, 59, 59, 999));
+      }
+    }
+
+    console.log("Query parameters:", { search, page, limit, status, department, startDate, endDate });
+    console.log("Constructed query:", query);
 
     const totalAppointments = await Appointment.countDocuments(query);
     const appointments = await Appointment.find(query).skip(skip).limit(limitNum);
+
+    console.log("Fetched appointments:", appointments);
 
     const doctorIds = [...new Set(appointments.map(a => a.doctorId?.toString()))];
     const userIds = [...new Set(appointments.map(a => a.userId?.toString()))];
 
     const doctors = await Employee.find({ _id: { $in: doctorIds } }, { _id: 1, name: 1 });
-    const users = await User.find({ _id: { $in: userIds } }, { _id: 1, name: 1, phone: 1 });
+    const users = await User.find({ _id: { $in: userIds } }, { _id: 1, name: 1, phone: 1, user_code: 1 });
 
     const doctorMap = doctors.reduce((acc, doc) => {
       acc[doc._id.toString()] = doc.name;
       return acc;
     }, {});
     const userMap = users.reduce((acc, user) => {
-      acc[user._id.toString()] = { name: user.name, phone: user.phone || "N/A" };
+      acc[user._id.toString()] = { name: user.name, phone: user.phone || "N/A", user_code: user.user_code || "N/A" };
       return acc;
     }, {});
 
@@ -45,7 +59,8 @@ exports.getAllAppointments = async (req, res) => {
       ...a._doc,
       doctorName: doctorMap[a.doctorId?.toString()] || "Unknown Doctor",
       userName: userMap[a.userId?.toString()]?.name || "Unknown User",
-      userPhone: userMap[a.userId?.toString()]?.phone || "N/A"
+      userPhone: userMap[a.userId?.toString()]?.phone || "N/A",
+      userCode: userMap[a.userId?.toString()]?.user_code || "N/A"
     }));
 
     if (search.trim() !== "") {
@@ -54,9 +69,22 @@ exports.getAllAppointments = async (req, res) => {
         (a.doctorName && a.doctorName.toLowerCase().includes(searchLower)) ||
         (a.userName && a.userName.toLowerCase().includes(searchLower)) ||
         (a.userPhone && a.userPhone.toLowerCase().includes(searchLower)) ||
+        (a.userCode && a.userCode.toLowerCase().includes(searchLower)) ||
         (a.department && a.department.toLowerCase().includes(searchLower)) ||
         (a.status && a.status.toLowerCase().includes(searchLower))
       );
+    } else if (startDate || endDate) {
+      enrichedAppointments = enrichedAppointments.filter(a => {
+        const appointmentDate = new Date(a.appointmentDate);
+        let matchesDateRange = true;
+        if (startDate && appointmentDate < new Date(startDate)) {
+          matchesDateRange = false;
+        }
+        if (endDate && appointmentDate > new Date(new Date(endDate).setHours(23, 59, 59, 999))) {
+          matchesDateRange = false;
+        }
+        return matchesDateRange;
+      });
     }
 
     const response = {
@@ -70,7 +98,8 @@ exports.getAllAppointments = async (req, res) => {
     };
     res.status(200).json(response);
   } catch (error) {
-    res.status(500).json({ message: "Lỗi server", error: error.message });
+    console.error("Error in getAllAppointments:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 };
 
@@ -154,13 +183,14 @@ exports.getAllDepartments = async (req, res) => {
 // Lấy danh sách tất cả user
 exports.getAllUsers = async (req, res) => {
   try {
-    const users = await User.find({}, { _id: 1, name: 1, phone: 1 });
+    const users = await User.find({}, { _id: 1, name: 1, phone: 1, user_code: 1 });
     res.status(200).json(users);
   } catch (error) {
     res.status(500).json({ message: "Lỗi server", error: error.message });
   }
 };
 
+// Lấy profiles theo userId
 exports.getProfilesByUser = async (req, res) => {
   try {
     const userId = req.params.userId;
@@ -172,7 +202,7 @@ exports.getProfilesByUser = async (req, res) => {
   }
 };
 
-// GET /api/appointmentScheduleManagement/schedules/:doctorId
+// Lấy schedules theo doctorId
 exports.getDoctorSchedules = async (req, res) => {
   try {
     const { doctorId } = req.params;
@@ -189,6 +219,7 @@ exports.getDoctorSchedules = async (req, res) => {
   }
 };
 
+// Tạo profile mới
 exports.createProfile = async (req, res) => {
   try {
     let { userId, name, gender, dateOfBirth, diagnose, note, issues, doctorId, medicine } = req.body;
