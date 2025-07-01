@@ -614,7 +614,7 @@ const BlogManagement = () => {
     setPage(value);
   };
 
-  // Lọc và tìm kiếm blogs
+  // Filter and search blogs
   const filteredBlogs = blogs.filter((blog) => {
     const matchesCategory =
       !filterCategory || blog.categoryId?._id === filterCategory;
@@ -644,12 +644,14 @@ const BlogManagement = () => {
       </Box>
       {tabValue === 0 && (
         <>
-          <Box className="filter-search-container">
-            <FormControl sx={{ minWidth: 200 }}>
-              <InputLabel>Filter by Category</InputLabel>
+          <Box className="filter-search-container" sx={{ display: "flex", gap: 2, mb: 2, flexWrap: "wrap" }}>
+            <FormControl variant="outlined" sx={{ minWidth: 200, flex: 1 }}>
+              <InputLabel id="filter-category-label">Filter by Category</InputLabel>
               <Select
+                labelId="filter-category-label"
                 value={filterCategory}
                 onChange={(e) => setFilterCategory(e.target.value)}
+                label="Filter by Category"
               >
                 <MenuItem value="">
                   <em>All Categories</em>
@@ -666,7 +668,7 @@ const BlogManagement = () => {
               variant="outlined"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value.toLowerCase())}
-              sx={{ flexGrow: 1 }}
+              sx={{ flex: 1, minWidth: 200 }}
             />
           </Box>
           <Button
@@ -675,6 +677,7 @@ const BlogManagement = () => {
             startIcon={<AddIcon />}
             onClick={handleOpenAddBlog}
             disabled={loading}
+            sx={{ mb: 2 }}
           >
             Add Blog
           </Button>
@@ -772,6 +775,7 @@ const BlogManagement = () => {
                   onChange={(e) =>
                     setEditingBlog({ ...editingBlog, title: e.target.value })
                   }
+                  variant="outlined"
                 />
               </Box>
               <Box sx={{ mb: 2 }}>
@@ -781,13 +785,15 @@ const BlogManagement = () => {
                     className="custom-edit-section"
                     sx={{ mb: 2, p: 2, borderRadius: 4 }}
                   >
-                    <FormControl fullWidth margin="dense">
-                      <InputLabel>Type</InputLabel>
+                    <FormControl fullWidth margin="dense" variant="outlined">
+                      <InputLabel id={`edit-content-type-${index}`}>Type</InputLabel>
                       <Select
+                        labelId={`edit-content-type-${index}`}
                         value={item.type}
                         onChange={(e) =>
                           handleContentChange(index, "type", e.target.value)
                         }
+                        label="Type"
                       >
                         <MenuItem value="paragraph">Paragraph</MenuItem>
                         <MenuItem value="bullet">Bullet</MenuItem>
@@ -806,6 +812,7 @@ const BlogManagement = () => {
                             handleContentChange(index, "text", e.target.value)
                           }
                           sx={{ mt: 1 }}
+                          variant="outlined"
                         />
                         <Box sx={{ display: "flex", gap: 2, mt: 1 }}>
                           <FormControlLabel
@@ -839,9 +846,10 @@ const BlogManagement = () => {
                             label="Italic"
                           />
                         </Box>
-                        <FormControl fullWidth margin="dense" sx={{ mt: 1 }}>
-                          <InputLabel>Font Size</InputLabel>
+                        <FormControl fullWidth margin="dense" sx={{ mt: 1 }} variant="outlined">
+                          <InputLabel id={`edit-font-size-${index}`}>Font Size</InputLabel>
                           <Select
+                            labelId={`edit-font-size-${index}`}
                             value={item.fontSize || "medium"}
                             onChange={(e) =>
                               handleContentChange(
@@ -850,6 +858,7 @@ const BlogManagement = () => {
                                 e.target.value
                               )
                             }
+                            label="Font Size"
                           >
                             <MenuItem value="small">Small</MenuItem>
                             <MenuItem value="medium">Medium</MenuItem>
@@ -893,9 +902,10 @@ const BlogManagement = () => {
                 ))}
               </Box>
               <Box sx={{ mb: 2 }}>
-                <FormControl fullWidth margin="dense">
-                  <InputLabel>Category</InputLabel>
+                <FormControl fullWidth margin="dense" variant="outlined">
+                  <InputLabel id="edit-category-label">Category</InputLabel>
                   <Select
+                    labelId="edit-category-label"
                     value={editingBlog?.categoryId || ""}
                     onChange={(e) =>
                       setEditingBlog({
@@ -903,6 +913,7 @@ const BlogManagement = () => {
                         categoryId: e.target.value,
                       })
                     }
+                    label="Category"
                   >
                     {categories.map((category) => (
                       <MenuItem key={category._id} value={category._id}>
@@ -949,7 +960,7 @@ const BlogManagement = () => {
           <Dialog
             open={openAddBlog}
             onClose={handleCloseAddBlog}
-            maxWidth="sm"
+            maxWidth="md"
             fullWidth
           >
             <DialogTitle>Add Blog</DialogTitle>
@@ -970,6 +981,7 @@ const BlogManagement = () => {
                   onChange={(e) =>
                     setNewBlog({ ...newBlog, title: e.target.value })
                   }
+                  variant="outlined"
                 />
               </Box>
               <Box sx={{ mb: 2 }}>
@@ -979,13 +991,15 @@ const BlogManagement = () => {
                     className="custom-edit-section"
                     sx={{ mb: 2, p: 2, borderRadius: 4 }}
                   >
-                    <FormControl fullWidth margin="dense">
-                      <InputLabel>Type</InputLabel>
+                    <FormControl fullWidth margin="dense" variant="outlined">
+                      <InputLabel id={`add-content-type-${index}`}>Type</InputLabel>
                       <Select
+                        labelId={`add-content-type-${index}`}
                         value={item.type}
                         onChange={(e) =>
                           handleContentChange(index, "type", e.target.value)
                         }
+                        label="Type"
                       >
                         <MenuItem value="paragraph">Paragraph</MenuItem>
                         <MenuItem value="bullet">Bullet</MenuItem>
@@ -1004,6 +1018,7 @@ const BlogManagement = () => {
                             handleContentChange(index, "text", e.target.value)
                           }
                           sx={{ mt: 1 }}
+                          variant="outlined"
                         />
                         <Box sx={{ display: "flex", gap: 2, mt: 1 }}>
                           <FormControlLabel
@@ -1037,9 +1052,10 @@ const BlogManagement = () => {
                             label="Italic"
                           />
                         </Box>
-                        <FormControl fullWidth margin="dense" sx={{ mt: 1 }}>
-                          <InputLabel>Font Size</InputLabel>
+                        <FormControl fullWidth margin="dense" sx={{ mt: 1 }} variant="outlined">
+                          <InputLabel id={`add-font-size-${index}`}>Font Size</InputLabel>
                           <Select
+                            labelId={`add-font-size-${index}`}
                             value={item.fontSize || "medium"}
                             onChange={(e) =>
                               handleContentChange(
@@ -1048,6 +1064,7 @@ const BlogManagement = () => {
                                 e.target.value
                               )
                             }
+                            label="Font Size"
                           >
                             <MenuItem value="small">Small</MenuItem>
                             <MenuItem value="medium">Medium</MenuItem>
@@ -1091,13 +1108,15 @@ const BlogManagement = () => {
                 ))}
               </Box>
               <Box sx={{ mb: 2 }}>
-                <FormControl fullWidth margin="dense">
-                  <InputLabel>Category</InputLabel>
+                <FormControl fullWidth margin="dense" variant="outlined">
+                  <InputLabel id="add-category-label">Category</InputLabel>
                   <Select
+                    labelId="add-category-label"
                     value={newBlog.categoryId}
                     onChange={(e) =>
                       setNewBlog({ ...newBlog, categoryId: e.target.value })
                     }
+                    label="Category"
                   >
                     {categories.map((category) => (
                       <MenuItem key={category._id} value={category._id}>
@@ -1178,6 +1197,7 @@ const BlogManagement = () => {
             startIcon={<AddIcon />}
             onClick={handleOpenAddCategory}
             disabled={loading}
+            sx={{ mb: 2 }}
           >
             Add Category
           </Button>
@@ -1231,6 +1251,7 @@ const BlogManagement = () => {
                     name: e.target.value,
                   })
                 }
+                variant="outlined"
               />
             </DialogContent>
             <DialogActions>
@@ -1264,6 +1285,7 @@ const BlogManagement = () => {
                 onChange={(e) =>
                   setNewCategory({ ...newCategory, name: e.target.value })
                 }
+                variant="outlined"
               />
             </DialogContent>
             <DialogActions>

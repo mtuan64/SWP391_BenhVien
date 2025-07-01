@@ -41,7 +41,7 @@ const NEWS_CATEGORIES = [
   "Khác",
 ];
 const PRIORITIES = ["low", "medium", "high"];
-const API_BASE_URL = "http://localhost:9999/api/staff"; // Centralize API URL
+const API_BASE_URL = "http://localhost:9999/api/staff";
 
 const NewsManagement = () => {
   const [newsItems, setNewsItems] = useState([]);
@@ -76,16 +76,12 @@ const NewsManagement = () => {
 
   const getToken = () => localStorage.getItem("token");
 
-  // Enhanced truncate function to handle emojis and special characters
   const truncateContent = (text, maxLength) => {
     if (!text || text.length <= maxLength) return text || "";
-    // Find the last space or newline before maxLength
     let lastSpace = text.substring(0, maxLength).lastIndexOf(" ");
     let lastNewline = text.substring(0, maxLength).lastIndexOf("\n");
     let cutOff = Math.max(lastSpace, lastNewline);
-    // If no space or newline found, cut at maxLength
     cutOff = cutOff > 0 ? cutOff : maxLength;
-    // Ensure we don't split an emoji (check for surrogate pairs)
     while (cutOff > 0 && /[\uD800-\uDFFF]/.test(text[cutOff - 1])) {
       cutOff--;
     }
@@ -394,7 +390,7 @@ const NewsManagement = () => {
   };
 
   const handleImageChange = (type, file) => {
-    if (file && file.size > 5 * 1024 * 1024) { // 5MB limit
+    if (file && file.size > 5 * 1024 * 1024) {
       setErrorMessage("File size exceeds 5MB limit.");
       return;
     }
@@ -418,12 +414,16 @@ const NewsManagement = () => {
   return (
     <div className="news-list-page">
       <h1>Quản Lý Tin Tức</h1>
-      <Box className="filter-search-container" sx={{ display: "flex", gap: 2, mb: 2 }}>
-        <FormControl sx={{ minWidth: 200 }}>
-          <InputLabel>Lọc Theo Danh Mục</InputLabel>
+      <Box className="filter-search-container" sx={{ display: "flex", gap: 2, mb: 2, flexWrap: "wrap" }}>
+        <FormControl variant="outlined" sx={{ minWidth: 200, flex: 1 }}>
+          <InputLabel id="filter-category-label" shrink={!!filterCategory}>
+            Lọc Theo Danh Mục
+          </InputLabel>
           <Select
+            labelId="filter-category-label"
             value={filterCategory}
             onChange={(e) => setFilterCategory(e.target.value)}
+            label="Lọc Theo Danh Mục"
           >
             <MenuItem value="">
               <em>Tất Cả Danh Mục</em>
@@ -435,11 +435,15 @@ const NewsManagement = () => {
             ))}
           </Select>
         </FormControl>
-        <FormControl sx={{ minWidth: 200 }}>
-          <InputLabel>Nổi Bật</InputLabel>
+        <FormControl variant="outlined" sx={{ minWidth: 200, flex: 1 }}>
+          <InputLabel id="filter-isFeatured-label" shrink={!!filterIsFeatured}>
+            Nổi Bật
+          </InputLabel>
           <Select
+            labelId="filter-isFeatured-label"
             value={filterIsFeatured}
             onChange={(e) => setFilterIsFeatured(e.target.value)}
+            label="Nổi Bật"
           >
             <MenuItem value="">
               <em>Tất Cả</em>
@@ -448,11 +452,15 @@ const NewsManagement = () => {
             <MenuItem value="false">Không Nổi Bật</MenuItem>
           </Select>
         </FormControl>
-        <FormControl sx={{ minWidth: 200 }}>
-          <InputLabel>Độ Ưu Tiên</InputLabel>
+        <FormControl variant="outlined" sx={{ minWidth: 200, flex: 1 }}>
+          <InputLabel id="filter-priority-label" shrink={!!filterPriority}>
+            Độ Ưu Tiên
+          </InputLabel>
           <Select
+            labelId="filter-priority-label"
             value={filterPriority}
             onChange={(e) => setFilterPriority(e.target.value)}
+            label="Độ Ưu Tiên"
           >
             <MenuItem value="">
               <em>Tất Cả</em>
@@ -467,7 +475,8 @@ const NewsManagement = () => {
           variant="outlined"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          sx={{ flexGrow: 1 }}
+          sx={{ flex: 1, minWidth: 200 }}
+          InputLabelProps={{ shrink: !!searchQuery }}
         />
       </Box>
       <Button
@@ -476,6 +485,7 @@ const NewsManagement = () => {
         startIcon={<AddIcon />}
         onClick={handleOpenAddNews}
         disabled={loading}
+        sx={{ mb: 2 }}
       >
         Add News
       </Button>
@@ -561,6 +571,8 @@ const NewsManagement = () => {
             fullWidth
             value={editingNews?.title || ""}
             onChange={(e) => setEditingNews({ ...editingNews, title: e.target.value })}
+            variant="outlined"
+            InputLabelProps={{ shrink: !!editingNews?.title }}
           />
           <TextField
             margin="dense"
@@ -571,12 +583,18 @@ const NewsManagement = () => {
             rows={4}
             value={editingNews?.content || ""}
             onChange={(e) => setEditingNews({ ...editingNews, content: e.target.value })}
+            variant="outlined"
+            InputLabelProps={{ shrink: !!editingNews?.content }}
           />
-          <FormControl fullWidth margin="dense">
-            <InputLabel>Danh Mục</InputLabel>
+          <FormControl fullWidth margin="dense" variant="outlined">
+            <InputLabel id="edit-category-label" shrink={!!editingNews?.category}>
+              Danh Mục
+            </InputLabel>
             <Select
+              labelId="edit-category-label"
               value={editingNews?.category || ""}
               onChange={(e) => setEditingNews({ ...editingNews, category: e.target.value })}
+              label="Danh Mục"
             >
               {NEWS_CATEGORIES.map((category) => (
                 <MenuItem key={category} value={category}>
@@ -594,11 +612,15 @@ const NewsManagement = () => {
             }
             label="Nổi Bật"
           />
-          <FormControl fullWidth margin="dense">
-            <InputLabel>Độ Ưu Tiên</InputLabel>
+          <FormControl fullWidth margin="dense" variant="outlined">
+            <InputLabel id="edit-priority-label" shrink={!!editingNews?.priority}>
+              Độ Ưu Tiên
+            </InputLabel>
             <Select
+              labelId="edit-priority-label"
               value={editingNews?.priority || "medium"}
               onChange={(e) => setEditingNews({ ...editingNews, priority: e.target.value })}
+              label="Độ Ưu Tiên"
             >
               {PRIORITIES.map((priority) => (
                 <MenuItem key={priority} value={priority}>
@@ -615,6 +637,7 @@ const NewsManagement = () => {
             InputLabelProps={{ shrink: true }}
             value={editingNews?.validUntil || ""}
             onChange={(e) => setEditingNews({ ...editingNews, validUntil: e.target.value })}
+            variant="outlined"
           />
           <Box sx={{ mt: 2 }}>
             <label>
@@ -677,6 +700,8 @@ const NewsManagement = () => {
             fullWidth
             value={newNews.title}
             onChange={(e) => setNewNews({ ...newNews, title: e.target.value })}
+            variant="outlined"
+            InputLabelProps={{ shrink: !!newNews.title }}
           />
           <TextField
             margin="dense"
@@ -687,12 +712,18 @@ const NewsManagement = () => {
             rows={4}
             value={newNews.content}
             onChange={(e) => setNewNews({ ...newNews, content: e.target.value })}
+            variant="outlined"
+            InputLabelProps={{ shrink: !!newNews.content }}
           />
-          <FormControl fullWidth margin="dense">
-            <InputLabel>Danh Mục</InputLabel>
+          <FormControl fullWidth margin="dense" variant="outlined">
+            <InputLabel id="add-category-label" shrink={!!newNews.category}>
+              Danh Mục
+            </InputLabel>
             <Select
+              labelId="add-category-label"
               value={newNews.category}
               onChange={(e) => setNewNews({ ...newNews, category: e.target.value })}
+              label="Danh Mục"
             >
               {NEWS_CATEGORIES.map((category) => (
                 <MenuItem key={category} value={category}>
@@ -710,11 +741,15 @@ const NewsManagement = () => {
             }
             label="Nổi Bật"
           />
-          <FormControl fullWidth margin="dense">
-            <InputLabel>Độ Ưu Tiên</InputLabel>
+          <FormControl fullWidth margin="dense" variant="outlined">
+            <InputLabel id="add-priority-label" shrink={!!newNews.priority}>
+              Độ Ưu Tiên
+            </InputLabel>
             <Select
+              labelId="add-priority-label"
               value={newNews.priority}
               onChange={(e) => setNewNews({ ...newNews, priority: e.target.value })}
+              label="Độ Ưu Tiên"
             >
               {PRIORITIES.map((priority) => (
                 <MenuItem key={priority} value={priority}>
@@ -731,6 +766,7 @@ const NewsManagement = () => {
             InputLabelProps={{ shrink: true }}
             value={newNews.validUntil}
             onChange={(e) => setNewNews({ ...newNews, validUntil: e.target.value })}
+            variant="outlined"
           />
           <Box sx={{ mt: 2 }}>
             <label>

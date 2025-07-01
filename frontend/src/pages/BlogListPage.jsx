@@ -217,7 +217,7 @@ const BlogListPage = () => {
       <div className="blogpage-page">
         <div className="blogpage-layout">
           <aside className="blogpage-sidebar">
-            <h3 className="blogpage-sidebar-title">Tin tức nhiều lượt truy cập nhất</h3>
+            <h3 className="blogpage-sidebar-title">Bài viết nhiều lượt truy cập nhất</h3>
             <div className="blogpage-featured-posts">
               {topViewedBlogs.slice(0, 5).map((blog) => (
                 <div key={blog._id} className="blogpage-featured-post-card">
@@ -258,7 +258,7 @@ const BlogListPage = () => {
           <div className="blogpage-content-main">
             {currentPage === 1 && latestBlogs.length > 0 && (
               <section className="blogpage-latest-blog">
-                <h2 className="blogpage-section-title">Tin tức mới nhất</h2>
+                <h2 className="blogpage-section-title">Bài viết mới nhất</h2>
                 <div className="blogpage-latest-blog-carousel">
                   <button
                     className="blogpage-carousel-btn prev"
@@ -330,7 +330,7 @@ const BlogListPage = () => {
             )}
 
             <section className="blogpage-list-blogs">
-              <h2 className="blogpage-section-title">Tất cả các tin tức</h2>
+              <h2 className="blogpage-section-title">Tất cả các Bài viết</h2>
               <div className="blogpage-category-filter">
                 <button
                   className={`blogpage-category-btn ${

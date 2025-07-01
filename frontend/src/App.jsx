@@ -41,16 +41,18 @@ import BlogListPage from "./pages/BlogListPage";
 import NewsListPage from "./pages/NewsListPage";
 import NewsDetail from "./pages/NewsDetail";
 import BlogDetail from "./pages/BlogDetail";
+import ViewMedicalRecord from "./pages/ViewMedicalRecord";
 import Header from "./components/HeaderComponent";
 import MenuComponent from "./components/MenuComponent";
 import FooterComponent from "./components/FooterComponent";
-import { PrivateRoute, PrivateRouteNotAllowUser,PrivateRouteByRole } from "./components/PrivateRoute"
+import { PrivateRoute, PrivateRouteByRole } from "./components/PrivateRoute";
 import "antd/dist/reset.css";
 import NotFoundPage from "./pages/NotFoundPage";
+
 const DRAWER_WIDTH = 240;
 
 const RoleRedirect = () => {
-  const navigate = useNavigate(); 
+  const navigate = useNavigate();
   const location = useLocation();
 
   const user = JSON.parse(localStorage.getItem("user"));
@@ -72,13 +74,17 @@ const RoleRedirect = () => {
       if (role === "Admin" && !path.startsWith("/admin")) navigate("/admin/");
       if (role === "Staff" && !path.startsWith("/staff")) navigate("/staff/");
       if (role === "Doctor" && !path.startsWith("/doctor")) navigate("/doctor");
-      if (role === "patient" && (path.startsWith("/admin") || path.startsWith("/staff") || path.startsWith("/doctor")))
+      if (
+        role === "patient" &&
+        (path.startsWith("/admin") || path.startsWith("/staff") || path.startsWith("/doctor"))
+      )
         navigate("/");
     }
   }, [navigate, location.pathname]);
 
   return null;
 };
+
 const getRole = () => {
   try {
     const user = JSON.parse(localStorage.getItem("user"));
@@ -88,7 +94,6 @@ const getRole = () => {
     return "patient";
   }
 };
-
 
 const App = () => {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -101,9 +106,7 @@ const App = () => {
 
   return (
     <Router>
-      {isPatient && (
-        <Header onMenuClick={toggleMenu} menuOpen={menuOpen} />
-      )}
+      {isPatient && <Header onMenuClick={toggleMenu} menuOpen={menuOpen} />}
 
       {isPatient && user && (
         <MenuComponent
@@ -124,21 +127,33 @@ const App = () => {
 
         <Routes>
           {/* Admin Layout Routes */}
-          <Route path="/admin/*" element={<PrivateRouteByRole allowedRoles={["Admin"]}><AdminLayout /></PrivateRouteByRole>}>
+          <Route
+            path="/admin/*"
+            element={
+              <PrivateRouteByRole allowedRoles={["Admin"]}>
+                <AdminLayout />
+              </PrivateRouteByRole>
+            }
+          >
             <Route index element={<Dashboard />} />
             <Route path="accounts" element={<AccountManagement />} />
             <Route path="employees" element={<EmployeeManagement />} />
           </Route>
 
           {/* Staff Layout Routes */}
-          <Route path="/staff/*" element={<PrivateRouteByRole allowedRoles={["Staff"]}>
-      <StaffLayout />
-    </PrivateRouteByRole>}>
+          <Route
+            path="/staff/*"
+            element={
+              <PrivateRouteByRole allowedRoles={["Staff"]}>
+                <StaffLayout />
+              </PrivateRouteByRole>
+            }
+          >
             <Route index element={<BlogManagement />} />
             <Route path="blogs" element={<BlogManagement />} />
             <Route path="services" element={<ServiceManagement />} />
             <Route path="specialties" element={<SpecialtyManagement />} />
-            <Route path="invoices" element={<InvoiceManagement />} />
+            <Route path="invoicesinvoices" element={<InvoiceManagement />} />
             <Route path="payments" element={<PaymentView />} />
             <Route path="news" element={<NewsManagement />} />
             <Route path="feedback" element={<FeedbackManagement />} />
@@ -157,27 +172,35 @@ const App = () => {
           <Route path="/news" element={<NewsListPage />} />
           <Route path="/blog/:slug" element={<BlogDetail />} />
           <Route path="/news/:slug" element={<NewsDetail />} />
-          <Route path="/doctor" element={<DoctorPage />} />
+          <Route
+            path="/view_medicalrecord"
+            element={
+              <PrivateRouteByRole allowedRoles={["patient"]}>
+                <ViewMedicalRecord />
+              </PrivateRouteByRole>
+            }
+          />
+          <Route path="/doctors" element={<DoctorPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/myprofile" element={<ProfilePage />} />
-          <Route path="/appointment" element={
-            <PrivateRoute>
-              <AppointmentPage />
-            </PrivateRoute>
-          } />
-          <Route path="/not-found" element={<NotFoundPage/>}/>
+          <Route
+            path="/appointment"
+            element={
+              <PrivateRoute>
+                <AppointmentPage />
+              </PrivateRoute>
+            }
+          />
+          <Route path="/not-found" element={<NotFoundPage />} />
           <Route path="/doctor/:doctorId" element={<DoctorDetail />} />
           <Route path="/changepass" element={<Changepass />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
         </Routes>
       </div>
-{isPatient && (
-        <FooterComponent />
-      )}
-      
+      {isPatient && <FooterComponent />}
     </Router>
   );
 };

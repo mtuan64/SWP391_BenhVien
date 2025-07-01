@@ -47,37 +47,57 @@ const Login = async (req, res) => {
 
 
 const Signup = async (req, res) => {
-
   if (!req.body) {
     return res.status(400).json({ error: "Missing request body" });
   }
+
   const { email, password, name, phone } = req.body;
+
   try {
+    // 1) Kiểm tra email đã tồn tại chưa
     const emailExist = await User.findOne({ email });
     if (emailExist) {
-      return res.status(400).json({ message: 'Email da ton tai' });
+      return res.status(400).json({ message: "Email đã tồn tại" });
     }
-const salt = await bcrypt.genSalt(10); // tạo salt
+
+    // 2) Băm mật khẩu
+    const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
+
+    // 3) Tạo user mới (user_code sẽ được middleware pre('save') sinh tự động)
     const newUser = new User({
       email,
-      password:hashedPassword,
+      password: hashedPassword,
       name,
       phone,
-      status: 'active',
-      emailVerificationCode: null, // Lưu code reset
-      verificationExpires: null, // Thời gian hết hạn
+      status: "active",
+      emailVerificationCode: null,
+      verificationExpires: null,
     });
-    console.log(newUser);
-    await newUser.save();
-    console.log("User saved:", await User.findOne({ email }));
 
-    res.status(200).json({ message: "Dang ky thanh cong" });
+    // 4) Lưu và lấy ra bản ghi đã lưu để chắc chắn có user_code
+    const savedUser = await newUser.save();
+
+    // 5) Trả kết quả về cho Postman (kèm user_code)
+    return res.status(200).json({
+      message: "Đăng ký thành công",
+      user_code: savedUser.user_code,  
+      user: {
+        _id: savedUser._id,
+        email: savedUser.email,
+        name: savedUser.name,
+        phone: savedUser.phone,
+        status: savedUser.status,
+        createdAt: savedUser.createdAt,
+        updatedAt: savedUser.updatedAt,
+      },
+    });
   } catch (error) {
-
-    res.status(500).json({ message: "Lỗi máy chủ" });
+    console.error("Signup error:", error);
+    return res.status(500).json({ message: "Lỗi máy chủ" });
   }
 };
+
 const check = async (req, res) => {
   res.status(200).json({ message: "API hoat dong" });
 };
@@ -263,6 +283,8 @@ const resetPassword = async (req, res) => {
 };
 
 
+
 module.exports = {
   Login, Signup, check, changePassword, forgotPassword, resetPassword
 }
+

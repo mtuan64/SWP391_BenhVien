@@ -324,7 +324,7 @@ const HomePage = () => {
       {/* Tiêu chí phòng khám */}
       <MilestoneSection />
 
-      {/* Cơ sở vật chất */}
+{/* Cơ sở vật chất */}
       <section className="mb-5">
         <h3 className="text-primary mb-4 fw-bold text-center">Cơ Sở Vật Chất</h3>
         <div id="facilityCarousel" className="carousel slide carousel-fade" data-bs-ride="carousel" data-bs-interval="3000">
@@ -353,10 +353,10 @@ const HomePage = () => {
           <div className="carousel-inner">
             <div className="carousel-item active">
               <img
-                src="https://images.unsplash.com/photo-1584982751601-97dcc096659c"
+                src="https://benhvienungbuoukhanhhoa.vn/uploads/news/2023_05/he-thong-chup-clvt.jpg"
                 className="d-block w-100"
                 alt="Máy chụp CT"
-                Ascending: true
+                data-ascending="true"
                 style={{ objectFit: 'cover', height: '50vh', borderRadius: '8px' }}
               />
               <div
@@ -380,7 +380,7 @@ const HomePage = () => {
             </div>
             <div className="carousel-item">
               <img
-                src="https://images.unsplash.com/photo-1579154396358-90c2b29340bf"
+                src="https://vietnamcleanroom.com/vcr-media/22/10/22/phong-mo-hien-dai.jpg"
                 className="d-block w-100"
                 alt="Phòng phẫu thuật"
                 style={{ objectFit: 'cover', height: '50vh', borderRadius: '8px' }}
@@ -406,7 +406,7 @@ const HomePage = () => {
             </div>
             <div className="carousel-item">
               <img
-                src="https://images.unsplash.com/photo-1538108149393-fbbd81895907"
+                src="https://thietbilabhoasinh.com/ckeditor/plugins/fileman/Uploads/tu-an-toan-sinh-hoc-cap-2-xet-nghiem.jpg"
                 className="d-block w-100"
                 alt="Phòng xét nghiệm"
                 style={{ objectFit: 'cover', height: '50vh', borderRadius: '8px' }}
@@ -472,108 +472,10 @@ const HomePage = () => {
         </Container>
       </Container>
 
-      {/* Most Viewed Blogs Section */}
-      <Container className="py-5">
-        <h2 className="text-center text-primary fw-bold mb-5">Bài Viết Được Xem Nhiều</h2>
-        {topViewedBlogs.length <= 4 ? (
-          <Row>
-            {topViewedBlogs.map((blog, index) => (
-              <Col key={index} md={6} lg={3} className="mb-4">
-                <div className="blog-card bg-white rounded shadow h-100">
-                  <Link to={`/blog/${blog.slug}`}>
-                    <img
-                      src={blog.image || "https://via.placeholder.com/100x100"}
-                      alt={blog.title}
-                      className="blog-image img-fluid w-100"
-                      style={{ height: "150px", objectFit: "cover" }}
-                      onError={(e) => (e.target.src = "https://via.placeholder.com/100x100")}
-                    />
-                  </Link>
-                  <div className="p-3">
-                    <Link
-                      to={`/blog/${blog.slug}`}
-                      className="text-decoration-none"
-                    >
-                      <h5 className="blog-title mb-2">
-                        {truncateText(blog.title, 20)}
-                      </h5>
-                    </Link>
-                    <p className="blog-excerpt text-muted mb-2">
-                      {getBlogContentSummary(blog.content)}
-                    </p>
-                    <Link
-                      to={`/blog/${blog.slug}`}
-                      className="btn btn-outline-primary btn-sm"
-                    >
-                      Đọc bài viết
-                    </Link>
-                  </div>
-                </div>
-              </Col>
-            ))}
-          </Row>
-        ) : (
-          <div className="blogs-carousel">
-            <Row className="flex-nowrap blogs-carousel-inner">
-              {getVisibleBlogs().map((blog, index) => (
-                <Col key={index} md={6} lg={3} className="mb-4">
-                  <div className="blog-card bg-white rounded shadow h-100">
-                    <Link to={`/blog/${blog.slug}`}>
-                      <img
-                        src={blog.image || "https://via.placeholder.com/100x100"}
-                        alt={blog.title}
-                        className="blog-image img-fluid w-100"
-                        style={{ height: "150px", objectFit: "cover" }}
-                        onError={(e) => (e.target.src = "https://via.placeholder.com/100x100")}
-                      />
-                    </Link>
-                    <div className="p-3">
-                      <Link
-                        to={`/blog/${blog.slug}`}
-                        className="text-decoration-none"
-                      >
-                        <h5 className="blog-title mb-2">
-                          {truncateText(blog.title, 20)}
-                        </h5>
-                      </Link>
-                      <p className="blog-excerpt text-muted mb-2">
-                        {getBlogContentSummary(blog.content)}
-                      </p>
-                      <Link
-                        to={`/blog/${blog.slug}`}
-                        className="btn btn-outline-primary btn-sm"
-                      >
-                        Đọc bài viết
-                      </Link>
-                    </div>
-                  </div>
-                </Col>
-              ))}
-            </Row>
-            <button
-              className="carousel-control-prev"
-              type="button"
-              onClick={handleBlogPrev}
-            >
-              <span className="carousel-control-prev-icon" aria-hidden="true"></span>
-              <span className="visually-hidden">Previous</span>
-            </button>
-            <button
-              className="carousel-control-next"
-              type="button"
-              onClick={handleBlogNext}
-            >
-              <span className="carousel-control-next-icon" aria-hidden="true"></span>
-              <span className="visually-hidden">Next</span>
-            </button>
-          </div>
-        )}
-      </Container>
-
-      {/* Priority News Section */}
+            {/* Priority News Section */}
       <Container fluid className="bg-light py-5">
         <Container>
-          <h2 className="text-center text-primary fw-bold mb-5">Tin Tức Nổi Bật</h2>
+          <h2 className="text-center text-primary fw-bold mb-5">Tin Tức Phòng Khám</h2>
           {prioritizedNews.length <= 4 ? (
             <Row>
               {prioritizedNews.map((news, index) => (
@@ -669,6 +571,106 @@ const HomePage = () => {
           )}
         </Container>
       </Container>
+
+      {/* Most Viewed Blogs Section */}
+      <Container className="py-5">
+        <h2 className="text-center text-primary fw-bold mb-5">Bài Viết Nổi Bật</h2>
+        {topViewedBlogs.length <= 4 ? (
+          <Row>
+            {topViewedBlogs.map((blog, index) => (
+              <Col key={index} md={6} lg={3} className="mb-4">
+                <div className="blog-card bg-white rounded shadow h-100">
+                  <Link to={`/blog/${blog.slug}`}>
+                    <img
+                      src={blog.image || "https://via.placeholder.com/100x100"}
+                      alt={blog.title}
+                      className="blog-image img-fluid w-100"
+                      style={{ height: "150px", objectFit: "cover" }}
+                      onError={(e) => (e.target.src = "https://via.placeholder.com/100x100")}
+                    />
+                  </Link>
+                  <div className="p-3">
+                    <Link
+                      to={`/blog/${blog.slug}`}
+                      className="text-decoration-none"
+                    >
+                      <h5 className="blog-title mb-2">
+                        {truncateText(blog.title, 20)}
+                      </h5>
+                    </Link>
+                    <p className="blog-excerpt text-muted mb-2">
+                      {getBlogContentSummary(blog.content)}
+                    </p>
+                    <Link
+                      to={`/blog/${blog.slug}`}
+                      className="btn btn-outline-primary btn-sm"
+                    >
+                      Đọc bài viết
+                    </Link>
+                  </div>
+                </div>
+              </Col>
+            ))}
+          </Row>
+        ) : (
+          <div className="blogs-carousel">
+            <Row className="flex-nowrap blogs-carousel-inner">
+              {getVisibleBlogs().map((blog, index) => (
+                <Col key={index} md={6} lg={3} className="mb-4">
+                  <div className="blog-card bg-white rounded shadow h-100">
+                    <Link to={`/blog/${blog.slug}`}>
+                      <img
+                        src={blog.image || "https://via.placeholder.com/100x100"}
+                        alt={blog.title}
+                        className="blog-image img-fluid w-100"
+                        style={{ height: "150px", objectFit: "cover" }}
+                        onError={(e) => (e.target.src = "https://via.placeholder.com/100x100")}
+                      />
+                    </Link>
+                    <div className="p-3">
+                      <Link
+                        to={`/blog/${blog.slug}`}
+                        className="text-decoration-none"
+                      >
+                        <h5 className="blog-title mb-2">
+                          {truncateText(blog.title, 20)}
+                        </h5>
+                      </Link>
+                      <p className="blog-excerpt text-muted mb-2">
+                        {getBlogContentSummary(blog.content)}
+                      </p>
+                      <Link
+                        to={`/blog/${blog.slug}`}
+                        className="btn btn-outline-primary btn-sm"
+                      >
+                        Đọc bài viết
+                      </Link>
+                    </div>
+                  </div>
+                </Col>
+              ))}
+            </Row>
+            <button
+              className="carousel-control-prev"
+              type="button"
+              onClick={handleBlogPrev}
+            >
+              <span className="carousel-control-prev-icon" aria-hidden="true"></span>
+              <span className="visually-hidden">Previous</span>
+            </button>
+            <button
+              className="carousel-control-next"
+              type="button"
+              onClick={handleBlogNext}
+            >
+              <span className="carousel-control-next-icon" aria-hidden="true"></span>
+              <span className="visually-hidden">Next</span>
+            </button>
+          </div>
+        )}
+      </Container>
+
+
 
       {/* Our Doctors */}
       <Container className="py-5">

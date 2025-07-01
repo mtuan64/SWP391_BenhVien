@@ -5,17 +5,18 @@ const fs = require("fs").promises;
 const path = require("path");
 const slugify = require("slugify");
 
-const uploadDir = path.join(__dirname, "../Uploads");
-fs.mkdir(uploadDir, { recursive: true })
-  .then(() => console.log("Uploads directory created or exists"))
-  .catch((err) => console.error("Error creating uploads directory:", err));
-
 // Configure Cloudinary
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
+
+// Ensure upload directory exists
+const uploadDir = path.join(__dirname, "../Uploads");
+fs.mkdir(uploadDir, { recursive: true })
+  .then(() => console.log("Uploads directory created or exists"))
+  .catch((err) => console.error("Error creating uploads directory:", err));
 
 // Blog Functions
 exports.getAllBlogs = async (req, res) => {
@@ -50,35 +51,39 @@ exports.createBlog = async (req, res) => {
   try {
     const { title, content, categoryId } = req.body;
     const author_id = req.user.userId;
+
     if (!title || !categoryId) {
-      return res
-        .status(400)
-        .json({ message: "Title and categoryId are required" });
+      return res.status(400).json({ message: "Title and categoryId are required" });
     }
     if (!Array.isArray(content) || content.length === 0) {
       return res.status(400).json({ message: "Content array is required" });
     }
+
     const slug = slugify(title, { lower: true, strict: true, locale: "vi" });
     let mainImageUrl = req.body.image || "";
+
+    // Handle main image upload
     if (req.files && req.files.mainImage) {
-      const result = await cloudinary.uploader.upload(
-        req.files.mainImage[0].path,
-        { folder: "blog_images" }
-      );
+      const mainImage = Array.isArray(req.files.mainImage) ? req.files.mainImage[0] : req.files.mainImage;
+      const result = await cloudinary.uploader.upload(mainImage.path, {
+        folder: "blog_images",
+      });
       mainImageUrl = result.secure_url;
-      await fs.unlink(req.files.mainImage[0].path);
+      await fs.unlink(mainImage.path).catch(console.error);
     }
+
+    // Process content images
     const processedContent = await Promise.all(
       content.map(async (item, index) => {
         if (item.type === "image" && req.files && req.files.contentImages) {
-          const contentImage = req.files.contentImages.find(
-            (file) => file.fieldname === `contentImages[${index}]`
-          );
+          const contentImage = Array.isArray(req.files.contentImages)
+            ? req.files.contentImages.find((file) => file.fieldname === `contentImages[${index}]`)
+            : req.files.contentImages;
           if (contentImage) {
             const result = await cloudinary.uploader.upload(contentImage.path, {
               folder: "blog_images",
             });
-            await fs.unlink(contentImage.path);
+            await fs.unlink(contentImage.path).catch(console.error);
             return { ...item, url: result.secure_url };
           }
         }
@@ -90,6 +95,7 @@ exports.createBlog = async (req, res) => {
         };
       })
     );
+
     const newBlog = new Blog({
       title,
       content: processedContent,
@@ -117,37 +123,39 @@ exports.updateBlog = async (req, res) => {
   try {
     const { id } = req.params;
     const { title, content, categoryId } = req.body;
+
     if (!title || !categoryId) {
-      return res
-        .status(400)
-        .json({ message: "Title and categoryId are required" });
+      return res.status(400).json({ message: "Title and categoryId are required" });
     }
     if (!Array.isArray(content) || content.length === 0) {
       return res.status(400).json({ message: "Content array is required" });
     }
-    const slug = title
-      ? slugify(title, { lower: true, strict: true, locale: "vi" })
-      : undefined;
-    let mainImageUrl = req.body.image;
+
+    const slug = title ? slugify(title, { lower: true, strict: true, locale: "vi" }) : undefined;
+    let mainImageUrl = req.body.image || "";
+
+    // Handle main image upload
     if (req.files && req.files.mainImage) {
-      const result = await cloudinary.uploader.upload(
-        req.files.mainImage[0].path,
-        { folder: "blog_images" }
-      );
+      const mainImage = Array.isArray(req.files.mainImage) ? req.files.mainImage[0] : req.files.mainImage;
+      const result = await cloudinary.uploader.upload(mainImage.path, {
+        folder: "blog_images",
+      });
       mainImageUrl = result.secure_url;
-      await fs.unlink(req.files.mainImage[0].path);
+      await fs.unlink(mainImage.path).catch(console.error);
     }
+
+    // Process content images
     const processedContent = await Promise.all(
       content.map(async (item, index) => {
         if (item.type === "image" && req.files && req.files.contentImages) {
-          const contentImage = req.files.contentImages.find(
-            (file) => file.fieldname === `contentImages[${index}]`
-          );
+          const contentImage = Array.isArray(req.files.contentImages)
+            ? req.files.contentImages.find((file) => file.fieldname === `contentImages[${index}]`)
+            : req.files.contentImages;
           if (contentImage) {
             const result = await cloudinary.uploader.upload(contentImage.path, {
               folder: "blog_images",
             });
-            await fs.unlink(contentImage.path);
+            await fs.unlink(contentImage.path).catch(console.error);
             return { ...item, url: result.secure_url };
           }
         }
@@ -159,6 +167,7 @@ exports.updateBlog = async (req, res) => {
         };
       })
     );
+
     const updatedBlog = await Blog.findByIdAndUpdate(
       id,
       {
@@ -214,7 +223,7 @@ exports.uploadImage = async (req, res) => {
           const result = await cloudinary.uploader.upload(file.path, {
             folder: "blog_images",
           });
-          await fs.unlink(file.path);
+          await fs.unlink(file.path).catch(console.error);
           return result.secure_url;
         })
       )
@@ -288,9 +297,7 @@ exports.deleteCategory = async (req, res) => {
     const { id } = req.params;
     const blogs = await Blog.find({ categoryId: id });
     if (blogs.length > 0) {
-      return res
-        .status(400)
-        .json({ message: "Cannot delete category with associated blogs" });
+      return res.status(400).json({ message: "Cannot delete category with associated blogs" });
     }
     const deletedCategory = await CategoryBlog.findByIdAndDelete(id);
     if (!deletedCategory) {

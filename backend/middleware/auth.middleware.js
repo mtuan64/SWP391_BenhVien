@@ -125,7 +125,7 @@ const authUserMiddleware = (req, res, next) => {
         status: "ERROR",
       });
     }
-    if (decoded.role === "User") {
+    if (decoded.role === "patient") {
       req.user = decoded;
       next();
     } else {
