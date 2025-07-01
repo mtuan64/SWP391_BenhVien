@@ -10,16 +10,16 @@ exports.getAllUsers = async (req, res) => {
       $or: [
         { name: { $regex: search, $options: "i" } },
         { email: { $regex: search, $options: "i" } },
+        { user_code: { $regex: search, $options: "i" } }, // Add user_code to search
       ],
     };
 
-    // Nếu có status filter thì thêm điều kiện lọc
     if (status && status !== "") {
       query.status = status;
     }
 
     const totalUsers = await User.countDocuments(query);
-    const users = await User.find(query)
+    const users = await User.find(query, { _id: 1, name: 1, email: 1, phone: 1, status: 1, user_code: 1 }) // Include user_code
       .skip((page - 1) * limit)
       .limit(parseInt(limit))
       .exec();
@@ -35,12 +35,10 @@ exports.getAllUsers = async (req, res) => {
   }
 };
 
-
-
 // Lấy người dùng theo ID
 exports.getUserById = async (req, res) => {
   try {
-    const user = await User.findById(req.params.id);
+    const user = await User.findById(req.params.id, { _id: 1, name: 1, email: 1, phone: 1, status: 1, user_code: 1 }); // Include user_code
     if (!user) return res.status(404).json({ message: 'Không tìm thấy người dùng' });
     res.status(200).json(user);
   } catch (error) {
@@ -71,7 +69,18 @@ exports.createUser = async (req, res) => {
     });
 
     await newUser.save();
-    res.status(201).json({ message: 'Tạo người dùng thành công', user: newUser });
+    // Include user_code in response
+    res.status(201).json({ 
+      message: 'Tạo người dùng thành công', 
+      user: { 
+        _id: newUser._id, 
+        name: newUser.name, 
+        email: newUser.email, 
+        phone: newUser.phone, 
+        status: newUser.status, 
+        user_code: newUser.user_code 
+      }
+    });
   } catch (error) {
     res.status(500).json({ message: 'Lỗi server', error: error.message });
   }
@@ -81,9 +90,11 @@ exports.createUser = async (req, res) => {
 exports.updateUser = async (req, res) => {
   try {
     const updateData = { ...req.body };
+    
+    // Prevent manual updates to user_code
+    delete updateData.user_code;
 
     if (updateData.password) {
-      // Hash lại mật khẩu nếu có
       const salt = await bcrypt.genSalt(10);
       updateData.password = await bcrypt.hash(updateData.password, salt);
     }
@@ -95,7 +106,18 @@ exports.updateUser = async (req, res) => {
     );
 
     if (!updatedUser) return res.status(404).json({ message: 'Không tìm thấy người dùng' });
-    res.status(200).json({ message: 'Cập nhật thành công', user: updatedUser });
+    // Include user_code in response
+    res.status(200).json({ 
+      message: 'Cập nhật thành công', 
+      user: { 
+        _id: updatedUser._id, 
+        name: updatedUser.name, 
+        email: updatedUser.email, 
+        phone: updatedUser.phone, 
+        status: updatedUser.status, 
+        user_code: updatedUser.user_code 
+      }
+    });
   } catch (error) {
     res.status(500).json({ message: 'Lỗi server', error: error.message });
   }
