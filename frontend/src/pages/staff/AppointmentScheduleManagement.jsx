@@ -3,7 +3,7 @@ import { Table, Button, Container, Spinner, Modal, Form, InputGroup, FormControl
 import { FaEdit, FaTrash, FaSearch, FaRedo } from "react-icons/fa";
 import FooterComponent from "../../components/FooterComponent";
 import axios from "axios";
-import "../../assets/css/Homepage.css";
+import "../../assets/css/AppointmentScheduleManagement.css";
 
 const AppointmentScheduleManagement = () => {
   const [appointments, setAppointments] = useState([]);
@@ -20,14 +20,16 @@ const AppointmentScheduleManagement = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [departmentFilter, setDepartmentFilter] = useState("all");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [doctorSearchTerm, setDoctorSearchTerm] = useState("");
+  const [userSearchTerm, setUserSearchTerm] = useState("");
 
-  // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
 
-  // Modal & form
   const [showModal, setShowModal] = useState(false);
   const [form, setForm] = useState({
     appointmentDate: "",
@@ -48,7 +50,7 @@ const AppointmentScheduleManagement = () => {
     fetchAppointments();
     fetchDepartments();
     fetchUsers();
-  }, [currentPage, statusFilter, departmentFilter, searchTerm]);
+  }, [currentPage, statusFilter, departmentFilter, searchTerm, startDate, endDate]);
 
   useEffect(() => {
     if (form.userId) {
@@ -83,6 +85,8 @@ const AppointmentScheduleManagement = () => {
       const params = { page: currentPage, limit: itemsPerPage, search: searchTerm };
       if (statusFilter !== "all") params.status = statusFilter;
       if (departmentFilter !== "all") params.department = departmentFilter;
+      if (startDate) params.startDate = startDate;
+      if (endDate) params.endDate = endDate;
 
       const res = await axios.get("http://localhost:9999/api/appointmentScheduleManagement", { params });
       const { appointments, pagination } = res.data;
@@ -100,8 +104,8 @@ const AppointmentScheduleManagement = () => {
 
   const fetchDepartments = async () => {
     try {
-      const res = await axios.get("http://localhost:9999/api/appointmentScheduleManagement/departments");
-      setDepartments(res.data);
+const res = await axios.get("http://localhost:9999/api/departments");
+setDepartments(res.data.departments || []);
     } catch (error) {
       console.error("Failed to fetch departments: ", error);
       setError("Failed to load departments.");
@@ -118,22 +122,34 @@ const AppointmentScheduleManagement = () => {
     }
   };
 
-  const fetchAvailableDoctors = async (date, department) => {
-    try {
-      setIsFormLoading(true);
-      const formattedDate = new Date(date).toISOString().split("T")[0];
-      const res = await axios.get("http://localhost:9999/api/appointmentScheduleManagement/doctors", {
-        params: { department, date: formattedDate }
-      });
-      setAvailableDoctors(res.data || []);
-    } catch (error) {
-      console.error("Failed to fetch doctors:", error);
+const fetchAvailableDoctors = async (date, departmentId) => {
+  try {
+    setIsFormLoading(true);
+
+    const selectedDept = departments.find((d) => d._id === departmentId);
+    if (!selectedDept) {
+      console.warn("Department not found for ID:", departmentId);
       setAvailableDoctors([]);
-      setError("Failed to fetch available doctors.");
-    } finally {
-      setIsFormLoading(false);
+      return;
     }
-  };
+
+    const departmentName = selectedDept.name;
+    const formattedDate = new Date(date).toISOString().split("T")[0];
+
+    const res = await axios.get("http://localhost:9999/api/appointmentScheduleManagement/doctors", {
+      params: { department: departmentName, date: formattedDate }
+    });
+
+    setAvailableDoctors(res.data || []);
+  } catch (error) {
+    console.error("Failed to fetch doctors:", error);
+    setAvailableDoctors([]);
+    setError("Failed to fetch available doctors.");
+  } finally {
+    setIsFormLoading(false);
+  }
+};
+
 
   const fetchSchedules = async (doctorId, date) => {
     try {
@@ -205,6 +221,8 @@ const AppointmentScheduleManagement = () => {
     setAvailableDoctors([]);
     setSchedules([]);
     setFormErrors({});
+    setDoctorSearchTerm("");
+    setUserSearchTerm("");
     setShowModal(true);
   }
 
@@ -222,6 +240,8 @@ const AppointmentScheduleManagement = () => {
       profileId: appointment.profileId || "",
     });
     setFormErrors({});
+    setDoctorSearchTerm("");
+    setUserSearchTerm("");
     setShowModal(true);
   }
 
@@ -249,12 +269,16 @@ const AppointmentScheduleManagement = () => {
     setAvailableDoctors([]);
     setSchedules([]);
     setFormErrors({});
+    setDoctorSearchTerm("");
+    setUserSearchTerm("");
   }
 
   function handleClearFilters() {
     setSearchTerm("");
     setStatusFilter("all");
     setDepartmentFilter("all");
+    setStartDate("");
+    setEndDate("");
     setCurrentPage(1);
   }
 
@@ -289,10 +313,10 @@ const AppointmentScheduleManagement = () => {
         return;
       }
       if (currentAppointment) {
-        await axios.put(`http://localhost:9999/api/AppointmentScheduleManagement/${currentAppointment._id}`, payload);
+        await axios.put(`http://localhost:9999/api/appointmentScheduleManagement/${currentAppointment._id}`, payload);
         alert("Appointment updated successfully!");
       } else {
-        await axios.post("http://localhost:9999/api/AppointmentScheduleManagement", payload);
+        await axios.post("http://localhost:9999/api/appointmentScheduleManagement", payload);
         alert("Appointment created successfully!");
       }
       setShowModal(false);
@@ -312,13 +336,13 @@ const AppointmentScheduleManagement = () => {
 
   async function confirmDelete() {
     try {
-      await axios.delete(`http://localhost:9999/api/AppointmentScheduleManagement/${deleteAppointmentId}`);
+      await axios.delete(`http://localhost:9999/api/appointmentScheduleManagement/${deleteAppointmentId}`);
       setShowDeleteModal(false);
       setDeleteAppointmentId(null);
       fetchAppointments();
       alert("Appointment deleted successfully!");
     } catch (error) {
-      alert("Delete failed: " + error.message);
+      alert("Delete failed: " + (error.response?.data?.message || error.message));
     }
   }
 
@@ -331,76 +355,123 @@ const AppointmentScheduleManagement = () => {
     setCurrentPage(pageNumber);
   };
 
+  const filteredDoctors = availableDoctors.filter((doc) =>
+    doc.name.toLowerCase().includes(doctorSearchTerm.toLowerCase())
+  );
+
+  const filteredUsers = users.filter((user) =>
+    user.name.toLowerCase().includes(userSearchTerm.toLowerCase()) ||
+    (user.phone && user.phone.toLowerCase().includes(userSearchTerm.toLowerCase())) ||
+    (user.user_code && user.user_code.toLowerCase().includes(userSearchTerm.toLowerCase()))
+  );
+
   return (
     <>
       <Container className="py-5">
         <h2 className="mb-4 text-primary fw-bold">Appointment Schedule Management</h2>
 
-        <Row className="mb-4 align-items-center">
-          <Col md={4} sm={12} className="mb-2 mb-md-0">
-            <InputGroup className="shadow-sm">
-              <InputGroup.Text className="bg-primary text-white border-0">
-                <FaSearch />
-              </InputGroup.Text>
-              <FormControl
-                placeholder="Search by doctor, user, department, or status..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="border-primary"
-                aria-label="Search appointments"
+        <Row className="mb-4 align-items-end filter-card">
+          <Col md={3} sm={12} className="mb-3">
+            <Form.Group>
+              <Form.Label>Search</Form.Label>
+              <InputGroup>
+                <InputGroup.Text>
+                  <FaSearch />
+                </InputGroup.Text>
+                <FormControl
+                  placeholder="Search by doctor, user, user code, department, or status..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  aria-label="Search appointments"
+                />
+              </InputGroup>
+            </Form.Group>
+          </Col>
+          <Col md={2} sm={6} className="mb-3">
+            <Form.Group>
+              <Form.Label>Status</Form.Label>
+              <Form.Select
+                value={statusFilter}
+                onChange={(e) => {
+                  setStatusFilter(e.target.value);
+                  setCurrentPage(1);
+                }}
+                aria-label="Filter by status"
+              >
+                <option value="all">All Statuses</option>
+                <option value="Booked">Booked</option>
+                <option value="In-Progress">In-Progress</option>
+                <option value="Completed">Completed</option>
+                <option value="Canceled">Canceled</option>
+              </Form.Select>
+            </Form.Group>
+          </Col>
+          <Col md={2} sm={6} className="mb-3">
+            <Form.Group>
+              <Form.Label>Department</Form.Label>
+<Form.Select
+  value={departmentFilter}
+  onChange={(e) => {
+    setDepartmentFilter(e.target.value);
+    setCurrentPage(1);
+  }}
+  aria-label="Filter by department"
+>
+  <option value="all">All Departments</option>
+  {Array.isArray(departments) &&
+    departments.map((dept) => (
+      <option key={dept._id} value={dept.name}>
+        {String(dept.name)}
+      </option>
+    ))}
+</Form.Select>
+
+
+            </Form.Group>
+          </Col>
+          <Col md={2} sm={6} className="mb-3">
+            <Form.Group>
+              <Form.Label>Start Date</Form.Label>
+              <Form.Control
+                type="date"
+                value={startDate}
+                onChange={(e) => {
+                  setStartDate(e.target.value);
+                  setCurrentPage(1);
+                }}
+                aria-label="Filter by start date"
               />
-            </InputGroup>
+            </Form.Group>
           </Col>
-          <Col md={3} sm={12} className="mb-2 mb-md-0">
-            <Form.Select
-              value={statusFilter}
-              onChange={(e) => {
-                setStatusFilter(e.target.value);
-                setCurrentPage(1);
-              }}
-              className="shadow-sm"
-              aria-label="Filter by status"
-            >
-              <option value="all">All Statuses</option>
-              <option value="Booked">Booked</option>
-              <option value="In-Progress">In-Progress</option>
-              <option value="Completed">Completed</option>
-              <option value="Canceled">Canceled</option>
-            </Form.Select>
+          <Col md={2} sm={6} className="mb-3">
+            <Form.Group>
+              <Form.Label>End Date</Form.Label>
+              <Form.Control
+                type="date"
+                value={endDate}
+                onChange={(e) => {
+                  setEndDate(e.target.value);
+                  setCurrentPage(1);
+                }}
+                aria-label="Filter by end date"
+              />
+            </Form.Group>
           </Col>
-          <Col md={3} sm={12} className="mb-2 mb-md-0">
-            <Form.Select
-              value={departmentFilter}
-              onChange={(e) => {
-                setDepartmentFilter(e.target.value);
-                setCurrentPage(1);
-              }}
-              className="shadow-sm"
-              aria-label="Filter by department"
-            >
-              <option value="all">All Departments</option>
-              {departments.map((dept) => (
-                <option key={dept} value={dept}>
-                  {dept}
-                </option>
-              ))}
-            </Form.Select>
-          </Col>
-          <Col md={2} sm={12} className="text-md-end">
+          <Col md={1} sm={12} className="mb-3 text-md-end">
             <Button
               variant="outline-primary"
               onClick={handleClearFilters}
-              className="shadow-sm rounded-pill px-3"
+              className="w-100"
               aria-label="Clear filters"
             >
-              Clear Filters
+              Clear
             </Button>
           </Col>
         </Row>
 
         <Button
           variant="success"
-          className="mb-4 shadow-sm rounded-pill px-4"
+          className="mb-4"
           onClick={handleAddNew}
           aria-label="Add new appointment"
         >
@@ -408,20 +479,27 @@ const AppointmentScheduleManagement = () => {
         </Button>
 
         {loading ? (
-          <div className="text-center py-5">
+          <div className="loading-container">
             <Spinner animation="border" variant="primary" role="status" />
-            <span className="visually-hidden">Loading...</span>
+            <p className="text-muted mt-2">Loading appointments...</p>
           </div>
         ) : error ? (
-          <div className="text-center py-5 text-danger">
+          <div className="error-container">
             <h5>{error}</h5>
+            <Button
+              variant="primary"
+              onClick={() => fetchAppointments()}
+              aria-label="Retry loading appointments"
+            >
+              Retry
+            </Button>
           </div>
         ) : filteredAppointments.length === 0 ? (
-          <p className="text-muted">No appointments found.</p>
+          <p className="text-muted text-center">No appointments found.</p>
         ) : (
           <>
-            <div className="table-responsive shadow-sm rounded">
-              <Table striped hover className="table-bordered">
+            <div className="table-responsive">
+              <Table striped hover>
                 <thead className="table-dark">
                   <tr>
                     <th>No</th>
@@ -430,8 +508,9 @@ const AppointmentScheduleManagement = () => {
                     <th>Department</th>
                     <th>Type</th>
                     <th>User</th>
+                    <th className="user-code">User Code</th>
                     <th>Phone</th>
-                    <th>Medical Profile</th>
+                    <th>Patient Profile</th>
                     <th>Status</th>
                     <th>Reminder</th>
                     <th>Actions</th>
@@ -443,9 +522,12 @@ const AppointmentScheduleManagement = () => {
                       <td>{(currentPage - 1) * itemsPerPage + index + 1}</td>
                       <td>{formatDateTime(appointment.appointmentDate)}</td>
                       <td>{appointment.doctorName || "N/A"}</td>
-                      <td>{appointment.department}</td>
+                      <td>
+                        {departments.find((d) => d._id === appointment.department)?.name || appointment.department}
+                      </td>
                       <td>{appointment.type}</td>
                       <td>{appointment.userName || "N/A"}</td>
+                      <td className="user-code">{appointment.userCode || "N/A"}</td>
                       <td>{appointment.userPhone || "N/A"}</td>
                       <td>{!appointment.profileId || appointment.profileId === "null" ? "N/A" : appointment.profileId}</td>
                       <td>{appointment.status}</td>
@@ -455,7 +537,6 @@ const AppointmentScheduleManagement = () => {
                           <Button
                             variant="primary"
                             size="sm"
-                            className="rounded-circle"
                             onClick={() => handleEdit(appointment)}
                             title="Edit Appointment"
                             aria-label="Edit appointment"
@@ -465,7 +546,6 @@ const AppointmentScheduleManagement = () => {
                           <Button
                             variant="danger"
                             size="sm"
-                            className="rounded-circle"
                             onClick={() => handleDeleteClick(appointment._id)}
                             title="Delete Appointment"
                             aria-label="Delete appointment"
@@ -485,18 +565,16 @@ const AppointmentScheduleManagement = () => {
                 Showing {(currentPage - 1) * itemsPerPage + 1} to{" "}
                 {Math.min(currentPage * itemsPerPage, totalItems)} of {totalItems} appointments
               </div>
-              <Pagination className="mb-0">
+              <Pagination>
                 <Pagination.Prev
                   onClick={() => handlePageChange(currentPage - 1)}
                   disabled={currentPage === 1}
-                  className="shadow-sm"
                 />
                 {[...Array(totalPages).keys()].map((page) => (
                   <Pagination.Item
                     key={page + 1}
                     active={page + 1 === currentPage}
                     onClick={() => handlePageChange(page + 1)}
-                    className="shadow-sm"
                     aria-label={`Go to page ${page + 1}`}
                   >
                     {page + 1}
@@ -505,7 +583,6 @@ const AppointmentScheduleManagement = () => {
                 <Pagination.Next
                   onClick={() => handlePageChange(currentPage + 1)}
                   disabled={currentPage === totalPages}
-                  className="shadow-sm"
                 />
               </Pagination>
             </div>
@@ -513,8 +590,7 @@ const AppointmentScheduleManagement = () => {
         )}
       </Container>
 
-      {/* Modal Add/Edit */}
-      <Modal show={showModal} onHide={() => setShowModal(false)} centered className="shadow-lg">
+      <Modal show={showModal} onHide={() => setShowModal(false)} centered>
         <Modal.Header closeButton className="bg-primary text-white">
           <Modal.Title>{currentAppointment ? "Update Appointment" : "Add New Appointment"}</Modal.Title>
         </Modal.Header>
@@ -532,7 +608,7 @@ const AppointmentScheduleManagement = () => {
                   value={form.appointmentDate ? form.appointmentDate.split("T")[0] : ""}
                   onChange={handleChange}
                   required
-                  className={`shadow-sm ${formErrors.appointmentDate ? "border-danger" : ""}`}
+                  className={formErrors.appointmentDate ? "border-danger" : ""}
                   aria-label="Select appointment date"
                 />
                 {formErrors.appointmentDate && (
@@ -544,22 +620,24 @@ const AppointmentScheduleManagement = () => {
                 <Form.Label className="fw-medium">
                   Department <span className="text-danger">*</span>
                 </Form.Label>
-                <Form.Select
-                  name="department"
-                  value={form.department}
-                  onChange={handleChange}
-                  required
-                  disabled={!form.appointmentDate}
-                  className={`shadow-sm ${formErrors.department ? "border-danger" : ""}`}
-                  aria-label="Select department"
-                >
-                  <option value="">Select department</option>
-                  {departments.map((dept) => (
-                    <option key={dept} value={dept}>
-                      {dept}
-                    </option>
-                  ))}
-                </Form.Select>
+<Form.Select
+  name="department"
+  value={form.department}
+  onChange={handleChange}
+  required
+  disabled={!form.appointmentDate}
+  className={formErrors.department ? "border-danger" : ""}
+  aria-label="Select department"
+>
+  <option value="">Select department</option>
+  {Array.isArray(departments) &&
+    departments.map((dept) => (
+      <option key={dept._id} value={dept._id}>
+        {dept.name}
+      </option>
+    ))}
+</Form.Select>
+
                 {formErrors.department && (
                   <div className="text-danger small mt-1">{formErrors.department}</div>
                 )}
@@ -574,6 +652,21 @@ const AppointmentScheduleManagement = () => {
 
               {availableDoctors.length > 0 ? (
                 <>
+                  <Form.Group className="mb-3" controlId="doctorSearch">
+                    <Form.Label className="fw-medium">Search Doctor</Form.Label>
+                    <InputGroup>
+                      <InputGroup.Text>
+                        <FaSearch />
+                      </InputGroup.Text>
+                      <FormControl
+                        placeholder="Search by doctor name..."
+                        value={doctorSearchTerm}
+                        onChange={(e) => setDoctorSearchTerm(e.target.value)}
+                        aria-label="Search doctors"
+                      />
+                    </InputGroup>
+                  </Form.Group>
+
                   <Form.Group className="mb-3" controlId="doctorId">
                     <Form.Label className="fw-medium">
                       Doctor <span className="text-danger">*</span>
@@ -583,11 +676,11 @@ const AppointmentScheduleManagement = () => {
                       value={form.doctorId}
                       onChange={handleChange}
                       required
-                      className={`shadow-sm ${formErrors.doctorId ? "border-danger" : ""}`}
+                      className={formErrors.doctorId ? "border-danger" : ""}
                       aria-label="Select doctor"
                     >
                       <option value="">Select doctor</option>
-                      {availableDoctors.map((doc) => (
+                      {filteredDoctors.map((doc) => (
                         <option key={doc._id} value={doc._id}>
                           {doc.name}
                         </option>
@@ -595,6 +688,9 @@ const AppointmentScheduleManagement = () => {
                     </Form.Select>
                     {formErrors.doctorId && (
                       <div className="text-danger small mt-1">{formErrors.doctorId}</div>
+                    )}
+                    {doctorSearchTerm && filteredDoctors.length === 0 && (
+                      <div className="text-muted small mt-1">No doctors found matching your search.</div>
                     )}
                   </Form.Group>
 
@@ -608,7 +704,7 @@ const AppointmentScheduleManagement = () => {
                       onChange={handleChange}
                       required
                       disabled={!form.doctorId || schedules.length === 0}
-                      className={`shadow-sm ${formErrors.timeSlot ? "border-danger" : ""}`}
+                      className={formErrors.timeSlot ? "border-danger" : ""}
                       aria-label="Select time slot"
                     >
                       <option value="">Select a time slot</option>
@@ -640,10 +736,25 @@ const AppointmentScheduleManagement = () => {
               ) : null}
             </div>
 
-            <hr className="my-4" />
+            <hr />
 
             <div className="mb-4">
               <h5 className="fw-bold text-primary mb-3">User Details</h5>
+              <Form.Group className="mb-3" controlId="userSearch">
+                <Form.Label className="fw-medium">Search User</Form.Label>
+                <InputGroup>
+                  <InputGroup.Text>
+                    <FaSearch />
+                  </InputGroup.Text>
+                  <FormControl
+                    placeholder="Search by user name, phone, or user code..."
+                    value={userSearchTerm}
+                    onChange={(e) => setUserSearchTerm(e.target.value)}
+                    aria-label="Search users"
+                  />
+                </InputGroup>
+              </Form.Group>
+
               <Form.Group className="mb-3" controlId="userId">
                 <Form.Label className="fw-medium">
                   User <span className="text-danger">*</span>
@@ -653,29 +764,31 @@ const AppointmentScheduleManagement = () => {
                   value={form.userId}
                   onChange={handleChange}
                   required
-                  className={`shadow-sm ${formErrors.userId ? "border-danger" : ""}`}
+                  className={formErrors.userId ? "border-danger" : ""}
                   aria-label="Select user"
                 >
                   <option value="">Select user</option>
-                  {users.map((user) => (
+                  {filteredUsers.map((user) => (
                     <option key={user._id} value={user._id}>
-                      {user.name}
+                      {user.name} ({user.phone || "N/A"}) - {user.user_code || "N/A"}
                     </option>
                   ))}
                 </Form.Select>
                 {formErrors.userId && (
                   <div className="text-danger small mt-1">{formErrors.userId}</div>
                 )}
+                {userSearchTerm && filteredUsers.length === 0 && (
+                  <div className="text-muted small mt-1">No users found matching your search.</div>
+                )}
               </Form.Group>
 
               <Form.Group className="mb-3" controlId="profileId">
-                <Form.Label className="fw-medium">Medical Profile</Form.Label>
+                <Form.Label className="fw-medium">Patient Profile</Form.Label>
                 <Form.Select
                   name="profileId"
                   value={form.profileId}
                   onChange={handleChange}
-                  className="shadow-sm"
-                  aria-label="Select medical profile"
+                  aria-label="Select patient profile"
                 >
                   <option value="">-- No profile (create new) --</option>
                   {profiles.map((profile) => (
@@ -690,7 +803,7 @@ const AppointmentScheduleManagement = () => {
               </Form.Group>
             </div>
 
-            <hr className="my-4" />
+            <hr />
 
             <div>
               <h5 className="fw-bold text-primary mb-3">Additional Details</h5>
@@ -700,7 +813,6 @@ const AppointmentScheduleManagement = () => {
                   name="type"
                   value={form.type}
                   onChange={handleChange}
-                  className="shadow-sm"
                   aria-label="Select appointment type"
                 >
                   <option value="Online">Online</option>
@@ -714,7 +826,6 @@ const AppointmentScheduleManagement = () => {
                   name="status"
                   value={form.status}
                   onChange={handleChange}
-                  className="shadow-sm"
                   aria-label="Select appointment status"
                 >
                   <option value="Booked">Booked</option>
@@ -741,7 +852,6 @@ const AppointmentScheduleManagement = () => {
           <Button
             variant="secondary"
             onClick={handleResetForm}
-            className="rounded-pill px-3 shadow-sm"
             aria-label="Reset form"
           >
             <FaRedo className="me-1" /> Reset
@@ -749,7 +859,6 @@ const AppointmentScheduleManagement = () => {
           <Button
             variant="danger"
             onClick={() => setShowModal(false)}
-            className="rounded-pill px-3 shadow-sm"
             aria-label="Cancel"
           >
             Cancel
@@ -758,7 +867,6 @@ const AppointmentScheduleManagement = () => {
             variant="primary"
             onClick={handleSubmit}
             disabled={isFormLoading || !form.timeSlot}
-            className="rounded-pill px-4 shadow-sm"
             aria-label={currentAppointment ? "Save appointment" : "Add appointment"}
           >
             {isFormLoading ? <Spinner animation="border" size="sm" className="me-2" /> : null}
@@ -767,8 +875,7 @@ const AppointmentScheduleManagement = () => {
         </Modal.Footer>
       </Modal>
 
-      {/* Modal Delete */}
-      <Modal show={showDeleteModal} onHide={cancelDelete} centered className="shadow-lg">
+      <Modal show={showDeleteModal} onHide={cancelDelete} centered>
         <Modal.Header closeButton className="bg-danger text-white">
           <Modal.Title>Confirm Delete</Modal.Title>
         </Modal.Header>
@@ -779,7 +886,6 @@ const AppointmentScheduleManagement = () => {
           <Button
             variant="secondary"
             onClick={cancelDelete}
-            className="rounded-pill px-3 shadow-sm"
             aria-label="Cancel delete"
           >
             Cancel
@@ -787,7 +893,6 @@ const AppointmentScheduleManagement = () => {
           <Button
             variant="danger"
             onClick={confirmDelete}
-            className="rounded-pill px-3 shadow-sm"
             aria-label="Confirm delete"
           >
             Delete
