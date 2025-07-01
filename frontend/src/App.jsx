@@ -22,6 +22,7 @@ import EmployeeManagement from "./pages/admin/EmployessManagement";
 import StaffLayout from "./components/Staff/StaffLayout";
 import BlogManagement from "./pages/staff/BlogManagement";
 import ServiceManagement from "./pages/staff/ServiceManagement";
+import DepartmentManagement from "./pages/staff/DepartmentManagement";
 import SpecialtyManagement from "./pages/staff/SpecialtyManagement";
 import InvoiceManagement from "./pages/staff/InvoiceManagement";
 import PaymentView from "./pages/staff/PaymentView";
@@ -132,6 +133,7 @@ const App = () => {
             <Route index element={<BlogManagement />} />
             <Route path="blogs" element={<BlogManagement />} />
             <Route path="services" element={<ServiceManagement />} />
+            <Route path="departments" element={<DepartmentManagement />} />
             <Route path="specialties" element={<SpecialtyManagement />} />
             <Route path="invoices" element={<InvoiceManagement />} />
             <Route path="payments" element={<PaymentView />} />
