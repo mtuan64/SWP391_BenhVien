@@ -51,7 +51,6 @@ import CreateInvoice from "./components/staff/CreateInvoice";
 import Header from "./components/HeaderComponent";
 import MenuComponent from "./components/MenuComponent";
 import FooterComponent from "./components/FooterComponent";
-import NotFoundPage from "./pages/NotFoundPage";
 import NotificationCenter from "./pages/NotificationCenter";
 import NotificationDetail from "./pages/NotificationDetail";
 import { PrivateRoute, PrivateRouteNotAllowUser, PrivateRouteByRole } from "./components/PrivateRoute"
