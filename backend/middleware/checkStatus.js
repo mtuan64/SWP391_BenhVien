@@ -1,5 +1,6 @@
 const User = require("../models/User");
 
+
 const checkUserStatus = async (req, res, next) => {
   try {
     const user = await User.findById(req.id);

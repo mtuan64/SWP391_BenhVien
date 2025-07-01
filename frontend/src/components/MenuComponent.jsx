@@ -35,6 +35,7 @@ const menuByRole = {
         { title: "Home", path: "/", icon: <HomeOutlined /> },
         { title: "My Project", path: "/my-project-intern", icon: <HomeOutlined /> },
        { title: "Medical Record", path: "/view_medicalrecord", icon: <FileTextOutlined /> },
+        { title: "Report Management", path: "/report-management", icon: <FileTextOutlined /> },
         { title: "Schedule", path: "/schedule", icon: <FileTextOutlined /> },
         { title: "Attendance", path: "/attendance", icon: <FileTextOutlined /> },
         { title: "Mark Report", path: "/attendance", icon: <FileTextOutlined /> },

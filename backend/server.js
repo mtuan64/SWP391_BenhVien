@@ -51,6 +51,10 @@ app.use("/api/auth", authRouter);
 app.use("/api/doctor", doctorRouter);
 app.use("/api/staff", staffRouter);
 
+app.use("/api/appointmentScheduleManagement", require("./routers/Staff/appointmentScheduleManagement.route"));
+app.use("/api/users", require("./routers/Staff/userManagement.route"));
+app.use("/api/departments", require("./routers/Staff/departmentManagement.route"));
+
 // Start server after DB connected
 const PORT = process.env.PORT || 9999;
 
@@ -60,4 +64,5 @@ connectDb().then(() => {
   });
 }).catch((err) => {
   console.error("❌ MongoDB connection failed:", err);
-});
+})
+

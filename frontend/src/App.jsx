@@ -30,10 +30,12 @@ import Dashboard from "./pages/admin/Dashboard";
 import AccountManagement from "./pages/admin/AccountManagement";
 import EmployeeManagement from "./pages/admin/EmployessManagement";
 import StaffLayout from "./components/staff/StaffLayout";
+import InvoiceUser from "./pages/InvoiceManagement";
 import BlogManagement from "./pages/staff/BlogManagement";
 import ServiceManagement from "./pages/staff/ServiceManagement";
+import DepartmentManagement from "./pages/staff/DepartmentManagement";
 import SpecialtyManagement from "./pages/staff/SpecialtyManagement";
-import InvoiceUser from "./pages/InvoiceManagement";
+import InvoiceManagement from "./pages/staff/InvoiceManagement";
 import PaymentView from "./pages/staff/PaymentView";
 import NewsManagement from "./pages/staff/NewsManagement";
 import FeedbackManagement from "./pages/staff/FeedbackManagement";
@@ -51,7 +53,11 @@ import MenuComponent from "./components/MenuComponent";
 import FooterComponent from "./components/FooterComponent";
 import NotificationCenter from "./pages/NotificationCenter";
 import NotificationDetail from "./pages/NotificationDetail";
-import { PrivateRoute, PrivateRouteNotAllowUser, PrivateRouteByRole } from "./components/PrivateRoute"
+import {
+  PrivateRoute,
+  PrivateRouteNotAllowUser,
+  PrivateRouteByRole,
+} from "./components/PrivateRoute";
 import "antd/dist/reset.css";
 import AddMedicalRecord from "./components/AddMedicalRecord";
 import ViewMedicalRecords from "./components/ViewMedicalRecord";
@@ -103,7 +109,6 @@ const RoleRedirect = () => {
 
   return null;
 };
-
 const getRole = () => {
   try {
     const user = JSON.parse(localStorage.getItem("user"));
@@ -189,12 +194,16 @@ const App = () => {
             <Route path="services" element={<ServiceManagement />} />
             <Route path="services/create" element={<CreateServicePage />} />
             <Route path="services/edit/:id" element={<EditServicePage />} />
+            <Route path="departments" element={<DepartmentManagement />} />
             <Route path="specialties" element={<SpecialtyManagement />} />
             <Route path="invoices" element={<InvoiceList />} />
             <Route path="payments" element={<PaymentView />} />
             <Route path="news" element={<NewsManagement />} />
             <Route path="add/medicalrecords" element={<AddMedicalRecord />} />
-            <Route path="view/medicalrecords" element={<ViewMedicalRecords />} />
+            <Route
+              path="view/medicalrecords"
+              element={<ViewMedicalRecords />}
+            />
 
             <Route path="feedback" element={<FeedbackManagement />} />
             <Route path="qna" element={<QnAView />} />
@@ -212,8 +221,7 @@ const App = () => {
           <Route path="/home" element={<HomePage />} />
           <Route path="/service" element={<ServicePage />} />
           <Route path="/doctor-home" element={<DoctorPage />} />
-          
-        
+
           <Route path="/blogs" element={<BlogListPage />} />
           <Route path="/news" element={<NewsListPage />} />
           <Route path="/blog/:slug" element={<BlogDetail />} />
@@ -232,11 +240,14 @@ const App = () => {
           <Route path="/about" element={<AboutPage />} />
           <Route path="/myprofile" element={<ProfilePage />} />
           <Route path="/invoice" element={<InvoiceUser />} />
-          <Route path="/appointment" element={
-            <PrivateRoute>
-              <AppointmentPage />
-            </PrivateRoute>
-          } />
+          <Route
+            path="/appointment"
+            element={
+              <PrivateRoute>
+                <AppointmentPage />
+              </PrivateRoute>
+            }
+          />
           <Route path="/not-found" element={<NotFoundPage />} />
           <Route path="/doctor/:doctorId" element={<DoctorDetail />} />
 
@@ -248,7 +259,6 @@ const App = () => {
           {/* <Route path="/labtests" element={<LabtestResult />} /> */}
           <Route path="/health/calculator" element={<HealthCalculatorPage />} />
 
-          
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
 

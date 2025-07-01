@@ -19,7 +19,6 @@ const profileSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-
 profileSchema.index({ name: 1 });
 
 module.exports = mongoose.model("Profile", profileSchema);

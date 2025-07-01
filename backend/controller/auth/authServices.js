@@ -1,10 +1,10 @@
 const User = require("../../models/User");
 const jwt = require("jsonwebtoken");
-const mongoose = require("mongoose");
-const nodemailer = require("nodemailer");
-const Employee = require("../../models/Employee");
-const bcrypt = require("bcrypt");
-require("dotenv").config();
+const mongoose = require('mongoose');
+const nodemailer = require('nodemailer');
+const Employee = require('../../models/Employee');
+const bcrypt = require('bcrypt');
+require('dotenv').config();
 const Login = async (req, res) => {
   const { email, password } = req.body;
   try {

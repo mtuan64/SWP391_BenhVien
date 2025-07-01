@@ -18,7 +18,6 @@ import {
 } from "@ant-design/icons";
 import { Link, Outlet, useNavigate } from "react-router-dom";
 
-
 const { Header, Sider, Content } = Layout;
 
 const StaffLayout = () => {
@@ -53,6 +52,9 @@ const StaffLayout = () => {
           </Menu.Item>
           <Menu.Item key="2" icon={<AppstoreOutlined />}>
             <Link to="/staff/services">Manage Service</Link>
+          </Menu.Item>
+          <Menu.Item key="2" icon={<AppstoreOutlined />}>
+            <Link to="/staff/departments">Manage Department</Link>
           </Menu.Item>
           <Menu.Item key="14" icon={<AppstoreOutlined />}>
             <Link to="/staff/view/medicalrecords">Manage Records</Link>
@@ -90,7 +92,6 @@ const StaffLayout = () => {
           <Menu.Item key="8" icon={<QuestionCircleOutlined />}>
             <Link to="/staff/qna">View Q&A</Link>
           </Menu.Item>
-
           <Menu.Item key="13" icon={<LogoutOutlined />} onClick={handleLogout}>
             Logout
           </Menu.Item>
