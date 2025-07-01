@@ -18,6 +18,7 @@ import {
 } from "@ant-design/icons";
 import { Link, Outlet, useNavigate } from "react-router-dom";
 
+
 const { Header, Sider, Content } = Layout;
 
 const StaffLayout = () => {
@@ -46,9 +47,9 @@ const StaffLayout = () => {
         >
           {collapsed ? "KC" : "KiwiCare"}
         </div>
-        <Menu theme="dark" mode="inline" defaultSelectedKeys={["1"]}>
+        <Menu theme="dark" mode="inline" defaultSelectedKeys={["1"]} >
           <Menu.Item key="1" icon={<FileTextOutlined />}>
-            <Link to="/staff/blogs">Manage Blogs</Link>
+            <Link to="/staff/blogs" >Manage Blogs</Link>
           </Menu.Item>
           <Menu.Item key="2" icon={<AppstoreOutlined />}>
             <Link to="/staff/services">Manage Service</Link>
