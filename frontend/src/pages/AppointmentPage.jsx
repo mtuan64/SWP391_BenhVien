@@ -9,6 +9,9 @@ import api from "../../api/axiosInstance";
 const AppointmentPage = () => {
   const [profiles, setProfiles] = useState([]);
   const [selectedProfile, setSelectedProfile] = useState(null);
+  const [profileName, setProfileName] = useState("");
+  const [profileGender, setProfileGender] = useState("");
+  const [profileDateOfBirth, setProfileDateOfBirth] = useState("");
   const [departmentData, setDepartmentData] = useState([
     { id: "dept1", name: "Nội tổng quát" },
     { id: "dept2", name: "Nhi" },
@@ -38,6 +41,7 @@ const AppointmentPage = () => {
     "01:00 Chiều", "02:00 Chiều", "03:00 Chiều", "04:00 Chiều"
   ];
 
+
   useEffect(() => {
     const fetchProfiles = async () => {
       try {
@@ -50,6 +54,7 @@ const AppointmentPage = () => {
     fetchProfiles();
   }, []);
 
+
   useEffect(() => {
     const fetchDoctors = async () => {
       try {
@@ -61,6 +66,32 @@ const AppointmentPage = () => {
     };
     fetchDoctors();
   }, []);
+
+  const handleCreateProfile = async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const res = await api.post("/profile/create", {
+        name: profileName,
+        gender: profileGender,
+        dateOfBirth: profileDateOfBirth,
+      });
+
+      console.log("Profile created:", res.data);
+      setSelectedProfile(res._id);
+      const updated = await api.get("/profile/user");
+      setProfiles(updated.data);
+
+      setSuccess(true);
+      setStep("profile");
+    } catch (err) {
+      console.error("Error creating profile:", err);
+      setError("Tạo hồ sơ thất bại.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const buildAppointmentDate = (selectedDate, selectedTime) => {
     if (!selectedDate || !selectedTime) return null;
@@ -101,10 +132,57 @@ const AppointmentPage = () => {
       case "profile":
         if (profiles.length === 0) {
           return (
-            <div className="p-4 bg-white rounded shadow-sm text-center">
-              <h3 className="text-primary fw-bold mb-3">Chưa Có Hồ Sơ</h3>
-              <p className="text-muted">Vui lòng thêm hồ sơ mới trước khi tiếp tục đặt lịch.</p>
-              <button className="btn btn-primary mt-3" onClick={() => setStep("addProfile")}>Thêm Hồ Sơ</button>
+            <div className="p-4 bg-white rounded shadow-sm">
+              <h3 className="text-primary fw-bold mb-4">Tạo Hồ Sơ Mới</h3>
+
+              {error && <div className="alert alert-danger">{error}</div>}
+              {success && <div className="alert alert-success">Tạo hồ sơ thành công!</div>}
+
+              <div className="mb-3">
+                <label className="form-label">Họ và tên</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={profileName}
+                  onChange={(e) => setProfileName(e.target.value)}
+                />
+              </div>
+
+              <div className="mb-3">
+                <label className="form-label">Giới tính</label>
+                <select
+                  className="form-select"
+                  value={profileGender}
+                  onChange={(e) => setProfileGender(e.target.value)}
+                >
+                  <option value="">Chọn giới tính</option>
+                  <option value="Male">Nam</option>
+                  <option value="Female">Nữ</option>
+                  <option value="Other">Khác</option>
+                </select>
+              </div>
+
+              <div className="mb-3">
+                <label className="form-label">Ngày sinh</label>
+                <input
+                  type="date"
+                  name="dateOfBirth"
+                  className="form-control"
+                  value={profileDateOfBirth}
+                  onChange={(e) => setProfileDateOfBirth(e.target.value)}
+                  max={new Date().toISOString().split("T")[0]}
+                />
+              </div>
+
+              <div className="text-end mt-4">
+                <button
+                  className="btn btn-primary"
+                  onClick={handleCreateProfile}
+                  disabled={loading || !profileName || !profileGender || !profileDateOfBirth}
+                >
+                  {loading ? "Đang tạo..." : "Tạo hồ sơ"}
+                </button>
+              </div>
             </div>
           );
         }
@@ -239,7 +317,20 @@ const AppointmentPage = () => {
             </Row>
             <div className="d-flex justify-content-between mt-4">
               <button className="btn btn-outline-secondary" onClick={() => setStep("doctor")}>Quay Lại</button>
-              <button className="btn btn-primary" onClick={() => handleCreateAppointment()} disabled={!selectedDate || !selectedTime}>Xác Nhận</button>
+              <button
+                className="btn btn-primary"
+                onClick={handleCreateAppointment}
+                disabled={loading}
+              >
+                {loading ? (
+                  <>
+                    <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                    Đang đặt lịch...
+                  </>
+                ) : (
+                  "Đặt Lịch"
+                )}
+              </button>
             </div>
           </div>
         );
