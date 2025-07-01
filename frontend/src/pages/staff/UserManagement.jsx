@@ -12,10 +12,10 @@ import {
   FormControl,
   Pagination,
 } from "react-bootstrap";
-import { FaEdit, FaTrash } from "react-icons/fa";
+import { FaEdit, FaTrash, FaSearch } from "react-icons/fa";
 import FooterComponent from "../../components/FooterComponent";
 import axios from "axios";
-import "../../assets/css/Homepage.css";
+import "../../assets/css/UserManagement.css";
 
 const UserManagement = () => {
   const [users, setUsers] = useState([]);
@@ -56,7 +56,7 @@ const UserManagement = () => {
       setUsers(res.data.users || []);
       setTotalPages(res.data.totalPages || 1);
       setCurrentPage(res.data.currentPage || 1);
-      setTotalItems(res.data.total || 0);
+      setTotalItems(res.data.totalUsers || 0);
       setLoading(false);
     } catch (err) {
       console.error(err);
@@ -125,7 +125,7 @@ const UserManagement = () => {
       setShowModal(false);
       fetchUsers(searchQuery, statusFilter, currentPage);
     } catch (error) {
-      alert("Operation failed: " + error.message);
+      alert("Operation failed: " + (error.response?.data?.message || error.message));
     }
   };
 
@@ -138,14 +138,16 @@ const UserManagement = () => {
     try {
       await axios.delete(`http://localhost:9999/api/users/${deleteUserId}`);
       setShowDeleteModal(false);
+      setDeleteUserId(null);
       fetchUsers(searchQuery, statusFilter, currentPage);
     } catch (error) {
-      alert("Delete failed: " + error.message);
+      alert("Delete failed: " + (error.response?.data?.message || error.message));
     }
   };
 
   const cancelDelete = () => {
     setShowDeleteModal(false);
+    setDeleteUserId(null);
   };
 
   const handlePageChange = (pageNumber) => {
@@ -155,50 +157,56 @@ const UserManagement = () => {
   return (
     <>
       <Container className="py-5">
-        <h2 className="mb-4">User Management</h2>
+        <h2 className="mb-4 text-primary fw-bold">User Management</h2>
 
-        <Row className="align-items-center mb-3">
-          <Col md={3} sm={12} className="mb-2 mb-md-0">
-            <InputGroup style={{ maxWidth: "300px" }}>
-              <FormControl
-                placeholder="Search by name or email..."
-                value={searchQuery}
-                onChange={handleSearchChange}
-                className="shadow-sm"
-                aria-label="Search users"
-              />
-            </InputGroup>
+        <Row className="align-items-end mb-4 filter-card">
+          <Col md={3} sm={12} className="mb-3">
+            <Form.Group>
+              <Form.Label>Search</Form.Label>
+              <InputGroup>
+                <InputGroup.Text>
+                  <FaSearch />
+                </InputGroup.Text>
+                <FormControl
+                  placeholder="Search by name, email, or user code..."
+                  value={searchQuery}
+                  onChange={handleSearchChange}
+                  aria-label="Search users"
+                />
+              </InputGroup>
+            </Form.Group>
           </Col>
 
-          <Col md={2} sm={12} className="mb-2 mb-md-0">
-            <Form.Select
-              value={statusFilter}
-              onChange={handleStatusChange}
-              className="shadow-sm"
-              aria-label="Filter by status"
-            >
-              <option value="all">All Statuses</option>
-              <option value="active">Active</option>
-              <option value="inactive">Inactive</option>
-            </Form.Select>
+          <Col md={2} sm={12} className="mb-3">
+            <Form.Group>
+              <Form.Label>Status</Form.Label>
+              <Form.Select
+                value={statusFilter}
+                onChange={handleStatusChange}
+                aria-label="Filter by status"
+              >
+                <option value="all">All Statuses</option>
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+              </Form.Select>
+            </Form.Group>
           </Col>
 
-          <Col md={3} sm={12} className="mb-2 mb-md-0">
+          <Col md={3} sm={12} className="mb-3">
             <Button
               variant="outline-primary"
               onClick={handleClearFilters}
-              className="shadow-sm rounded-pill px-3 w-100"
+              className="w-100"
               aria-label="Clear filters"
             >
               Clear Filters
             </Button>
           </Col>
 
-          <Col md={4} sm={12} className="text-md-end">
+          <Col md={4} sm={12} className="mb-3 text-md-end">
             <Button
               variant="success"
               onClick={handleAddNew}
-              className="shadow-sm rounded-pill px-4"
               aria-label="Add new user"
             >
               Add User
@@ -207,24 +215,32 @@ const UserManagement = () => {
         </Row>
 
         {loading ? (
-          <div className="text-center py-5">
-            <Spinner animation="border" role="status" />
+          <div className="loading-container">
+            <Spinner animation="border" variant="primary" role="status" />
+            <p className="text-muted mt-2">Loading users...</p>
           </div>
         ) : error ? (
-          <div className="text-center py-5 text-danger">
+          <div className="error-container">
             <h5>{error}</h5>
+            <Button
+              variant="primary"
+              onClick={() => fetchUsers(searchQuery, statusFilter, currentPage)}
+              aria-label="Retry loading users"
+            >
+              Retry
+            </Button>
           </div>
         ) : users.length === 0 ? (
-          <p>No users found.</p>
+          <p className="text-muted text-center">No users found.</p>
         ) : (
           <>
-            <div className="table-responsive shadow-sm rounded">
-              <Table striped hover className="table-bordered">
+            <div className="table-responsive">
+              <Table striped hover>
                 <thead className="table-dark">
                   <tr>
                     <th>No</th>
+                    <th className="user-code">User Code</th>
                     <th>Email</th>
-                    <th>Password</th>
                     <th>Name</th>
                     <th>Phone</th>
                     <th>Status</th>
@@ -236,8 +252,8 @@ const UserManagement = () => {
                   {users.map((user, index) => (
                     <tr key={user._id}>
                       <td>{(currentPage - 1) * limit + index + 1}</td>
+                      <td className="user-code">{user.user_code || "N/A"}</td>
                       <td>{user.email}</td>
-                      <td>{"••••••••"}</td>
                       <td>{user.name}</td>
                       <td>{user.phone || "N/A"}</td>
                       <td>{user.status}</td>
@@ -247,11 +263,10 @@ const UserManagement = () => {
                           : "No profiles"}
                       </td>
                       <td>
-                        <div style={{ display: "flex", gap: "8px" }}>
+                        <div className="d-flex gap-2">
                           <Button
                             variant="primary"
                             size="sm"
-                            className="rounded-circle"
                             onClick={() => handleEdit(user)}
                             aria-label="Edit user"
                           >
@@ -260,7 +275,6 @@ const UserManagement = () => {
                           <Button
                             variant="danger"
                             size="sm"
-                            className="rounded-circle"
                             onClick={() => handleDeleteClick(user._id)}
                             aria-label="Delete user"
                           >
@@ -275,22 +289,20 @@ const UserManagement = () => {
             </div>
 
             <div className="d-flex justify-content-between align-items-center mt-4">
-              <div>
+              <div className="text-muted">
                 Showing {(currentPage - 1) * limit + 1} to{" "}
                 {Math.min(currentPage * limit, totalItems)} of {totalItems} users
               </div>
-              <Pagination className="mb-0">
+              <Pagination>
                 <Pagination.Prev
                   onClick={() => handlePageChange(currentPage - 1)}
                   disabled={currentPage === 1}
-                  className="shadow-sm"
                 />
                 {[...Array(totalPages).keys()].map((page) => (
                   <Pagination.Item
                     key={page + 1}
                     active={page + 1 === currentPage}
                     onClick={() => handlePageChange(page + 1)}
-                    className="shadow-sm"
                     aria-label={`Go to page ${page + 1}`}
                   >
                     {page + 1}
@@ -299,7 +311,6 @@ const UserManagement = () => {
                 <Pagination.Next
                   onClick={() => handlePageChange(currentPage + 1)}
                   disabled={currentPage === totalPages}
-                  className="shadow-sm"
                 />
               </Pagination>
             </div>
@@ -307,46 +318,49 @@ const UserManagement = () => {
         )}
       </Container>
 
-      {/* Modal Add/Edit */}
-      <Modal show={showModal} onHide={() => setShowModal(false)} centered className="shadow-lg">
+      <Modal show={showModal} onHide={() => setShowModal(false)} centered>
         <Modal.Header closeButton className="bg-primary text-white">
           <Modal.Title>{currentUser ? "Edit User" : "Add User"}</Modal.Title>
         </Modal.Header>
         <Modal.Body className="p-4">
           <Form>
+            {currentUser && (
+              <Form.Group className="mb-3">
+                <Form.Label className="fw-medium">User Code</Form.Label>
+                <Form.Control
+                  value={currentUser.user_code || "N/A"}
+                  readOnly
+                  aria-label="User code (read-only)"
+                />
+              </Form.Group>
+            )}
             <Form.Group className="mb-3">
               <Form.Label className="fw-medium">Name</Form.Label>
               <Form.Control
                 name="name"
                 value={form.name}
                 onChange={handleChange}
-                className="shadow-sm"
                 aria-label="Enter name"
               />
             </Form.Group>
-
             <Form.Group className="mb-3">
               <Form.Label className="fw-medium">Email</Form.Label>
               <Form.Control
                 name="email"
                 value={form.email}
                 onChange={handleChange}
-                className="shadow-sm"
                 aria-label="Enter email"
               />
             </Form.Group>
-
             <Form.Group className="mb-3">
               <Form.Label className="fw-medium">Phone</Form.Label>
               <Form.Control
                 name="phone"
                 value={form.phone}
                 onChange={handleChange}
-                className="shadow-sm"
                 aria-label="Enter phone"
               />
             </Form.Group>
-
             <Form.Group className="mb-3">
               <Form.Label className="fw-medium">Password</Form.Label>
               <Form.Control
@@ -355,18 +369,15 @@ const UserManagement = () => {
                 placeholder={currentUser ? "Leave blank to keep old password" : ""}
                 value={form.password}
                 onChange={handleChange}
-                className="shadow-sm"
                 aria-label="Enter password"
               />
             </Form.Group>
-
             <Form.Group className="mb-3">
               <Form.Label className="fw-medium">Status</Form.Label>
               <Form.Select
                 name="status"
                 value={form.status}
                 onChange={handleChange}
-                className="shadow-sm"
                 aria-label="Select status"
               >
                 <option value="active">Active</option>
@@ -379,7 +390,6 @@ const UserManagement = () => {
           <Button
             variant="secondary"
             onClick={() => setShowModal(false)}
-            className="rounded-pill px-3 shadow-sm"
             aria-label="Cancel"
           >
             Cancel
@@ -387,7 +397,6 @@ const UserManagement = () => {
           <Button
             variant="primary"
             onClick={handleSubmit}
-            className="rounded-pill px-4 shadow-sm"
             aria-label={currentUser ? "Save user" : "Add user"}
           >
             {currentUser ? "Save" : "Add"}
@@ -395,8 +404,7 @@ const UserManagement = () => {
         </Modal.Footer>
       </Modal>
 
-      {/* Modal Delete Confirmation */}
-      <Modal show={showDeleteModal} onHide={cancelDelete} centered className="shadow-lg">
+      <Modal show={showDeleteModal} onHide={cancelDelete} centered>
         <Modal.Header closeButton className="bg-danger text-white">
           <Modal.Title>Confirm Delete</Modal.Title>
         </Modal.Header>
@@ -405,7 +413,6 @@ const UserManagement = () => {
           <Button
             variant="secondary"
             onClick={cancelDelete}
-            className="rounded-pill px-3 shadow-sm"
             aria-label="Cancel delete"
           >
             Cancel
@@ -413,7 +420,6 @@ const UserManagement = () => {
           <Button
             variant="danger"
             onClick={confirmDelete}
-            className="rounded-pill px-3 shadow-sm"
             aria-label="Confirm delete"
           >
             Delete
