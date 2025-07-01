@@ -23,6 +23,8 @@ import AppointmentManagePage from "./pages/AppointmentManagePage";
 import MedicalLabPage from "./pages/BlogTestPage.jsx";
 import TestPageDetails from "./pages/TestPageDetails.jsx";
 import WorkSchedulePage from "./pages/WorkSchedule";
+import WorkSchedulePage from "./pages/WorkSchedulePage";
+import StaffScheduleManager from "./pages/staff/StaffScheduleManager";
 import Changepass from "./pages/ChangePassword";
 import ResetPassword from "./pages/ResetPassword";
 import ForgotPassword from "./pages/ForgotPassword";
@@ -216,6 +218,7 @@ const App = () => {
             <Route path="users" element={<UserManagement />} />
             <Route path="medicalrecord" element={<MedicalRecord />} />
             <Route path="medicines" element={<MedicineManagement />} />
+            <Route path="schedule" element={<StaffScheduleManager />} />
           </Route>
 
           {/* Public routes */}
