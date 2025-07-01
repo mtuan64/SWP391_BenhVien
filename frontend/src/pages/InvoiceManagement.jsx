@@ -1,352 +1,311 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
-  TextField,
-  Select,
-  MenuItem,
-  Button,
-  Box,
-  Typography,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  CircularProgress,
-  Snackbar,
-  Alert,
-  IconButton,
-} from "@mui/material";
-import AddIcon from "@mui/icons-material/Add";
-import "../assets/css/InvoiceManagement.css"
+import { usePayOS } from "@payos/payos-checkout"; // Chỉ import usePayOS
 
-const InvoiceManagement = () => {
-  const [invoices, setInvoices] = useState([]);
-  const [formData, setFormData] = useState({
-    userId: "",
-    profileId: "",
-    invoiceNumber: "",
-    services: "",
-    totalAmount: "",
-    status: "pending",
-  });
-  const [openAddInvoice, setOpenAddInvoice] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [successMessage, setSuccessMessage] = useState("");
-  const [errorMessage, setErrorMessage] = useState("");
+const InvoiceUser = () => {
+    const [invoices, setInvoices] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
-  useEffect(() => {
-    fetchInvoices();
-  }, []);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [pageSize] = useState(10);
+    const [totalInvoices, setTotalInvoices] = useState(0);
+    const [totalPages, setTotalPages] = useState(1);
 
-  const fetchInvoices = async () => {
-    try {
-      const response = await axios.get("http://localhost:9999/api/med/invoices", {
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-      });
-      if (Array.isArray(response.data)) {
-        setInvoices(response.data);
-      } else {
-        console.error("Unexpected data format", response.data);
-        setInvoices([]);
-      }
-    } catch (error) {
-      console.error("Error fetching invoices:", error.response?.data || error.message);
-      setErrorMessage("Failed to fetch invoices: " + (error.response?.data?.message || error.message));
-      setInvoices([]);
-    }
-  };
+    const [sortField, setSortField] = useState("createdAt");
+    const [sortOrder, setSortOrder] = useState("desc");
+    const [statusFilter, setStatusFilter] = useState("all");
+    const [searchText, setSearchText] = useState("");
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
-  };
+    const fetchInvoices = async () => {
+        setLoading(true);
+        setError(null);
 
-  const handleAddInvoice = async () => {
-    setLoading(true);
-    setErrorMessage("");
-    try {
-      // Validate form data
-      if (!formData.userId.trim()) {
-        setErrorMessage("Please enter a User ID.");
-        setLoading(false);
-        return;
-      }
-      if (!formData.profileId.trim()) {
-        setErrorMessage("Please enter a Profile ID.");
-        setLoading(false);
-        return;
-      }
-      if (!formData.invoiceNumber.trim()) {
-        setErrorMessage("Please enter an Invoice Number.");
-        setLoading(false);
-        return;
-      }
-      if (!formData.services.trim()) {
-        setErrorMessage("Please enter at least one service ID.");
-        setLoading(false);
-        return;
-      }
-      if (!formData.totalAmount || isNaN(parseFloat(formData.totalAmount))) {
-        setErrorMessage("Please enter a valid Total Amount.");
-        setLoading(false);
-        return;
-      }
+        try {
+            const token = localStorage.getItem("token");
+            const response = await axios.get("http://localhost:9999/api/user/invoices", {
+                headers: { Authorization: `Bearer ${token}` },
+                params: {
+                    page: currentPage,
+                    limit: pageSize,
+                    sort: sortField,
+                    order: sortOrder,
+                    status: statusFilter,
+                    search: searchText,
+                },
+            });
 
-      // Convert services to array
-      const servicesArray = formData.services
-        .split(",")
-        .map((id) => id.trim())
-        .filter((id) => id);
-
-      const payload = {
-        userId: formData.userId,
-        profileId: formData.profileId,
-        invoiceNumber: formData.invoiceNumber,
-        services: servicesArray,
-        totalAmount: parseFloat(formData.totalAmount),
-        status: formData.status,
-      };
-
-      const response = await axios.post(
-        "http://localhost:9999/api/med/invoices",
-        payload,
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
+            if (response.data.success) {
+                setInvoices(response.data.data || []);
+                setTotalInvoices(response.data.total || 0);
+                setTotalPages(response.data.totalPages || 1);
+            } else {
+                throw new Error(response.data.message || "Lỗi khi tải danh sách hóa đơn");
+            }
+        } catch (err) {
+            console.error("Error fetching invoices:", err);
+            setError(err.response?.data?.message || "Lỗi khi tải danh sách hóa đơn");
+        } finally {
+            setLoading(false);
         }
-      );
+    };
 
-      setInvoices([...invoices, response.data]);
-      setFormData({
-        userId: "",
-        profileId: "",
-        invoiceNumber: "",
-        services: "",
-        totalAmount: "",
-        status: "pending",
-      });
-      setOpenAddInvoice(false);
-      setSuccessMessage("Invoice added successfully!");
-      fetchInvoices();
-    } catch (error) {
-      const errorMsg = error.response?.data?.message || "Error creating invoice";
-      setErrorMessage(errorMsg);
-    } finally {
-      setLoading(false);
-    }
-  };
+    useEffect(() => {
+        fetchInvoices();
+    }, [currentPage, sortField, sortOrder, statusFilter]);
 
-  const handleOpenAddInvoice = () => {
-    setOpenAddInvoice(true);
-  };
+    const handleSearch = () => {
+        setCurrentPage(1);
+        fetchInvoices();
+    };
 
-  const handleCloseAddInvoice = () => {
-    setOpenAddInvoice(false);
-    setFormData({
-      userId: "",
-      profileId: "",
-      invoiceNumber: "",
-      services: "",
-      totalAmount: "",
-      status: "pending",
-    });
-    setErrorMessage("");
-  };
+    const handlePrevPage = () => {
+        if (currentPage > 1) setCurrentPage((prev) => prev - 1);
+    };
 
-  const handleCloseMessages = () => {
-    setSuccessMessage("");
-    setErrorMessage("");
-  };
+    const handleNextPage = () => {
+        if (currentPage < totalPages) setCurrentPage((prev) => prev + 1);
+    };
 
-  return (
-    <div className="invoice-management" style={{ padding: "24px" }}>
-      <h1>Invoice Management</h1>
-      <p>Total Invoices: {invoices.length}</p>
+    const handleCreatePayment = async (invoiceId) => {
+        try {
+            const token = localStorage.getItem("token");
+            const response = await axios.post(
+                `http://localhost:9999/api/user/create-link`,
+                { invoiceId },
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
 
-      {/* Add Invoice Button */}
-      <Button
-        variant="contained"
-        color="primary"
-        startIcon={<AddIcon />}
-        onClick={handleOpenAddInvoice}
-        disabled={loading}
-        sx={{ mb: 4 }}
-      >
-        Add Invoice
-      </Button>
+            const checkoutUrl = response.data.checkoutUrl;
+            if (!checkoutUrl) throw new Error("Không nhận được link thanh toán");
 
-      {/* Add Invoice Dialog */}
-      <Dialog
-        open={openAddInvoice}
-        onClose={handleCloseAddInvoice}
-        maxWidth="sm"
-        fullWidth
-      >
-        <DialogTitle>Add New Invoice</DialogTitle>
-        <DialogContent>
-          {loading && (
-            <div className="custom-loading-overlay" style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(255, 255, 255, 0.8)" }}>
-              <CircularProgress />
+            // Cấu hình PayOS theo kiểu object config
+            const payOSConfig = {
+                RETURN_URL: "http://localhost:5173/invoice", // URL trả về sau khi thanh toán
+                ELEMENT_ID: "embedded-payment-container", // ID của phần tử DOM để nhúng
+                CHECKOUT_URL: checkoutUrl, // URL thanh toán từ API
+                embedded: true, // Sử dụng chế độ nhúng
+                onSuccess: async (event) => {
+                    try {
+                        await axios.put(
+                            `http://localhost:9999/api/user/pay/success`,
+                            { invoiceId },
+                            {
+                                headers: {
+                                    Authorization: `Bearer ${token}`,
+                                },
+                            }
+                        );
+                        alert("Thanh toán thành công!");
+                        fetchInvoices();
+                    } catch (err) {
+                        console.error("Cập nhật trạng thái thanh toán thất bại:", err);
+                        alert("Thanh toán thành công nhưng cập nhật trạng thái thất bại.");
+                    }
+                },
+                onCancel: (event) => {
+                    console.log("Thanh toán bị hủy:", event);
+                    alert("Thanh toán đã bị hủy.");
+                },
+                onExit: (event) => {
+                    console.log("Thanh toán thoát:", event);
+                    alert("Thanh toán đã thoát.");
+                },
+            };
+
+            const { open } = usePayOS(payOSConfig);
+            open(); // Mở giao diện thanh toán
+        } catch (err) {
+            console.error("Tạo link thanh toán thất bại:", err);
+            alert(`Lỗi: ${err.message}. Vui lòng kiểm tra kết nối hoặc thử lại sau.`);
+        }
+    };
+
+    return (
+        <div className="container mx-auto p-6 bg-gray-50 min-h-screen">
+            <h2 className="text-2xl font-bold text-gray-800 mb-6">
+                Danh sách hóa đơn của bạn
+            </h2>
+            <div id="embedded-payment-container" style={{
+                height: "350px",
+            }} />
+            {/* Filter & Sort */}
+            <div className="flex flex-col md:flex-row gap-4 mb-6 bg-white p-4 rounded-lg shadow-sm">
+                <div className="flex items-center gap-2">
+                    <label className="text-sm font-medium text-gray-700">Sắp xếp:</label>
+                    <select
+                        value={sortField}
+                        onChange={(e) => setSortField(e.target.value)}
+                        className="border border-gray-300 rounded-md p-2 text-sm focus:ring-2 focus:ring-blue-500"
+                    >
+                        <option value="createdAt">Ngày tạo</option>
+                        <option value="status">Trạng thái</option>
+                    </select>
+                </div>
+                <div className="flex items-center gap-2">
+                    <label className="text-sm font-medium text-gray-700">Thứ tự:</label>
+                    <select
+                        value={sortOrder}
+                        onChange={(e) => setSortOrder(e.target.value)}
+                        className="border border-gray-300 rounded-md p-2 text-sm focus:ring-2 focus:ring-blue-500"
+                    >
+                        <option value="desc">Giảm dần</option>
+                        <option value="asc">Tăng dần</option>
+                    </select>
+                </div>
+                <div className="flex items-center gap-2">
+                    <label className="text-sm font-medium text-gray-700">Trạng thái:</label>
+                    <select
+                        value={statusFilter}
+                        onChange={(e) => setStatusFilter(e.target.value)}
+                        className="border border-gray-300 rounded-md p-2 text-sm focus:ring-2 focus:ring-blue-500"
+                    >
+                        <option value="all">Tất cả</option>
+                        <option value="Paid">Đã thanh toán</option>
+                        <option value="Pending">Chưa thanh toán</option>
+                        <option value="cancelled">Đã hủy</option>
+                    </select>
+                </div>
+                <div className="flex items-center gap-2 flex-1">
+                    <input
+                        type="text"
+                        value={searchText}
+                        onChange={(e) => setSearchText(e.target.value)}
+                        placeholder="Nhập ID hóa đơn"
+                        className="border border-gray-300 rounded-md p-2 text-sm w-full focus:ring-2 focus:ring-blue-500"
+                    />
+                    <button
+                        onClick={handleSearch}
+                        className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition"
+                    >
+                        Tìm
+                    </button>
+                </div>
             </div>
-          )}
-          <Box sx={{ display: "grid", gap: 2, mt: 2 }}>
-            <TextField
-              label="User ID"
-              name="userId"
-              value={formData.userId}
-              onChange={handleInputChange}
-              required
-              fullWidth
-              disabled={loading}
-            />
-            <TextField
-              label="Profile ID"
-              name="profileId"
-              value={formData.profileId}
-              onChange={handleInputChange}
-              required
-              fullWidth
-              disabled={loading}
-            />
-            <TextField
-              label="Invoice Number"
-              name="invoiceNumber"
-              value={formData.invoiceNumber}
-              onChange={handleInputChange}
-              required
-              fullWidth
-              disabled={loading}
-            />
-            <TextField
-              label="Services (comma-separated IDs)"
-              name="services"
-              value={formData.services}
-              onChange={handleInputChange}
-              placeholder="e.g., 68503ca37155acd1ad3905d2,68503ca37155acd1ad3905d3"
-              required
-              fullWidth
-              disabled={loading}
-            />
-            <TextField
-              label="Total Amount"
-              name="totalAmount"
-              type="number"
-              value={formData.totalAmount}
-              onChange={handleInputChange}
-              required
-              inputProps={{ step: "0.01" }}
-              fullWidth
-              disabled={loading}
-            />
-            <Select
-              name="status"
-              value={formData.status}
-              onChange={handleInputChange}
-              fullWidth
-              disabled={loading}
-            >
-              <MenuItem value="pending">Pending</MenuItem>
-              <MenuItem value="paid">Paid</MenuItem>
-              <MenuItem value="cancelled">Cancelled</MenuItem>
-            </Select>
-          </Box>
-        </DialogContent>
-        <DialogActions>
-          <Button
-            onClick={handleCloseAddInvoice}
-            color="primary"
-            disabled={loading}
-          >
-            Cancel
-          </Button>
-          <Button
-            onClick={handleAddInvoice}
-            color="primary"
-            disabled={loading}
-          >
-            Add
-          </Button>
-        </DialogActions>
-      </Dialog>
 
-      {/* Table of Invoices */}
-      <TableContainer component={Paper}>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>Invoice Number</TableCell>
-              <TableCell>User</TableCell>
-              <TableCell>Profile ID</TableCell>
-              <TableCell>Services</TableCell>
-              <TableCell>Total Amount</TableCell>
-              <TableCell>Status</TableCell>
-              <TableCell>Created At</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {invoices.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={7}>No invoices found</TableCell>
-              </TableRow>
+            {loading ? (
+                <p className="text-center text-gray-600">Đang tải...</p>
+            ) : error ? (
+                <p className="text-center text-red-600">{error}</p>
+            ) : invoices.length === 0 ? (
+                <p className="text-center text-gray-600">Không có hóa đơn nào.</p>
             ) : (
-              invoices.map((invoice) => (
-                <TableRow key={invoice._id}>
-                  <TableCell>{invoice.invoiceNumber}</TableCell>
-                  <TableCell>{invoice.userId?.fullname || "N/A"}</TableCell>
-                  <TableCell>{invoice.profileId?._id || invoice.profileId || "N/A"}</TableCell>
-                  <TableCell>
-                    {invoice.services && invoice.services.length > 0 ? (
-                      invoice.services.map((s, index) => (
-                        <div key={index}>
-                          {typeof s === "object" ? s.name : s}
-                        </div>
-                      ))
-                    ) : (
-                      "N/A"
-                    )}
-                  </TableCell>
-                  <TableCell>${invoice.totalAmount.toFixed(2)}</TableCell>
-                  <TableCell>{invoice.status}</TableCell>
-                  <TableCell>{new Date(invoice.createdAt).toLocaleString()}</TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </TableContainer>
+                <>
+                    <div className="overflow-x-auto bg-white rounded-lg shadow-sm">
+                        <table className="min-w-full table-auto">
+                            <thead className="bg-gray-100">
+                                <tr>
+                                    <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">
+                                        #
+                                    </th>
+                                    <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">
+                                        Mã hóa đơn
+                                    </th>
+                                    <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">
+                                        Ngày tạo
+                                    </th>
+                                    <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">
+                                        Dịch vụ
+                                    </th>
+                                    <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">
+                                        Tổng giá
+                                    </th>
+                                    <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">
+                                        Người dùng
+                                    </th>
+                                    <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">
+                                        Trạng thái
+                                    </th>
+                                    <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">
+                                        Thanh toán
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {invoices.map((invoice, index) => {
+                                    const total = invoice.totalAmount;
+                                    return (
+                                        <tr
+                                            key={invoice._id}
+                                            className="border-b hover:bg-gray-50"
+                                        >
+                                            <td className="px-4 py-3 text-sm text-gray-600">
+                                                {(currentPage - 1) * pageSize + index + 1}
+                                            </td>
+                                            <td className="px-4 py-3 text-sm text-gray-600">
+                                                {invoice.invoiceNumber}
+                                            </td>
+                                            <td className="px-4 py-3 text-sm text-gray-600">
+                                                {new Date(invoice.createdAt).toLocaleDateString()}
+                                            </td>
+                                            <td className="px-4 py-3 text-sm text-gray-600">
+                                                {invoice.services?.map((service) => (
+                                                    <div key={service._id}>
+                                                        {service.name} - {service.price.toLocaleString()}₫
+                                                    </div>
+                                                ))}
+                                            </td>
+                                            <td className="px-4 py-3 text-sm text-gray-600">
+                                                {total.toLocaleString()}₫
+                                            </td>
+                                            <td className="px-4 py-3 text-sm text-gray-600">
+                                                {invoice.userId?.name} ({invoice.userId?.email})
+                                            </td>
+                                            <td className="px-4 py-3 text-sm text-gray-600">
+                                                {invoice.status}
+                                            </td>
+                                            <td className="px-4 py-3 text-sm">
+                                                {invoice.status === "Pending" ? (
+                                                    <button
+                                                        onClick={() => handleCreatePayment(invoice._id)}
+                                                        className="bg-green-600 text-white px-3 py-1 rounded-md hover:bg-green-700 transition"
+                                                    >
+                                                        Tạo thanh toán
+                                                    </button>
+                                                ) : (
+                                                    "-"
+                                                )}
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
+                            </tbody>
+                        </table>
+                    </div>
 
-      {/* Success/Error Messages */}
-      <Snackbar
-        open={!!successMessage}
-        autoHideDuration={3000}
-        onClose={handleCloseMessages}
-        anchorOrigin={{ vertical: "top", horizontal: "center" }}
-      >
-        <Alert onClose={handleCloseMessages} severity="success">
-          {successMessage}
-        </Alert>
-      </Snackbar>
-      <Snackbar
-        open={!!errorMessage}
-        autoHideDuration={3000}
-        onClose={handleCloseMessages}
-        anchorOrigin={{ vertical: "top", horizontal: "center" }}
-      >
-        <Alert onClose={handleCloseMessages} severity="error">
-          {errorMessage}
-        </Alert>
-      </Snackbar>
-    </div>
-  );
+                    <div className="flex justify-between items-center mt-6">
+                        <button
+                            onClick={handlePrevPage}
+                            disabled={currentPage === 1}
+                            className={`px-4 py-2 rounded-md ${currentPage === 1
+                                ? "bg-gray-300 cursor-not-allowed"
+                                : "bg-blue-600 text-white hover:bg-blue-700"
+                                } transition`}
+                        >
+                            Trang trước
+                        </button>
+                        <span className="text-sm text-gray-700">
+                            Trang {currentPage} / {totalPages}
+                        </span>
+                        <button
+                            onClick={handleNextPage}
+                            disabled={currentPage === totalPages}
+                            className={`px-4 py-2 rounded-md ${currentPage === totalPages
+                                ? "bg-gray-300 cursor-not-allowed"
+                                : "bg-blue-600 text-white hover:bg-blue-700"
+                                } transition`}
+                        >
+                            Trang sau
+                        </button>
+                    </div>
+                </>
+            )}
+        </div>
+    );
 };
 
-export default InvoiceManagement;
+export default InvoiceUser;

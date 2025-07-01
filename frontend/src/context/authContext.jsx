@@ -8,8 +8,11 @@ export const AuthProvider = ({ children }) => {
     return storedUser ? JSON.parse(storedUser) : null;
   });
 
+  const [token, setToken] = useState(() => {
+    return localStorage.getItem("token") || null;
+  });
+
   useEffect(() => {
-    console.log("User state updated:", user);
     if (user) {
       localStorage.setItem("user", JSON.stringify(user));
     } else {
@@ -17,20 +20,28 @@ export const AuthProvider = ({ children }) => {
     }
   }, [user]);
 
-  const login = (userData) => {
-    console.log("Login called with:", userData);
+  useEffect(() => {
+    if (token) {
+      localStorage.setItem("token", token);
+    } else {
+      localStorage.removeItem("token");
+    }
+  }, [token]);
+
+  const login = (userData, tokenData) => {
     setUser(userData);
+    setToken(tokenData);
   };
 
   const logout = () => {
-    console.log("Logout called");
     setUser(null);
+    setToken(null);
     localStorage.removeItem("user");
     localStorage.removeItem("token");
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout }}>
+    <AuthContext.Provider value={{ user, token, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

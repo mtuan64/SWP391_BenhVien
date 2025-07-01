@@ -1,8 +1,7 @@
-const express = require('express');
-const appointmentRouter = express.Router();
+const express = require("express");
+const router = express.Router();
+const { getByDoctor } = require("../../controller/doctor/workschedule");
 
-const { getAll } = require('../../controller/doctor/workschedule');
+router.get("/doctor/:id", getByDoctor);
 
-appointmentRouter.get("/all", getAll);
-
-module.exports = appointmentRouter;
+module.exports = router;

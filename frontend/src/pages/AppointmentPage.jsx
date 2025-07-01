@@ -1,12 +1,15 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState } from "react";
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Row, Col } from "react-bootstrap";
 import Flatpickr from "react-flatpickr";
 import "flatpickr/dist/themes/material_green.css";
 import "../assets/css/AppointmentPage.css";
-import api from "../../api/axiosInstance";
+import axios from "axios";
+import { useAuth } from "../context/authContext";
 
 const AppointmentPage = () => {
+  const { token } = useAuth();
   const [profiles, setProfiles] = useState([]);
   const [selectedProfile, setSelectedProfile] = useState(null);
   const [profileName, setProfileName] = useState("");
@@ -29,23 +32,32 @@ const AppointmentPage = () => {
   const [success, setSuccess] = useState(false);
   const navigate = useNavigate();
   const steps = [
-    { id: 'profile', title: 'Chọn hồ sơ', desc: '' },
-    { id: 'department', title: 'Chọn khoa', desc: '' },
-    { id: 'doctor', title: 'Chọn bác sĩ', desc: '' },
-    { id: 'datetime', title: 'Chọn ngày giờ', desc: '' },
-    { id: 'confirm', title: 'Xác nhận', desc: '' }
+    { id: "profile", title: "Chọn hồ sơ", desc: "" },
+    { id: "department", title: "Chọn khoa", desc: "" },
+    { id: "doctor", title: "Chọn bác sĩ", desc: "" },
+    { id: "datetime", title: "Chọn ngày giờ", desc: "" },
+    { id: "confirm", title: "Xác nhận", desc: "" },
   ];
 
   const timeSlots = [
-    "08:00 Sáng", "09:00 Sáng", "10:00 Sáng", "11:00 Sáng",
-    "01:00 Chiều", "02:00 Chiều", "03:00 Chiều", "04:00 Chiều"
+    "08:00 Sáng",
+    "09:00 Sáng",
+    "10:00 Sáng",
+    "11:00 Sáng",
+    "01:00 Chiều",
+    "02:00 Chiều",
+    "03:00 Chiều",
+    "04:00 Chiều",
   ];
-
 
   useEffect(() => {
     const fetchProfiles = async () => {
       try {
-        const res = await api.get("/profile/user");
+        const res = await axios.get("http://localhost:9999/api/profile/user", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
         setProfiles(res.data);
       } catch (err) {
         console.error("Error fetching profiles:", err);
@@ -54,11 +66,14 @@ const AppointmentPage = () => {
     fetchProfiles();
   }, []);
 
-
   useEffect(() => {
     const fetchDoctors = async () => {
       try {
-        const res = await api.get("/doctor/doctor");
+        const res = await axios.get("http://localhost:9999/api/doctor/doctor", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
         setDoctors(res.data);
       } catch (err) {
         console.error("Error fetching doctors:", err);
@@ -72,15 +87,19 @@ const AppointmentPage = () => {
     setError(null);
 
     try {
-      const res = await api.post("/profile/create", {
+      const res = await axios.post("http://localhost:9999/api/profile/create", {
         name: profileName,
         gender: profileGender,
         dateOfBirth: profileDateOfBirth,
+      }, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       });
 
       console.log("Profile created:", res.data);
       setSelectedProfile(res._id);
-      const updated = await api.get("/profile/user");
+      const updated = await axios.get("http://localhost:9999/api/profile/user");
       setProfiles(updated.data);
 
       setSuccess(true);
@@ -109,12 +128,16 @@ const AppointmentPage = () => {
     setError(null);
     try {
       const appointmentDate = buildAppointmentDate(selectedDate, selectedTime);
-      const res = await api.post("/user/create", {
+      const res = await axios.post("http://localhost:9999/api/user/create", {
         profileId: selectedProfile,
         doctorId: selectedDoctor,
         department: selectedDepartment,
         appointmentDate,
         type: "Offline",
+      }, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       });
       console.log("Appointment created:", res.data);
       setSuccess(true);
@@ -136,7 +159,9 @@ const AppointmentPage = () => {
               <h3 className="text-primary fw-bold mb-4">Tạo Hồ Sơ Mới</h3>
 
               {error && <div className="alert alert-danger">{error}</div>}
-              {success && <div className="alert alert-success">Tạo hồ sơ thành công!</div>}
+              {success && (
+                <div className="alert alert-success">Tạo hồ sơ thành công!</div>
+              )}
 
               <div className="mb-3">
                 <label className="form-label">Họ và tên</label>
@@ -178,7 +203,12 @@ const AppointmentPage = () => {
                 <button
                   className="btn btn-primary"
                   onClick={handleCreateProfile}
-                  disabled={loading || !profileName || !profileGender || !profileDateOfBirth}
+                  disabled={
+                    loading ||
+                    !profileName ||
+                    !profileGender ||
+                    !profileDateOfBirth
+                  }
                 >
                   {loading ? "Đang tạo..." : "Tạo hồ sơ"}
                 </button>
@@ -193,12 +223,16 @@ const AppointmentPage = () => {
               {profiles.map((profile) => (
                 <Col key={profile._id} md={6} className="mb-4">
                   <label
-                    className={`border p-4 rounded text-center cursor-pointer hover:bg-light ${selectedProfile === profile._id ? 'border-primary' : ''}`}
+                    className={`border p-4 rounded text-center cursor-pointer hover:bg-light ${selectedProfile === profile._id ? "border-primary" : ""
+                      }`}
                     onClick={() => setSelectedProfile(profile._id)}
                   >
                     <input type="radio" name="profile" className="d-none" />
                     <h5 className="fw-semibold">{profile.name}</h5>
-                    <p className="text-muted small">{profile.gender} - {new Date(profile.dateOfBirth).toLocaleDateString()}</p>
+                    <p className="text-muted small">
+                      {profile.gender} -{" "}
+                      {new Date(profile.dateOfBirth).toLocaleDateString()}
+                    </p>
                   </label>
                 </Col>
               ))}
@@ -223,7 +257,8 @@ const AppointmentPage = () => {
               {departmentData.map((dep) => (
                 <Col key={dep.id} md={6} className="mb-4">
                   <label
-                    className={`border p-4 rounded text-center cursor-pointer hover:bg-light ${selectedDepartment === dep.id ? 'border-primary' : ''}`}
+                    className={`border p-4 rounded text-center cursor-pointer hover:bg-light ${selectedDepartment === dep.id ? "border-primary" : ""
+                      }`}
                     onClick={() => setSelectedDepartment(dep.id)}
                   >
                     <input type="radio" name="department" className="d-none" />
@@ -251,24 +286,40 @@ const AppointmentPage = () => {
         );
 
       case "doctor":
-        const filteredDoctors = doctors.filter(d => d.department === selectedDepartment);
+        const filteredDoctors = doctors.filter(
+          (d) => d.department === selectedDepartment
+        );
         return (
           <div className="p-4 bg-white rounded shadow-sm">
             <h3 className="text-primary fw-bold mb-4">Chọn Bác Sĩ</h3>
             <Row>
               {filteredDoctors.length === 0 ? (
-                <Col className="text-center">Không có bác sĩ trong chuyên khoa này</Col>
+                <Col className="text-center">
+                  Không có bác sĩ trong chuyên khoa này
+                </Col>
               ) : (
                 filteredDoctors.map((doctor) => (
-                  <Col key={doctor._id} xs={12} sm={6} md={4} lg={4} className="mb-4">
+                  <Col
+                    key={doctor._id}
+                    xs={12}
+                    sm={6}
+                    md={4}
+                    lg={4}
+                    className="mb-4"
+                  >
                     <label
-                      className={`doctor-card ${selectedDoctor === doctor._id ? 'selected' : ''}`}
+                      className={`doctor-card ${selectedDoctor === doctor._id ? "selected" : ""
+                        }`}
                       onClick={() => setSelectedDoctor(doctor._id)}
                     >
                       <input type="radio" name="doctor" className="d-none" />
                       <div className="doctor-image-container">
                         {doctor.avatar ? (
-                          <img src={doctor.avatar} alt={doctor.name} className="doctor-image" />
+                          <img
+                            src={doctor.avatar}
+                            alt={doctor.name}
+                            className="doctor-image"
+                          />
                         ) : (
                           <div className="doctor-image bg-light d-flex align-items-center justify-content-center">
                             {doctor.name.charAt(0)}
@@ -276,15 +327,28 @@ const AppointmentPage = () => {
                         )}
                       </div>
                       <h5 className="doctor-name">{doctor.name}</h5>
-                      <p className="doctor-experience">{doctor.expYear} năm kinh nghiệm</p>
+                      <p className="doctor-experience">
+                        {doctor.expYear} năm kinh nghiệm
+                      </p>
                     </label>
                   </Col>
                 ))
               )}
             </Row>
             <div className="d-flex justify-content-between mt-4">
-              <button className="btn btn-outline-secondary" onClick={() => setStep("department")}>Quay Lại</button>
-              <button className="btn btn-primary" onClick={() => setStep("datetime")} disabled={!selectedDoctor}>Tiếp Theo</button>
+              <button
+                className="btn btn-outline-secondary"
+                onClick={() => setStep("department")}
+              >
+                Quay Lại
+              </button>
+              <button
+                className="btn btn-primary"
+                onClick={() => setStep("datetime")}
+                disabled={!selectedDoctor}
+              >
+                Tiếp Theo
+              </button>
             </div>
           </div>
         );
@@ -306,7 +370,8 @@ const AppointmentPage = () => {
                   {timeSlots.map((time) => (
                     <button
                       key={time}
-                      className={`btn btn-outline-primary btn-sm ${selectedTime === time ? 'btn-primary text-white' : ''}`}
+                      className={`btn btn-outline-primary btn-sm ${selectedTime === time ? "btn-primary text-white" : ""
+                        }`}
                       onClick={() => setSelectedTime(time)}
                     >
                       {time}
@@ -316,7 +381,12 @@ const AppointmentPage = () => {
               </Col>
             </Row>
             <div className="d-flex justify-content-between mt-4">
-              <button className="btn btn-outline-secondary" onClick={() => setStep("doctor")}>Quay Lại</button>
+              <button
+                className="btn btn-outline-secondary"
+                onClick={() => setStep("doctor")}
+              >
+                Quay Lại
+              </button>
               <button
                 className="btn btn-primary"
                 onClick={handleCreateAppointment}
@@ -324,7 +394,11 @@ const AppointmentPage = () => {
               >
                 {loading ? (
                   <>
-                    <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                    <span
+                      className="spinner-border spinner-border-sm me-2"
+                      role="status"
+                      aria-hidden="true"
+                    ></span>
                     Đang đặt lịch...
                   </>
                 ) : (
@@ -338,17 +412,39 @@ const AppointmentPage = () => {
       case "confirm":
         return (
           <div className="p-4 bg-white rounded shadow-sm text-center">
-            <svg className="checkmark-animated mx-auto mb-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
-              <circle className="checkmark__circle" cx="26" cy="26" r="25" fill="none" />
-              <path className="checkmark__check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8" />
+            <svg
+              className="checkmark-animated mx-auto mb-4"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 52 52"
+            >
+              <circle
+                className="checkmark__circle"
+                cx="26"
+                cy="26"
+                r="25"
+                fill="none"
+              />
+              <path
+                className="checkmark__check"
+                fill="none"
+                d="M14.1 27.2l7.1 7.2 16.7-16.8"
+              />
             </svg>
-            <h3 className="text-primary fw-bold mb-3">Đặt Lịch Hẹn Thành Công!</h3>
+            <h3 className="text-primary fw-bold mb-3">
+              Đặt Lịch Hẹn Thành Công!
+            </h3>
             <p className="text-muted small">Cảm ơn bạn đã sử dụng dịch vụ.</p>
             <div className="mt-4 d-flex justify-content-center gap-3">
-              <button className="btn btn-primary" onClick={() => setStep("profile")}>
+              <button
+                className="btn btn-primary"
+                onClick={() => setStep("profile")}
+              >
                 Đặt Thêm Lịch
               </button>
-              <button className="btn btn-outline-secondary" onClick={() => navigate("/appointmentmanage")}>
+              <button
+                className="btn btn-outline-secondary"
+                onClick={() => navigate("/appointmentmanage")}
+              >
                 Quản lý Lịch
               </button>
             </div>
@@ -367,7 +463,8 @@ const AppointmentPage = () => {
           <Col md={6} className="text-start">
             <small className="text-muted">
               <i className="far fa-clock text-primary me-2"></i>
-              Giờ Mở Cửa: Thứ 2 - Thứ 7: 7:00 Sáng - 8:00 Tối, Chủ Nhật: 9:00 Sáng - 5:00 Chiều
+              Giờ Mở Cửa: Thứ 2 - Thứ 7: 7:00 Sáng - 8:00 Tối, Chủ Nhật: 9:00
+              Sáng - 5:00 Chiều
             </small>
           </Col>
           <Col md={6} className="text-end">
@@ -383,29 +480,42 @@ const AppointmentPage = () => {
         </Row>
       </div>
 
-      <div id="heroCarousel" className="carousel slide carousel-fade" data-bs-ride="carousel" data-bs-interval="4000">
+      <div
+        id="heroCarousel"
+        className="carousel slide carousel-fade"
+        data-bs-ride="carousel"
+        data-bs-interval="4000"
+      >
         <div className="carousel-inner">
           <div className="carousel-item active">
             <img
               src="https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d"
               className="d-block w-100"
               alt="KiwiCare Banner"
-              style={{ objectFit: 'cover', height: '80vh', borderRadius: '8px' }}
+              style={{
+                objectFit: "cover",
+                height: "80vh",
+                borderRadius: "8px",
+              }}
             />
             <div
               className="carousel-caption d-flex flex-column justify-content-center align-items-center"
               style={{
-                backgroundColor: 'rgba(0, 0, 0, 0.6)',
+                backgroundColor: "rgba(0, 0, 0, 0.6)",
                 top: 0,
                 bottom: 0,
                 left: 0,
                 right: 0,
-                position: 'absolute',
-                borderRadius: '8px'
+                position: "absolute",
+                borderRadius: "8px",
               }}
             >
-              <h1 className="display-3 fw-bold text-white mb-3">Đặt Lịch Hẹn Tại KiwiCare</h1>
-              <p className="text-white fs-5">Dễ dàng đặt lịch với các bác sĩ chuyên khoa hàng đầu</p>
+              <h1 className="display-3 fw-bold text-white mb-3">
+                Đặt Lịch Hẹn Tại KiwiCare
+              </h1>
+              <p className="text-white fs-5">
+                Dễ dàng đặt lịch với các bác sĩ chuyên khoa hàng đầu
+              </p>
             </div>
           </div>
         </div>
@@ -415,18 +525,31 @@ const AppointmentPage = () => {
         <section className="mb-5">
           <Row className="align-items-start">
             <Col lg={3} className="mb-4 mb-lg-0">
-              <div className="bg-primary text-white p-4 rounded shadow-sm sticky-top" style={{ top: '20px' }}>
+              <div
+                className="bg-primary text-white p-4 rounded shadow-sm sticky-top"
+                style={{ top: "20px" }}
+              >
                 <ul className="list-unstyled">
                   {steps.map((s, index) => (
                     <li
                       key={s.id}
-                      className={`d-flex align-items-center mb-3 ${step === s.id ? 'fw-bold' : ''}`}
+                      className={`d-flex align-items-center mb-3 ${step === s.id ? "fw-bold" : ""
+                        }`}
                     >
                       <span
-                        className={`d-inline-block rounded-circle text-center me-2 ${steps.findIndex(st => st.id === step) >= index ? 'bg-white text-primary' : 'bg-light text-white'}`}
-                        style={{ width: '24px', height: '24px', lineHeight: '24px' }}
+                        className={`d-inline-block rounded-circle text-center me-2 ${steps.findIndex((st) => st.id === step) >= index
+                          ? "bg-white text-primary"
+                          : "bg-light text-white"
+                          }`}
+                        style={{
+                          width: "24px",
+                          height: "24px",
+                          lineHeight: "24px",
+                        }}
                       >
-                        {steps.findIndex(st => st.id === step) >= index ? '✓' : '•'}
+                        {steps.findIndex((st) => st.id === step) >= index
+                          ? "✓"
+                          : "•"}
                       </span>
                       <div>
                         <div className="small fw-semibold">{s.title}</div>
@@ -437,14 +560,11 @@ const AppointmentPage = () => {
                 </ul>
               </div>
             </Col>
-            <Col lg={9}>
-              {renderStepContent()}
-            </Col>
+            <Col lg={9}>{renderStepContent()}</Col>
           </Row>
         </section>
       </div>
     </>
   );
 };
-
 export default AppointmentPage;
