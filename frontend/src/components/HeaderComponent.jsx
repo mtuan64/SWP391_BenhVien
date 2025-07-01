@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/authContext";
 import { Badge } from "antd";
-import { MenuOutlined, BellOutlined } from "@ant-design/icons";
 import axios from "axios";
 import { Button, Avatar, Dropdown } from "antd";
 import {

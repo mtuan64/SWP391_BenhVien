@@ -5,7 +5,7 @@ const { authMiddleware, ismeomeo } = require('../../middleware/auth.middleware')
 authRouter.post('/login', Login);
 authRouter.post('/signup', Signup);
 authRouter.post('/updatePassword', changePassword);
-authRouter.post('/authMiddleware', authMiddleware, ismeomeo, check);
+// authRouter.post('/authMiddleware', authMiddleware, ismeomeo, check);
 authRouter.post('/forgotPassword', forgotPassword);
 authRouter.post('/resetPassword', resetPassword);
 module.exports = authRouter;

@@ -47,14 +47,12 @@ import InvoiceList from "./components/InvoiceList";
 import PaymentSuccess from "./components/PaymentSuccess";
 import PaymentFail from "./components/PaymentFail";
 import CreateInvoice from "./components/staff/CreateInvoice";
-import Header from "./components/HeaderComponent";
 import MenuComponent from "./components/MenuComponent";
 import FooterComponent from "./components/FooterComponent";
 import NotificationCenter from "./pages/NotificationCenter";
 import NotificationDetail from "./pages/NotificationDetail";
 import { PrivateRoute, PrivateRouteNotAllowUser, PrivateRouteByRole } from "./components/PrivateRoute"
 import "antd/dist/reset.css";
-import NotFoundPage from "./pages/NotFoundPage";
 import AddMedicalRecord from "./components/AddMedicalRecord";
 import ViewMedicalRecords from "./components/ViewMedicalRecord";
 import CreateServicePage from "./components/staff/CreateServicePage";
@@ -66,10 +64,6 @@ import NewsDetail from "./pages/NewsDetail";
 import BlogDetail from "./pages/BlogDetail";
 import ViewMedicalRecord from "./pages/ViewMedicalRecord";
 import Header from "./components/HeaderComponent";
-import MenuComponent from "./components/MenuComponent";
-import FooterComponent from "./components/FooterComponent";
-import { PrivateRoute, PrivateRouteByRole } from "./components/PrivateRoute";
-import "antd/dist/reset.css";
 import NotFoundPage from "./pages/NotFoundPage";
 
 const DRAWER_WIDTH = 240;
