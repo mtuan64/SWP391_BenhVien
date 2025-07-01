@@ -2,7 +2,8 @@ import React, { useEffect, useState } from "react";
 import { Line, Bar, Pie } from "@ant-design/plots";
 import { Card, Col, List, Row, Typography } from "antd";
 import axios from "axios";
-import { DatePicker } from "antd";
+import { DatePicker, message } from "antd";
+import dayjs from "dayjs";
 
 const Dashboard = () => {
   const [userData, setUserData] = useState([]);
@@ -16,8 +17,12 @@ const Dashboard = () => {
     roles: [],
   });
   const { RangePicker } = DatePicker;
-  useEffect(() => {
-    const fetchStats = async () => {
+  const [dateRange, setDateRange] = useState([
+    dayjs().subtract(29, "day"),
+    dayjs(),
+  ]);
+  const fetchStats = async (startDate, endDate) => {
+      const query = `?start=${startDate}&end=${endDate}`;
       const [
         userRes,
         appointmentRes,
@@ -27,13 +32,13 @@ const Dashboard = () => {
         summaryRes,
         employeeRes,
       ] = await Promise.all([
-        axios.get("/api/admin/user-registrations"),
-        axios.get("/api/admin/appointments"),
-        axios.get("/api/admin/revenue"),
-        axios.get("/api/admin/appointment-types"),
-        axios.get("/api/admin/revenue-methods"),
-        axios.get("/api/admin/summaries"),
-        axios.get("/api/admin/employee-stats"),
+        axios.get(`/api/admin/user-registrations${query}`),
+        axios.get(`/api/admin/appointments${query}`),
+        axios.get(`/api/admin/revenue${query}`),
+        axios.get(`/api/admin/appointment-types${query}`),
+        axios.get(`/api/admin/revenue-methods${query}`),
+        axios.get(`/api/admin/summaries${query}`),
+        axios.get(`/api/admin/employee-stats${query}`),
       ]);
 
       setUserData(
@@ -62,8 +67,10 @@ const Dashboard = () => {
       setEmployeeStats(employeeRes.data);
     };
 
-    fetchStats();
-  }, []);
+  useEffect(() => {
+    const [start, end] = dateRange;
+    fetchStats(start.format("YYYY-MM-DD"), end.format("YYYY-MM-DD"));
+  }, [dateRange]);
 
   // Configs
 
@@ -120,7 +127,14 @@ const Dashboard = () => {
     <div style={{ padding: "20px" }}>
       <Typography.Title level={2}>Admin Dashboard</Typography.Title>
       <div style={{ marginBottom: "20px" }}>
-        <RangePicker onChange={(dates) => console.log(dates)} />
+        <RangePicker
+          value={dateRange}
+          onChange={(dates) => {
+            if (!dates) return;
+            setDateRange(dates);
+          }}
+          style={{ marginBottom: "20px" }}
+        />
       </div>
 
       <Row gutter={[16, 16]}>
