@@ -44,6 +44,7 @@ app.use("/api/auth", authRouter);
 app.use("/api/doctor", doctorRouter);
 app.use("/api/staff", staffRouter);
 
+
 // Start server after DB connected
 const PORT = process.env.PORT || 9999;
 

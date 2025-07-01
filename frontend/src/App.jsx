@@ -18,14 +18,11 @@ import AboutPage from "./pages/AboutPage";
 import ProfilePage from "./pages/ProfilePage";
 import HomePage from "./pages/Homepage";
 import AppointmentPage from "./pages/AppointmentPage";
-
+import WorkSchedulePage from "./pages/WorkSchedulePage";
+import StaffScheduleManager from './pages/staff/StaffScheduleManager';
 
 
 import "antd/dist/reset.css";
-import MedicalLabPage from "./pages/BlogTestPage.jsx";
-import TestPageDetails from "./pages/TestPageDetails.jsx";
-import WorkSchedulePage from "./pages/WorkSchedule";
-import "antd/dist/reset.css"; // hoặc 'antd/dist/antd.css' nếu bạn dùng antd v4
 import Changepass from "./pages/ChangePassword";
 import ResetPassword from "./pages/ResetPassword";
 import ForgotPassword from "./pages/ForgotPassword";
@@ -164,6 +161,7 @@ const App = () => {
             <Route path="notifications" element={<NotificationManagement />} />
             <Route path="users" element={<UserManagement />} />
             <Route path="medicines" element={<MedicineManagement />} />
+            <Route path="schedules" element={<StaffScheduleManager  />} />
           </Route>
 
           {/* Public routes */}

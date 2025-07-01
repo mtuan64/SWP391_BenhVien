@@ -59,6 +59,9 @@ const StaffLayout = () => {
           <Menu.Item key="9" icon={<CalendarOutlined />}>
             <Link to="/staff/appointments">Appointment Schedule</Link>
           </Menu.Item>
+          <Menu.Item key="14" icon={<CalendarOutlined />}>
+            <Link to="/staff/schedules">Manage Doctor Schedule</Link>
+          </Menu.Item>
           <Menu.Item key="10" icon={<BellOutlined />}>
             <Link to="/staff/notifications">Manage Notifications</Link>
           </Menu.Item>
@@ -83,7 +86,7 @@ const StaffLayout = () => {
           <Menu.Item key="8" icon={<QuestionCircleOutlined />}>
             <Link to="/staff/qna">View Q&A</Link>
           </Menu.Item>
-          
+
           <Menu.Item key="13" icon={<LogoutOutlined />} onClick={handleLogout}>
             Logout
           </Menu.Item>
