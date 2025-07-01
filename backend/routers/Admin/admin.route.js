@@ -11,6 +11,16 @@ const {
   createEmployees,
   changeStatus,
 } = require("../../controller/admin/adminService");
+const {
+  getAppointmentTypeStats,
+  getRevenueByMethod,
+  getDashboardSummaries,
+  getUserRegistrationTrend,
+  getAppointmentTrend,
+  getRevenueTrend,
+  getUserGrowthStats,
+  getEmployeeStats,
+} = require("../../controller/admin/statisService");
 
 // Admin - user manage
 adminRouter.get("/users", getUserAccs);
@@ -23,5 +33,15 @@ adminRouter.get("/employees", getEmployees);
 adminRouter.put("/updEmp/:id", editEmployees);
 adminRouter.delete("/delEmp/:id", delEmployees);
 adminRouter.post("/createEmp", createEmployees);
+
+// Admin - statistics
+adminRouter.get("/user-registrations", getUserRegistrationTrend);
+adminRouter.get("/appointments", getAppointmentTrend);
+adminRouter.get("/revenue", getRevenueTrend);
+adminRouter.get("/appointment-types", getAppointmentTypeStats);
+adminRouter.get("/revenue-methods", getRevenueByMethod);
+adminRouter.get("/summaries", getDashboardSummaries);
+adminRouter.get("/user-growth-stats", getUserGrowthStats);
+adminRouter.get("/employee-stats", getEmployeeStats);
 
 module.exports = adminRouter;

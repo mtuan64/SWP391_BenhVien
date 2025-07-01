@@ -1,8 +1,10 @@
 const mongoose = require("mongoose");
 
+
 const profileSchema = new mongoose.Schema(
   {
     name: { type: String, required: true },
+    user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
     dateOfBirth: { type: Date, required: true },
     gender: { type: String, enum: ["Male", "Female", "Other"], required: true },
     diagnose: { type: String },
@@ -12,7 +14,7 @@ const profileSchema = new mongoose.Schema(
     medicine: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Medicine",
-    },
+    }, userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: false }
   },
   { timestamps: true }
 );

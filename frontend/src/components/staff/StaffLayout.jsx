@@ -53,41 +53,49 @@ const StaffLayout = () => {
           <Menu.Item key="2" icon={<AppstoreOutlined />}>
             <Link to="/staff/services">Manage Service</Link>
           </Menu.Item>
-          <Menu.Item key="3" icon={<MedicineBoxOutlined />}>
+          <Menu.Item key="3" icon={<AppstoreOutlined />}>
+            <Link to="/staff/departments">Manage Department</Link>
+          </Menu.Item>
+          <Menu.Item key="4" icon={<AppstoreOutlined />}>
+            <Link to="/staff/view/medicalrecords">Manage Records</Link>
+          </Menu.Item>
+          <Menu.Item key="5" icon={<MedicineBoxOutlined />}>
             <Link to="/staff/specialties">Manage Specialty</Link>
           </Menu.Item>
-          <Menu.Item key="9" icon={<CalendarOutlined />}>
+          <Menu.Item key="6" icon={<CalendarOutlined />}>
             <Link to="/staff/appointments">Appointment Schedule</Link>
           </Menu.Item>
-          <Menu.Item key="14" icon={<CalendarOutlined />}>
-            <Link to="/staff/schedules">Manage Doctor Schedule</Link>
-          </Menu.Item>
-          <Menu.Item key="10" icon={<BellOutlined />}>
+          <Menu.Item key="7" icon={<BellOutlined />}>
             <Link to="/staff/notifications">Manage Notifications</Link>
           </Menu.Item>
-          <Menu.Item key="11" icon={<UserOutlined />}>
+          <Menu.Item key="8" icon={<UserOutlined />}>
             <Link to="/staff/users">Manage Users</Link>
           </Menu.Item>
-          <Menu.Item key="12" icon={<PlusCircleOutlined />}>
+          <Menu.Item key="9" icon={<FileTextOutlined />}>
+            <Link to="/staff/medicalrecord">Medical Record</Link>
+          </Menu.Item>
+          <Menu.Item key="10" icon={<PlusCircleOutlined />}>
             <Link to="/staff/medicines">Manage Medicines</Link>
           </Menu.Item>
-          <Menu.Item key="4" icon={<DollarOutlined />}>
+          <Menu.Item key="11" icon={<DollarOutlined />}>
             <Link to="/staff/invoices">Manage Invoices</Link>
           </Menu.Item>
-          <Menu.Item key="5" icon={<DollarOutlined />}>
+          <Menu.Item key="12" icon={<DollarOutlined />}>
             <Link to="/staff/payments">View Payment</Link>
           </Menu.Item>
-          <Menu.Item key="6" icon={<NotificationOutlined />}>
+          <Menu.Item key="13" icon={<NotificationOutlined />}>
             <Link to="/staff/news">Manage News</Link>
           </Menu.Item>
-          <Menu.Item key="7" icon={<CommentOutlined />}>
+          <Menu.Item key="14" icon={<CommentOutlined />}>
             <Link to="/staff/feedback">Manage Feedback</Link>
           </Menu.Item>
-          <Menu.Item key="8" icon={<QuestionCircleOutlined />}>
+          <Menu.Item key="15" icon={<QuestionCircleOutlined />}>
             <Link to="/staff/qna">View Q&A</Link>
           </Menu.Item>
-
-          <Menu.Item key="13" icon={<LogoutOutlined />} onClick={handleLogout}>
+          <Menu.Item key="16" icon={<QuestionCircleOutlined />}>
+            <Link to="/staff/schedule">Manage Schedule</Link>
+          </Menu.Item>
+          <Menu.Item key="17" icon={<LogoutOutlined />} onClick={handleLogout}>
             Logout
           </Menu.Item>
         </Menu>

@@ -25,6 +25,13 @@ app.use(cors(corsOptions));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
+app.use("/api/user", require("./routers/User/user.route"));
+app.use("/api/admin", require("./routers/Admin/admin.route"));
+app.use("/api/auth", require("./routers/auth/auth.route"));
+app.use("/api/doctor", require("./routers/Doctor/doctor.route"));
+app.use("/api/staff", require("./routers/Staff/blog.route"));
+app.use("/api/staff", require("./routers/Staff/news.route"));
+app.use("/api/staff", require("./routers/Staff/medicalrecord.route"));
 
 // Routers import
 const userRouter = require("./routers/User/user.route");
@@ -44,6 +51,9 @@ app.use("/api/auth", authRouter);
 app.use("/api/doctor", doctorRouter);
 app.use("/api/staff", staffRouter);
 
+app.use("/api/appointmentScheduleManagement", require("./routers/Staff/appointmentScheduleManagement.route"));
+app.use("/api/users", require("./routers/Staff/userManagement.route"));
+app.use("/api/departments", require("./routers/Staff/departmentManagement.route"));
 
 // Start server after DB connected
 const PORT = process.env.PORT || 9999;
@@ -54,4 +64,5 @@ connectDb().then(() => {
   });
 }).catch((err) => {
   console.error("❌ MongoDB connection failed:", err);
-});
+})
+
