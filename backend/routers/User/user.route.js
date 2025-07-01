@@ -9,6 +9,12 @@ const {
   getAllInvoices4User,
   CompletedInvoices,
 } = require("../../controller/staff/InvoiceController");
+const {
+  createAppointment,
+  getAppointmentsByUser,
+  cancelAppointment,
+} = require("../../controller/user/userService");
+const { authMiddleware } = require("../../middleware/auth.middleware");
 
 userRouter.get(
   "/getNoti",
@@ -24,4 +30,13 @@ userRouter.put(
 userRouter.get("/invoices", verifyToken, getAllInvoices4User);
 userRouter.post("/create-link", createPaymentLinkEmbedded);
 userRouter.put("/pay/success", CompletedInvoices);
+
+userRouter.get("/", (req, res) => {
+  res.send("User route is working!");
+});
+
+userRouter.post("/create", authMiddleware, createAppointment);
+userRouter.get("/user", authMiddleware, getAppointmentsByUser);
+userRouter.post("/cancel/:id", authMiddleware, cancelAppointment);
+
 module.exports = userRouter;

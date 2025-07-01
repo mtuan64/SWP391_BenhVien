@@ -41,28 +41,37 @@ const adminRouter = require("./routers/Admin/admin.route");
 const authRouter = require("./routers/auth/auth.route");
 const doctorRouter = require("./routers/Doctor/doctor.route");
 const staffRouter = require("./routers/Staff/staff.route");
+const userProfileRouter = require("./routers/User/profile.route");
 
 // Mount routers
 app.use("/api/user", userRouter);
-app.use("/api/user-profile",userMedicalProfile);
-app.use("/api/work-schedule",workschedule )
+app.use("/api/user-profile", userMedicalProfile);
+app.use("/api/work-schedule", workschedule);
 app.use("/api/admin", adminRouter);
 app.use("/api/auth", authRouter);
 app.use("/api/doctor", doctorRouter);
 app.use("/api/staff", staffRouter);
 
-app.use("/api/appointmentScheduleManagement", require("./routers/Staff/appointmentScheduleManagement.route"));
+app.use(
+  "/api/appointmentScheduleManagement",
+  require("./routers/Staff/appointmentScheduleManagement.route")
+);
 app.use("/api/users", require("./routers/Staff/userManagement.route"));
-app.use("/api/departments", require("./routers/Staff/departmentManagement.route"));
+app.use(
+  "/api/departments",
+  require("./routers/Staff/departmentManagement.route")
+);
+app.use("/api/profile", userProfileRouter);
 
 // Start server after DB connected
 const PORT = process.env.PORT || 9999;
 
-connectDb().then(() => {
-  app.listen(PORT, () => {
-    console.log(`✅ Server is running on port ${PORT}`);
+connectDb()
+  .then(() => {
+    app.listen(PORT, () => {
+      console.log(`✅ Server is running on port ${PORT}`);
+    });
+  })
+  .catch((err) => {
+    console.error("❌ MongoDB connection failed:", err);
   });
-}).catch((err) => {
-  console.error("❌ MongoDB connection failed:", err);
-})
-

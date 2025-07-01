@@ -18,7 +18,8 @@ import AboutPage from "./pages/AboutPage";
 import ProfilePage from "./pages/ProfilePage";
 import HomePage from "./pages/Homepage";
 import AppointmentPage from "./pages/AppointmentPage";
-
+import ProfileManagePage from "./pages/ProfileManagePage";
+import AppointmentManagePage from "./pages/AppointmentManagePage";
 import MedicalLabPage from "./pages/BlogTestPage.jsx";
 import TestPageDetails from "./pages/TestPageDetails.jsx";
 import WorkSchedulePage from "./pages/WorkSchedule";
@@ -240,13 +241,11 @@ const App = () => {
           <Route path="/about" element={<AboutPage />} />
           <Route path="/myprofile" element={<ProfilePage />} />
           <Route path="/invoice" element={<InvoiceUser />} />
+          <Route path="/profilemanage" element={<ProfileManagePage />} />
+          <Route path="/appointment" element={<AppointmentPage />} />
           <Route
-            path="/appointment"
-            element={
-              <PrivateRoute>
-                <AppointmentPage />
-              </PrivateRoute>
-            }
+            path="/appointmentmanage"
+            element={<AppointmentManagePage />}
           />
           <Route path="/not-found" element={<NotFoundPage />} />
           <Route path="/doctor/:doctorId" element={<DoctorDetail />} />
