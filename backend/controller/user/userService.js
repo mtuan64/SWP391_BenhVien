@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 const Profile = require("../../models/Profile");
 const Question = require("../../models/Question");
 const User = require("../../models/User");
@@ -96,11 +95,9 @@ module.exports.getAllQAUser = async (req, res) => {
   }
 };
 
-=======
 const Appointment = require("../../models/Appointment");
 const { sendAppointmentConfirmation } = require("../../utils/mailService");
-const User = require("../../models/User");
-const Profile = require("../../models/Profile");
+
 const Employee = require("../../models/Employee");
 
 // Đặt lịch khám
@@ -198,4 +195,3 @@ exports.cancelAppointment = async (req, res) => {
         res.status(500).json({ message: 'Failed to cancel appointment', error: err.message });
     }
 };
->>>>>>> origin/test

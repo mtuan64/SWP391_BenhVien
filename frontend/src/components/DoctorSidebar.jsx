@@ -1,44 +1,19 @@
 import React from "react";
-<<<<<<< HEAD
 import { NavLink } from "react-router-dom";
 import { UserOutlined, MedicineBoxOutlined, CalendarOutlined, BellOutlined, ScheduleOutlined } from "@ant-design/icons";
 
 const DoctorSidebar = () => {
-=======
-import { NavLink, useNavigate } from "react-router-dom";
-import {
-  UserOutlined,
-  MedicineBoxOutlined,
-  CalendarOutlined,
-  BellOutlined,
-  ScheduleOutlined,
-  LogoutOutlined,
-} from "@ant-design/icons";
-
-const DoctorSidebar = () => {
-  const navigate = useNavigate();
-
->>>>>>> origin/test
   const links = [
     { to: "/doctor/medical-profile", label: "User Medical Profile", icon: <UserOutlined /> },
     { to: "/doctor/medicine", label: "View Medicine", icon: <MedicineBoxOutlined /> },
     { to: "/doctor/appointments", label: "View Appointment", icon: <CalendarOutlined /> },
     { to: "/doctor/notifications", label: "Notification", icon: <BellOutlined /> },
     { to: "/doctor/work-schedule", label: "View Work Schedule", icon: <ScheduleOutlined /> },
-<<<<<<< HEAD
         { to: "/doctor/profile", label: "View profile", icon: <ScheduleOutlined /> },
+        
 
   ];
 
-=======
-  ];
-
-  const handleLogout = () => {
-    localStorage.clear(); // hoặc localStorage.removeItem("token") nếu dùng token
-    navigate("/login");
-  };
-
->>>>>>> origin/test
   return (
     <div style={styles.sidebar}>
       <h2 style={styles.title}>Doctor</h2>
@@ -56,17 +31,6 @@ const DoctorSidebar = () => {
           {label}
         </NavLink>
       ))}
-<<<<<<< HEAD
-=======
-
-      {/* Nút Logout */}
-      <div onClick={handleLogout} style={{ ...styles.link, color: "#f5222d", cursor: "pointer" }}>
-        <span style={styles.icon}>
-          <LogoutOutlined />
-        </span>
-        Logout
-      </div>
->>>>>>> origin/test
     </div>
   );
 };
@@ -75,11 +39,7 @@ const styles = {
   sidebar: {
     width: 240,
     minHeight: "100vh",
-<<<<<<< HEAD
     backgroundColor: "#001529", // dark blue
-=======
-    backgroundColor: "#001529",
->>>>>>> origin/test
     padding: "20px 10px",
     boxShadow: "2px 0 5px rgba(0,0,0,0.2)",
   },
@@ -105,8 +65,4 @@ const styles = {
   },
 };
 
-<<<<<<< HEAD
 export default DoctorSidebar;
-=======
-export default DoctorSidebar;
->>>>>>> origin/test

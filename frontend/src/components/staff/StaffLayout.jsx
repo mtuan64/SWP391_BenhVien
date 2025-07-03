@@ -92,17 +92,17 @@ const StaffLayout = () => {
           <Menu.Item key="15" icon={<QuestionCircleOutlined />}>
             <Link to="/staff/qna">View Q&A</Link>
           </Menu.Item>
-<<<<<<< HEAD
-          <Menu.Item key="13" icon={<QuestionCircleOutlined />}>
+
+          <Menu.Item key="18" icon={<QuestionCircleOutlined />}>
             <Link to="/staff/profile">Profile</Link>
           </Menu.Item>
-          <Menu.Item key="14" icon={<LogoutOutlined />} onClick={handleLogout}>
-=======
+          <Menu.Item key="19" icon={<LogoutOutlined />} onClick={handleLogout}/>
+
           <Menu.Item key="16" icon={<QuestionCircleOutlined />}>
             <Link to="/staff/schedule">Manage Schedule</Link>
           </Menu.Item>
           <Menu.Item key="17" icon={<LogoutOutlined />} onClick={handleLogout}>
->>>>>>> origin/test
+
             Logout
           </Menu.Item>
 

@@ -16,7 +16,6 @@ module.exports.createCheckup = async (req, res) => {
   }
 };
 
-<<<<<<< HEAD
 exports.replyQA = async (req, res) => {
   const { id } = req.params;
   const { replyMessage } = req.body;
@@ -89,7 +88,8 @@ exports.getAllQA = async (req, res) => {
       success: false,
       message: "Đã xảy ra lỗi, vui lòng thử lại sau."
     });
-=======
+  }}
+  
 const Schedule = require('../../models/Schedule');
 
 module.exports.createSchedule = async (req, res) => {
@@ -165,6 +165,5 @@ module.exports.deleteSchedule = async (req, res) => {
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: "Internal server error" });
->>>>>>> origin/test
   }
 };
