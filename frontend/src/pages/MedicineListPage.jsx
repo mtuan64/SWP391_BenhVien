@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { Row, Col } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import axios from "axios";
 import "../assets/css/MedicineListPage.css";
 import HeaderComponent from "../components/HeaderComponent";
 import HeroBanner from "../components/HeroBanner";
+import TopBarComponent from "../components/TopBarComponent";
 
-const MEDICINE_BANNER = "https://images.unsplash.com/photo-1511174511562-5f97f4f4eab6?auto=format&fit=facearea&w=1600&q=80";
+const MEDICINE_BANNER = "https://img.freepik.com/premium-photo/pills-medical-equiupments-green-banner-background_8087-321.jpg";
 
 const ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
 
@@ -44,28 +44,11 @@ const MedicineListPage = () => {
     return (
         <>
             {/* Topbar */}
-            <div className="bg-light py-2 px-5 d-none d-lg-block">
-                <Row className="align-items-center justify-content-between">
-                    <Col md={6} className="text-start">
-                        <small>
-                            <i className="far fa-clock text-primary me-2"></i>
-                            Opening Hours: Mon - Sat : 7.00 am - 8.00 pm, Sunday 9.00 am - 5.00 pm
-                        </small>
-                    </Col>
-                    <Col md={6} className="text-end">
-                        <small className="me-4">
-                            <i className="fa fa-envelope-open text-primary me-2"></i>
-                            contact@kiwicare.com
-                        </small>
-                        <small>
-                            <i className="fa fa-phone-alt text-primary me-2"></i>
-                            +987 654 3210
-                        </small>
-                    </Col>
-                </Row>
-            </div>
+            <TopBarComponent />
 
+            {/* Header */}
             <HeaderComponent />
+
             {/* Hero Carousel */}
             <HeroBanner
                 image={MEDICINE_BANNER}

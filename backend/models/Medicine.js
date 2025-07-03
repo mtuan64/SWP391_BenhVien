@@ -11,6 +11,7 @@ const medicineSchema = new mongoose.Schema({
   sideEffects: { type: String },                  // Tác dụng phụ
   precaution: { type: String },                   // Thận trọng
   interaction: { type: String },                  // Tương tác thuốc
+  note: { type: String },                         // Chú ý
   storage: { type: String },                      // Bảo quản
   quantity: { type: Number, required: true, min: 0 },
   unitPrice: { type: Number, required: true, min: 0 },

@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { Container, Row, Col } from "react-bootstrap";
 import axios from "axios";
 import { Link, useParams } from "react-router-dom";
 import "../assets/css/ServiceDetail.css";
 import HeroBanner from "../components/HeroBanner";
+import TopBarComponent from "../components/TopBarComponent";
 
 const DEPT_BANNER = "https://xdcs.cdnchinhphu.vn/446259493575335936/2024/1/13/bv-1705119640880430272769.jpg";
 
@@ -16,7 +16,7 @@ const ServiceDetail = () => {
     useEffect(() => {
         const fetchService = async () => {
             try {
-                const res = await axios.get(`http://localhost:9999/api/user/service/${serviceId}`);
+                const res = await axios.get(`/api/user/service/${serviceId}`);
                 console.log("API Response:", res.data);
                 if (Array.isArray(res.data.service)) {
                     setService(res.data.service[0]);
@@ -58,26 +58,7 @@ const ServiceDetail = () => {
     return (
         <>
             {/* Topbar */}
-            <div className="bg-light py-2 px-5 d-none d-lg-block">
-                <Row className="align-items-center justify-content-between">
-                    <Col md={6} className="text-start">
-                        <small>
-                            <i className="far fa-clock text-primary me-2"></i>
-                            Opening Hours: Mon - Tues : 6.00 am - 10.00 pm, Sunday Closed
-                        </small>
-                    </Col>
-                    <Col md={6} className="text-end">
-                        <small className="me-4">
-                            <i className="fa fa-envelope-open text-primary me-2"></i>
-                            info@example.com
-                        </small>
-                        <small>
-                            <i className="fa fa-phone-alt text-primary me-2"></i>
-                            +012 345 6789
-                        </small>
-                    </Col>
-                </Row>
-            </div>
+            <TopBarComponent />
 
             {/* Hero Carousel */}
             <HeroBanner

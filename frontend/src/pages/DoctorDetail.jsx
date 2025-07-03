@@ -4,6 +4,7 @@ import { Link, useParams } from "react-router-dom";
 import axios from "axios";
 import "../assets/css/Homepage.css";
 import HeroBanner from "../components/HeroBanner";
+import TopBarComponent from "../components/TopBarComponent";
 
 const DEPT_BANNER = "https://images.unsplash.com/photo-1579684453423-f84349ef60b0";
 
@@ -16,7 +17,7 @@ const DoctorDetail = () => {
   useEffect(() => {
     const fetchDoctor = async () => {
       try {
-        const res = await axios.get(`http://localhost:9999/api/user/doctr/${doctorId}`);
+        const res = await axios.get(`/api/user/doctr/${doctorId}`);
         console.log("API Response:", res.data);
         if (res.data.doctor) {
           setDoctor(res.data.doctor);
@@ -36,56 +37,56 @@ const DoctorDetail = () => {
     fetchDoctor();
   }, [doctorId]);
 
-//   const doctors = [
-//   {
-//     _id: "1",
-//     userId: { fullname: "Nguyễn Văn An" },
-//     ProfileImage: "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d",
-//     Specialty: "Nội Tổng Quát",
-//   },
-//   {
-//     _id: "2",
-//     userId: { fullname: "Trần Thị Bình" },
-//     ProfileImage: "https://images.unsplash.com/photo-1594824476967-48c8b964273f",
-//     Specialty: "Nhi Khoa",
-//   },
-//   {
-//     _id: "3",
-//     userId: { fullname: "Lê Minh Châu" },
-//     ProfileImage: "https://images.unsplash.com/photo-1598257006626-48b0c252070d",
-//     Specialty: "Phụ Sản",
-//   },
-//   {
-//     _id: "4",
-//     userId: { fullname: "Phạm Quốc Đạt" },
-//     ProfileImage: "https://images.unsplash.com/photo-1622253692010-333f2b7c2f96",
-//     Specialty: "Ngoại Khoa",
-//   },
-//   {
-//     _id: "5",
-//     userId: { fullname: "Hoàng Thị Mai" },
-//     ProfileImage: "https://images.unsplash.com/photo-1594824476967-48c8b964273f",
-//     Specialty: "Chẩn Đoán Hình Ảnh",
-//   },
-// ];
+  //   const doctors = [
+  //   {
+  //     _id: "1",
+  //     userId: { fullname: "Nguyễn Văn An" },
+  //     ProfileImage: "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d",
+  //     Specialty: "Nội Tổng Quát",
+  //   },
+  //   {
+  //     _id: "2",
+  //     userId: { fullname: "Trần Thị Bình" },
+  //     ProfileImage: "https://images.unsplash.com/photo-1594824476967-48c8b964273f",
+  //     Specialty: "Nhi Khoa",
+  //   },
+  //   {
+  //     _id: "3",
+  //     userId: { fullname: "Lê Minh Châu" },
+  //     ProfileImage: "https://images.unsplash.com/photo-1598257006626-48b0c252070d",
+  //     Specialty: "Phụ Sản",
+  //   },
+  //   {
+  //     _id: "4",
+  //     userId: { fullname: "Phạm Quốc Đạt" },
+  //     ProfileImage: "https://images.unsplash.com/photo-1622253692010-333f2b7c2f96",
+  //     Specialty: "Ngoại Khoa",
+  //   },
+  //   {
+  //     _id: "5",
+  //     userId: { fullname: "Hoàng Thị Mai" },
+  //     ProfileImage: "https://images.unsplash.com/photo-1594824476967-48c8b964273f",
+  //     Specialty: "Chẩn Đoán Hình Ảnh",
+  //   },
+  // ];
 
-//   useEffect(() => {
-//     const fetchDoctor = async () => {
-//       try {
-//         console.log(`Fetching doctor with ID: ${doctorId}`);
-//         const doctor1 = doctors.find(dt => dt._id == doctorId);
-//         setDoctor(doctor1);
-//         setLoading(false);
-//       } catch (error) {
-//         console.error("Error fetching doctor details:", error);
-//         setError("Failed to load doctor details. Please check the console for more details.");
-//         setLoading(false);
-//       }
-//     };
+  //   useEffect(() => {
+  //     const fetchDoctor = async () => {
+  //       try {
+  //         console.log(`Fetching doctor with ID: ${doctorId}`);
+  //         const doctor1 = doctors.find(dt => dt._id == doctorId);
+  //         setDoctor(doctor1);
+  //         setLoading(false);
+  //       } catch (error) {
+  //         console.error("Error fetching doctor details:", error);
+  //         setError("Failed to load doctor details. Please check the console for more details.");
+  //         setLoading(false);
+  //       }
+  //     };
 
-//     fetchDoctor();
-//     console.log(JSON.stringify(doctor));
-//   }, [doctorId]);
+  //     fetchDoctor();
+  //     console.log(JSON.stringify(doctor));
+  //   }, [doctorId]);
 
   if (loading) {
     return (
@@ -107,35 +108,16 @@ const DoctorDetail = () => {
   return (
     <>
       {/* Topbar */}
-      <div className="bg-light py-2 px-5 d-none d-lg-block">
-        <Row className="align-items-center justify-content-between">
-          <Col md={6} className="text-start">
-            <small>
-              <i className="far fa-clock text-primary me-2"></i>
-              Opening Hours: Mon - Tues : 6.00 am - 10.00 pm, Sunday Closed
-            </small>
-          </Col>
-          <Col md={6} className="text-end">
-            <small className="me-4">
-              <i className="fa fa-envelope-open text-primary me-2"></i>
-              info@example.com
-            </small>
-            <small>
-              <i className="fa fa-phone-alt text-primary me-2"></i>
-              +012 345 6789
-            </small>
-          </Col>
-        </Row>
-      </div>
+      <TopBarComponent />
 
 
 
       {/* Hero Carousel */}
       <HeroBanner
-          image={DEPT_BANNER}
-          title="Đội Ngũ Bác Sĩ KiwiCare"
-          subtitle="Những chuyên gia tận tâm vì sức khỏe của bạn"
-        />
+        image={DEPT_BANNER}
+        title="Đội Ngũ Bác Sĩ KiwiCare"
+        subtitle="Những chuyên gia tận tâm vì sức khỏe của bạn"
+      />
 
       {/* Doctor Details Section */}
       <div className="container-fluid py-5">
@@ -166,7 +148,6 @@ const DoctorDetail = () => {
           </Row>
         </Container>
       </div>
-
     </>
   );
 };
