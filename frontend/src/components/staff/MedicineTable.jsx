@@ -13,6 +13,7 @@ const MedicineTable = ({ medicines, onEdit, onDelete }) => (
           <th>Giá</th>
           <th>Số lượng</th>
           <th>Hạn dùng</th>
+          <th>Người thêm</th>
           <th></th>
         </tr>
       </thead>
@@ -26,6 +27,7 @@ const MedicineTable = ({ medicines, onEdit, onDelete }) => (
             <td>{med.unitPrice?.toLocaleString() ?? ""}</td>
             <td>{med.quantity ?? ""}</td>
             <td>{med.expirationDate ? new Date(med.expirationDate).toLocaleDateString("vi-VN") : ""}</td>
+            <td>{med.supplier ? med.supplier.email : ""}</td>
             <td>
               <Button variant="primary" size="sm" onClick={() => onEdit(med)}>Sửa</Button>{" "}
               <Button variant="danger" size="sm" onClick={() => onDelete(med._id)}>Xoá</Button>

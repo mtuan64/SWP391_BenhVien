@@ -4,7 +4,7 @@ const Employee = require("../../models/Employee");
 const bcrypt = require("bcrypt");
 
 // Admin - user manage
-module.exports.getUserAccs = async (req, res) => {
+const getUserAccs = async (req, res) => {
   try {
     const users = await User.find({}, "name email status createdAt");
     res.json(users);
@@ -13,7 +13,7 @@ module.exports.getUserAccs = async (req, res) => {
   }
 };
 
-module.exports.editUsers = async (req, res) => {
+const editUsers = async (req, res) => {
   try {
     const user = await User.findById(req.params.id);
     if (!user) return res.status(404).json({ message: "User not found" });
@@ -32,7 +32,7 @@ module.exports.editUsers = async (req, res) => {
   }
 };
 
-module.exports.changeStatus = async (req, res) => {
+const changeStatus = async (req, res) => {
   try {
     const user = await User.findById(req.params.id);
 
@@ -49,7 +49,7 @@ module.exports.changeStatus = async (req, res) => {
   }
 };
 
-module.exports.delUsers = async (req, res) => {
+const delUsers = async (req, res) => {
   try {
     const user = await User.findByIdAndDelete(req.params.id);
     if (!user) return res.status(404).json({ message: "User not found" });
@@ -64,7 +64,7 @@ module.exports.delUsers = async (req, res) => {
 
 //Admin - employee manage
 
-module.exports.getEmployees = async (req, res) => {
+const getEmployees = async (req, res) => {
   try {
     const employees = await Employee.find({}, "-password");
     res.json(employees);
@@ -74,7 +74,7 @@ module.exports.getEmployees = async (req, res) => {
 };
 
 // CREATE employee
-module.exports.createEmployees = async (req, res) => {
+const createEmployees = async (req, res) => {
   try {
     const hashedPassword = await bcrypt.hash(req.body.password, 10);
     const employee = new Employee({
@@ -94,7 +94,7 @@ module.exports.createEmployees = async (req, res) => {
 };
 
 // UPDATE employee (full form)
-module.exports.editEmployees = async (req, res) => {
+const editEmployees = async (req, res) => {
   try {
     const updateFields = { ...req.body };
 
@@ -120,15 +120,26 @@ module.exports.editEmployees = async (req, res) => {
 };
 
 // DELETE employee
-module.exports.delEmployees = async (req, res) => {
+const delEmployees = async (req, res) => {
   try {
     const employee = await Employee.findByIdAndDelete(req.params.id);
     if (!employee)
       return res.status(404).json({ message: "Employee not found" });
 
-    
+
     res.json({ message: "Employee deleted successfully" });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 };
+
+module.exports = {
+  getUserAccs,
+  editUsers,
+  changeStatus,
+  delUsers,
+  getEmployees,
+  createEmployees,
+  editEmployees,
+  delEmployees,
+}

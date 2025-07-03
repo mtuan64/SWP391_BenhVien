@@ -56,10 +56,6 @@ const MedicineFormModal = ({ show, onHide, onSubmit, editMedicine, emptyMedicine
                 <Form.Control type="date" name="expirationDate" value={form.expirationDate ?? ""} onChange={handleChange} />
               </Form.Group>
               <Form.Group className="mb-2">
-                <Form.Label>Ảnh (URL)</Form.Label>
-                <Form.Control name="image" value={form.image ?? ""} onChange={handleChange} />
-              </Form.Group>
-              <Form.Group className="mb-2">
                 <Form.Label>Chỉ định</Form.Label>
                 <Form.Control name="indication" value={form.indication ?? ""} onChange={handleChange} />
               </Form.Group>

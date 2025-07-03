@@ -5,7 +5,7 @@ async function createMedicine(data) {
 }
 
 async function getAllMedicines() {
-    return await Medicine.find();
+    return await Medicine.find().populate('supplier');
 }
 
 async function getMedicineById(id) {

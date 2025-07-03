@@ -67,19 +67,49 @@ const MedicineDetail = () => {
 
             <div className="medicine-detail-container">
                 <h1 className="medicine-detail-title">{medicine.name}</h1>
-                <div className="medicine-detail-block">
-                    <div><b>Dạng bào chế:</b> {medicine.type || "-"}</div>
-                    <div><b>Nhóm thuốc:</b> {medicine.group || "-"}</div>
-                    <div><b>Hoạt chất:</b> {medicine.ingredient || "-"}</div>
-                    <div><b>Chỉ định:</b> {medicine.indication || "-"}</div>
-                    <div><b>Chống chỉ định:</b> {medicine.contraindication || "-"}</div>
-                    <div><b>Liều dùng:</b> {medicine.dosage || "-"}</div>
-                    <div><b>Tác dụng phụ:</b> {medicine.sideEffects || "-"}</div>
-                    <div><b>Thận trọng:</b> {medicine.precaution || "-"}</div>
-                    <div><b>Tương tác thuốc:</b> {medicine.interaction || "-"}</div>
-                    <div><b>Bảo quản:</b> {medicine.storage || "-"}</div>
-                    <Link to="/medicines-home" className="btn btn-secondary mt-3">Back to Medicine Home</Link>
+
+                <div className="medicine-detail-meta">
+                    <span><b>Dạng bào chế:</b> {medicine.type || "-"}</span>
+                    <span><b>Nhóm thuốc:</b> {medicine.group || "-"}</span>
+                    <span><b>Hoạt chất:</b> {medicine.ingredient || "-"}</span>
                 </div>
+
+                <section className="medicine-detail-section">
+                    <h2>Chỉ định</h2>
+                    <div>{medicine.indication || "-"}</div>
+                </section>
+
+                <section className="medicine-detail-section">
+                    <h2>Chống chỉ định</h2>
+                    <div>{medicine.contraindication || "-"}</div>
+                </section>
+
+                <section className="medicine-detail-section">
+                    <h2>Liều dùng</h2>
+                    <div>{medicine.dosage || "-"}</div>
+                </section>
+
+                <section className="medicine-detail-section">
+                    <h2>Tác dụng phụ</h2>
+                    <div>{medicine.sideEffects || "-"}</div>
+                </section>
+
+                <section className="medicine-detail-section">
+                    <h2>Thận trọng</h2>
+                    <div>{medicine.precaution || "-"}</div>
+                </section>
+
+                <section className="medicine-detail-section">
+                    <h2>Tương tác thuốc</h2>
+                    <div>{medicine.interaction || "-"}</div>
+                </section>
+
+                <section className="medicine-detail-section">
+                    <h2>Bảo quản</h2>
+                    <div>{medicine.storage || "-"}</div>
+                </section>
+
+                <Link to="/medicines-home" className="btn btn-secondary mt-3">Quay lại danh mục thuốc</Link>
             </div>
         </>
 

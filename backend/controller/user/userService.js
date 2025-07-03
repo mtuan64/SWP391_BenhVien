@@ -9,7 +9,7 @@ const departmentRepo = require("../../repository/department.repository");
 const medicineRepo = require("../../repository/medicine.repository");
 
 // Đặt lịch khám
-exports.createAppointment = async (req, res) => {
+const createAppointment = async (req, res) => {
     const { profileId, doctorId, department, appointmentDate, type } = req.body;
     const userId = req.user.id;
 
@@ -68,7 +68,7 @@ exports.createAppointment = async (req, res) => {
 
 
 // Hiển thị toàn bộ danh sách đặt lịch của chính người dùng
-exports.getAppointmentsByUser = async (req, res) => {
+const getAppointmentsByUser = async (req, res) => {
     const userId = req.user.id;
 
     try {
@@ -83,7 +83,7 @@ exports.getAppointmentsByUser = async (req, res) => {
 };
 
 // Hủy lịch hẹn
-exports.cancelAppointment = async (req, res) => {
+const cancelAppointment = async (req, res) => {
     const { id } = req.params;
     const userId = req.user.id;
 
@@ -137,7 +137,7 @@ const getAllServices = async (req, res) => {
 };
 
 const getServiceById = async (req, res) => {
-    try{
+    try {
         const service = await serviceRepo.getServiceById(req.params.serviceId);
         if (!service) {
             return res.status(404).json({ message: "Service not found" });
@@ -204,20 +204,23 @@ const getMedicineById = async (req, res) => {
             precaution: medicine.precaution,
             interaction: medicine.interaction,
             storage: medicine.storage,
-        }; 
+        };
         res.status(200).json({ message: "OK", data: result });
     } catch (err) {
         res.status(500).json({ message: "Error", error: err.message });
     }
 };
 
-module.exports = { 
-    getAllDoctors, 
-    getDoctorById, 
-    getAllServices, 
+module.exports = {
+    createAppointment,
+    getAppointmentsByUser,
+    cancelAppointment,
+    getAllDoctors,
+    getDoctorById,
+    getAllServices,
     getServiceById,
     getAllDepartment,
-    getDepartmentById, 
+    getDepartmentById,
     getAllMedicines,
     getMedicineById,
 };

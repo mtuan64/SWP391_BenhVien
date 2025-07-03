@@ -15,12 +15,11 @@ const EMPTY_MEDICINE = {
   sideEffects: "",
   precaution: "",
   interaction: "",
+  note: "",
   storage: "",
   quantity: "",
   unitPrice: "",
   expirationDate: "",
-  image: "",
-  description: "",
 };
 
 const axios = axiosInstance;
@@ -32,11 +31,14 @@ const MedicineManagement = () => {
   const [editMedicine, setEditMedicine] = useState(null);
 
   const fetchMedicines = async () => {
-    const res = await axios.get("/api/staff/medicines");
+    const res = await axios.get("/api/staff/medicinesall");
+     console.log("DATA FROM API:", res.data.medicines);
     setMedicines(res.data.medicines || []);
   };
 
   useEffect(() => { fetchMedicines(); }, []);
+
+  console.log("Medicines in render:", medicines);
 
   const handleAdd = () => {
     setEditMedicine(null);
@@ -65,6 +67,7 @@ const MedicineManagement = () => {
   const filtered = medicines.filter(m =>
     m.name && m.name.toLowerCase().includes(search.toLowerCase())
   );
+  console.log("Filtered:", filtered);
 
   return (
     <div className="container py-4">

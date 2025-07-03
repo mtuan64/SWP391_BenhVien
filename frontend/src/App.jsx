@@ -18,6 +18,7 @@ import AboutPage from "./pages/AboutPage";
 import ProfilePage from "./pages/ProfilePage";
 import HomePage from "./pages/Homepage";
 import AppointmentPage from "./pages/AppointmentPage";
+import ListAppointmentPage from "./pages/ListAppointmentPage.jsx";
 import ProfileManagePage from "./pages/ProfileManagePage";
 import AppointmentManagePage from "./pages/AppointmentManagePage";
 import MedicalLabPage from "./pages/BlogTestPage.jsx";
@@ -107,7 +108,7 @@ const RoleRedirect = () => {
         role === "patient" &&
         (path.startsWith("/admin") ||
           path.startsWith("/staff") ||
-          path.startsWith("/doctor"))
+          path === "/doctor")
       )
         navigate("/home");
     }
@@ -239,10 +240,11 @@ const App = () => {
           <Route path="/appointment" element={<AppointmentPage />} />
           <Route path="/appointmentmanage" element={<AppointmentManagePage />} />
           <Route path="/not-found" element={<NotFoundPage />} />
-          <Route path="/doctr/:doctorId" element={<DoctorDetail />} />
+          <Route path="/doctor/:doctorId" element={<DoctorDetail />} />
           <Route path="/medicines/:medicineId" element={<MedicineDetail />} />
           <Route path="service/:serviceId" element={<ServiceDetail />} />
           <Route path="/department/:departmentId" element={<DepartmentDetail />} />
+          <Route path="/myappointments" element={<ListAppointmentPage />} />
 
 
           {/* <Route path="/medicalrecord" element={<AddMedicalRecord />} />
