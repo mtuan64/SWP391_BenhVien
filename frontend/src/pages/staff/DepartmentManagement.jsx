@@ -304,7 +304,7 @@ const DepartmentManagement = () => {
         </Modal.Footer>
       </Modal>
 
-      <FooterComponent />
+      
     </>
   );
 };

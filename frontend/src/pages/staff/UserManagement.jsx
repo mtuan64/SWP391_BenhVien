@@ -427,7 +427,7 @@ const UserManagement = () => {
         </Modal.Footer>
       </Modal>
 
-      <FooterComponent />
+     
     </>
   );
 };
