@@ -73,7 +73,11 @@ import BlogDetail from "./pages/BlogDetail";
 import ViewMedicalRecord from "./pages/ViewMedicalRecord";
 import Header from "./components/HeaderComponent";
 import NotFoundPage from "./pages/NotFoundPage";
-
+import MedicineListPage from "./pages/MedicineListPage.jsx";
+import MedicineDetail from "./pages/MedicineDetail";
+import ServiceDetail from "./pages/ServiceDetail.jsx";
+import DepartmentPage from "./pages/DepartmentListPage.jsx";
+import DepartmentDetail from "./pages/DepartmentDetail.jsx";
 const DRAWER_WIDTH = 240;
 
 const RoleRedirect = () => {
@@ -224,30 +228,22 @@ const App = () => {
           <Route path="/home" element={<HomePage />} />
           <Route path="/service" element={<ServicePage />} />
           <Route path="/doctor-home" element={<DoctorPage />} />
-
-          <Route path="/blogs" element={<BlogListPage />} />
-          <Route path="/news" element={<NewsListPage />} />
-          <Route path="/blog/:slug" element={<BlogDetail />} />
-          <Route path="/news/:slug" element={<NewsDetail />} />
-          <Route
-            path="/view_medicalrecord"
-            element={
-              <PrivateRouteByRole allowedRoles={["patient"]}>
-                <ViewMedicalRecord />
-              </PrivateRouteByRole>
-            }
-          />
-          <Route path="/doctors" element={<DoctorPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/about" element={<AboutPage />} />
+          <Route path="/medicines-home" element={<MedicineListPage />} />
+          <Route path="/department" element={<DepartmentPage />} />
           <Route path="/myprofile" element={<ProfilePage />} />
           <Route path="/invoice" element={<InvoiceUser />} />
           <Route path="/profilemanage" element={<ProfileManagePage />} />
           <Route path="/appointment" element={<AppointmentPage />} />
           <Route path="/appointmentmanage" element={<AppointmentManagePage />} />
           <Route path="/not-found" element={<NotFoundPage />} />
-          <Route path="/doctor/:doctorId" element={<DoctorDetail />} />
+          <Route path="/doctr/:doctorId" element={<DoctorDetail />} />
+          <Route path="/medicines/:medicineId" element={<MedicineDetail />} />
+          <Route path="service/:serviceId" element={<ServiceDetail />} />
+          <Route path="/department/:departmentId" element={<DepartmentDetail />} />
+
 
           {/* <Route path="/medicalrecord" element={<AddMedicalRecord />} />
           <Route path="/medicalrecords" element={<ViewMedicalRecords />} /> */}

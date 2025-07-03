@@ -1,9 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/authContext";
-import { Badge } from "antd";
-import axios from "axios";
-import { Button, Avatar, Dropdown } from "antd";
+import { Badge, Button, Avatar, Dropdown } from "antd";
 import {
   MenuOutlined,
   HomeOutlined,
@@ -19,6 +17,7 @@ import {
   LockOutlined,
   BellOutlined,
 } from "@ant-design/icons";
+import axios from "axios";
 
 const Header = ({ onMenuClick }) => {
   const { user, token, logout } = useAuth();
@@ -40,10 +39,6 @@ const Header = ({ onMenuClick }) => {
     };
 
     fetchUnreadCount();
-
-    // ✅ If you still want polling later, safely enable this:
-    // const interval = setInterval(fetchUnreadCount, 5000);
-    // return () => clearInterval(interval);
   }, [token]);
 
   const handleLogout = () => {
@@ -51,27 +46,18 @@ const Header = ({ onMenuClick }) => {
     navigate("/login");
   };
 
-  const accountMenuItems = [
-    {
-      key: "profile",
-      icon: <UserOutlined />,
-      label: <Link to="/myprofile">Profile</Link>,
-    },
-    {
-      key: "changepass",
-      icon: <LockOutlined />,
-      label: <Link to="/changepass">Change password</Link>,
-    },
-    {
-      type: "divider",
-    },
-    {
-      key: "logout",
-      icon: <LogoutOutlined />,
-      label: "Log out",
-      onClick: handleLogout,
-    },
-  ];
+  const postMenu = {
+    items: [
+      {
+        key: "blogs",
+        label: <Link to="/blogs">Blogs</Link>,
+      },
+      {
+        key: "news",
+        label: <Link to="/news">News</Link>,
+      },
+    ],
+  };
 
   const guestMenuItems = [
     {
@@ -102,33 +88,15 @@ const Header = ({ onMenuClick }) => {
           type="text"
           icon={<MenuOutlined style={{ fontSize: 24 }} />}
           onClick={onMenuClick}
-          style={{
-            marginRight: 16,
-            border: "none",
-            background: "none",
-            boxShadow: "none",
-            outline: "none",
-          }}
+          style={{ marginRight: 16 }}
         />
       )}
 
       <Link to="/" className="navbar-brand p-0 d-flex align-items-center">
-        <h1
-          className="m-0 text-primary"
-          style={{ fontWeight: 700, fontSize: 32 }}
-        >
+        <h1 className="m-0 text-primary" style={{ fontWeight: 700, fontSize: 32 }}>
           <i className="fa fa-heartbeat me-2"></i>Kiwicare
         </h1>
       </Link>
-
-      <button
-        className="navbar-toggler"
-        type="button"
-        data-bs-toggle="collapse"
-        data-bs-target="#navbarCollapse"
-      >
-        <span className="navbar-toggler-icon"></span>
-      </button>
 
       <div className="collapse navbar-collapse" id="navbarCollapse">
         <div className="navbar-nav ms-auto py-0 align-items-center d-flex">
@@ -140,30 +108,18 @@ const Header = ({ onMenuClick }) => {
             <InfoCircleOutlined style={{ marginRight: 8 }} />
             About
           </Link>
-          <Dropdown
-            menu={{
-              items: [
-                {
-                  key: "blogs",
-                  label: <Link to="/blogs">Blogs</Link>,
-                },
-                {
-                  key: "news",
-                  label: <Link to="/news">News</Link>,
-                },
-              ],
-            }}
-            trigger={["click"]}
-          >
-            <div
-              className="nav-item nav-link d-flex align-items-center"
-              style={{ cursor: "pointer" }}
-            >
+
+          <Dropdown menu={postMenu} trigger={["click"]}>
+            <div className="nav-item nav-link" style={{ cursor: "pointer" }}>
               <BookOutlined style={{ marginRight: 8 }} />
               Post
             </div>
           </Dropdown>
 
+          <Link to="/service" className="nav-item nav-link">Service</Link>
+          <Link to="/doctr-home" className="nav-item nav-link">Doctor</Link>
+          <Link to="/medicines-home" className="nav-item nav-link">Medicine</Link>
+          <Link to="/department" className="nav-item nav-link">Department</Link>
           <Link to="/services" className="nav-item nav-link">
             <MedicineBoxOutlined style={{ marginRight: 8 }} />
             Services
@@ -172,10 +128,8 @@ const Header = ({ onMenuClick }) => {
             <TeamOutlined style={{ marginRight: 8 }} />
             Doctors
           </Link>
+          <Link to="/health/calculator" className="nav-item nav-link">BMI</Link>
 
-          <Link to="/health/calculator" className="nav-item nav-link">
-            BMI
-          </Link>
           {user ? (
             <>
               <Badge count={unreadCount} size="small">
@@ -200,34 +154,12 @@ const Header = ({ onMenuClick }) => {
                   Account
                 </button>
                 <ul className="dropdown-menu dropdown-menu-end">
-                  <li>
-                    <Link to="/myprofile" className="dropdown-item">
-                      Profile
-                    </Link>
-                  </li>
-                  <li>
-                    <Link to="/profilemanage" className="dropdown-item">
-                      Profile Manage
-                    </Link>
-                  </li>
-                  <li>
-                    <Link to="/appointmentmanage" className="dropdown-item">
-                      Appointment Manage
-                    </Link>
-                  </li>
-                  <li>
-                    <Link to="/changepass" className="dropdown-item">
-                      Change password
-                    </Link>
-                  </li>
-                  <li>
-                    <hr className="dropdown-divider" />
-                  </li>
-                  <li>
-                    <button className="dropdown-item" onClick={handleLogout}>
-                      Log out
-                    </button>
-                  </li>
+                  <li><Link to="/myprofile" className="dropdown-item">Profile</Link></li>
+                  <li><Link to="/profilemanage" className="dropdown-item">Profile Manage</Link></li>
+                  <li><Link to="/appointmentmanage" className="dropdown-item">Appointment Manage</Link></li>
+                  <li><Link to="/changepass" className="dropdown-item">Change password</Link></li>
+                  <li><hr className="dropdown-divider" /></li>
+                  <li><button className="dropdown-item" onClick={handleLogout}>Log out</button></li>
                 </ul>
               </div>
             </>
