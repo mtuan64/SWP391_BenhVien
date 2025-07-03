@@ -6,86 +6,29 @@ import {
   UserOutlined,
   LockOutlined,
   CloseOutlined,
-  TeamOutlined,
   FileTextOutlined,
-  SettingOutlined,
+  CalendarOutlined,
 } from "@ant-design/icons";
 
 const DRAWER_WIDTH = 240;
 
-// Định nghĩa menu theo từng vai trò với đường dẫn rõ ràng
-const menuByRole = {
-  admin: [
-    { title: "Home", path: "/", icon: <HomeOutlined /> },
-    {
-      title: "Manage Users",
-      path: "/users-management",
-      icon: <TeamOutlined />,
-    },
-    {
-      title: "Manage Recruitment",
-      path: "/manage-recruitment",
-      icon: <FileTextOutlined />,
-    },
-    { title: "Manage BlogList", path: "/bloglist", icon: <FileTextOutlined /> },
-    {
-      title: "Manage Doctor Account",
-      path: "/doctoraccount",
-      icon: <FileTextOutlined />,
-    },
-    { title: "Settings", path: "/settings", icon: <SettingOutlined /> },
-  ],
-  doctor: [
-    { title: "Home", path: "/", icon: <HomeOutlined /> },
-    { title: "My Project", path: "/my-project", icon: <TeamOutlined /> },
-    { title: "Report Management", path: "/report", icon: <LockOutlined /> },
-    {
-      title: "Message Management",
-      path: "/message-management",
-      icon: <LockOutlined />,
-    },
-    {
-      title: "Attendance Management",
-      path: "/attendance-management",
-      icon: <LockOutlined />,
-    },
-    {
-      title: "Recruitment Management",
-      path: "/recruitment-management-mentor",
-      icon: <LockOutlined />,
-    },
-  ],
-  staff: [
-    { title: "Home", path: "/", icon: <HomeOutlined /> },
-    { title: "Addresses", path: "/addresses", icon: <UserOutlined /> },
-    {
-      title: "Change Password",
-      path: "/change-password",
-      icon: <LockOutlined />,
-    },
-  ],
-  patient: [
-    { title: "Home", path: "/", icon: <HomeOutlined /> },
-    { title: "My Project", path: "/my-project-intern", icon: <HomeOutlined /> },
-    {
-      title: "Medical Record",
-      path: "/view_medicalrecord",
-      icon: <FileTextOutlined />,
-    },
-    {
-      title: "Report Management",
-      path: "/report-management",
-      icon: <FileTextOutlined />,
-    },
-    { title: "Schedule", path: "/schedule", icon: <FileTextOutlined /> },
-    { title: "Attendance", path: "/attendance", icon: <FileTextOutlined /> },
-    { title: "Mark Report", path: "/attendance", icon: <FileTextOutlined /> },
-  ],
-};
+// Menu items for patient role
+const patientMenu = [
+  { title: "Home", path: "/", icon: <HomeOutlined /> },,
+  { title: "Medical Record", path: "/view_medicalrecord", icon: <FileTextOutlined /> },
+  { title: "BMI", path: "/health/calculator", icon: <UserOutlined /> }, // New item
+  { title: "Profile Manage", path: "/profilemanage", icon: <UserOutlined /> }, // New item
+  { title: "Appointment Manage", path: "/appointmentmanage", icon: <CalendarOutlined /> }, // New item
+];
 
-const MenuComponent = ({ isOpen, onClose, role }) => {
-  const navigations = menuByRole[role] || [];
+const MenuComponent = ({ isOpen, onClose }) => {
   const location = useLocation();
+
+  // Handle logout
+  const handleLogout = () => {
+    localStorage.clear(); // Or clear token specifically if used
+    window.location.href = "/login"; // Redirect to login page
+  };
 
   return (
     <Drawer
@@ -102,38 +45,47 @@ const MenuComponent = ({ isOpen, onClose, role }) => {
         style={{
           display: "flex",
           flexDirection: "column",
-          justifyContent: "center", // THÊM DÒNG NÀY
-          alignItems: "flex-start", // Đảm bảo mục menu vẫn bám lề trái
+          justifyContent: "center",
+          alignItems: "flex-start",
           minHeight: "100%",
-          height: "calc(100vh - 64px)", // <-- Sửa dòng này!
+          height: "calc(100vh - 64px)",
           overflowY: "auto",
           paddingTop: 4,
           paddingBottom: 4,
         }}
       >
-        {navigations.map(({ title, path, icon }) => {
+        {patientMenu.map(({ title, path, icon, action }) => {
           const isActive = location.pathname === path;
+
+          const commonStyle = {
+            display: "flex",
+            alignItems: "center",
+            gap: "14px",
+            padding: "14px 28px",
+            fontSize: "16px",
+            color: isActive ? "#1890ff" : "#333",
+            textDecoration: "none",
+            borderRadius: "0 24px 24px 0",
+            background: isActive ? "#e6f7ff" : "transparent",
+            fontWeight: isActive ? 600 : 400,
+            margin: "2px 0",
+            cursor: "pointer",
+            transition: "background 0.2s, color 0.2s",
+          };
+
+          // If it's a logout action
+          if (action === "logout") {
+            return (
+              <div key={title} onClick={handleLogout} style={commonStyle}>
+                {React.cloneElement(icon, { style: { fontSize: 20 } })}
+                <span>{title}</span>
+              </div>
+            );
+          }
+
+          // Normal menu items
           return (
-            <Link
-              key={title}
-              to={path}
-              onClick={onClose}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "14px",
-                padding: "14px 28px",
-                fontSize: "16px",
-                color: isActive ? "#1890ff" : "#333",
-                textDecoration: "none",
-                borderRadius: "0 24px 24px 0",
-                background: isActive ? "#e6f7ff" : "transparent",
-                fontWeight: isActive ? 600 : 400,
-                margin: "2px 0",
-                cursor: "pointer",
-                transition: "background 0.2s,color 0.2s",
-              }}
-            >
+            <Link key={title} to={path} onClick={onClose} style={commonStyle}>
               {React.cloneElement(icon, { style: { fontSize: 20 } })}
               <span>{title}</span>
             </Link>

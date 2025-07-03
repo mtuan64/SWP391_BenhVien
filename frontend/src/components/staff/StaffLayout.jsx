@@ -56,12 +56,6 @@ const StaffLayout = () => {
           <Menu.Item key="3" icon={<AppstoreOutlined />}>
             <Link to="/staff/departments">Manage Department</Link>
           </Menu.Item>
-          <Menu.Item key="4" icon={<AppstoreOutlined />}>
-            <Link to="/staff/view/medicalrecords">Manage Records</Link>
-          </Menu.Item>
-          <Menu.Item key="5" icon={<MedicineBoxOutlined />}>
-            <Link to="/staff/specialties">Manage Specialty</Link>
-          </Menu.Item>
           <Menu.Item key="6" icon={<CalendarOutlined />}>
             <Link to="/staff/appointments">Appointment Schedule</Link>
           </Menu.Item>

@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Table, Button, Container, Spinner, Modal, Form, InputGroup, FormControl, Pagination, Row, Col } from "react-bootstrap";
 import { FaEdit, FaTrash, FaSearch, FaRedo } from "react-icons/fa";
-import FooterComponent from "../../components/FooterComponent";
 import axios from "axios";
 import "../../assets/css/AppointmentScheduleManagement.css";
 
@@ -900,7 +899,6 @@ const fetchAvailableDoctors = async (date, departmentId) => {
         </Modal.Footer>
       </Modal>
 
-      <FooterComponent />
     </>
   );
 };

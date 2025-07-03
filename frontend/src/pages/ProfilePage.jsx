@@ -7,8 +7,9 @@ const ProfilePage = () => {
   const { user, login } = useAuth();
   const navigate = useNavigate();
 
-  // Initialize form data with all editable fields
   const [formData, setFormData] = useState({
+    user_code: user?.user_code || "",
+    user_name: user?.fullname || "",
     name: user?.fullname || "",
     email: user?.email || "",
     phone: user?.phone || "",
@@ -22,17 +23,17 @@ const ProfilePage = () => {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-  // Redirect to login if not authenticated
   useEffect(() => {
     if (!user) {
       navigate("/login");
     }
   }, [user, navigate]);
 
-  // Sync form data with user changes
   useEffect(() => {
     setFormData({
-      fullname: user?.fullname || "",
+      user_code: user?.user_code || "",
+      user_name: user?.fullname || "",
+      name: user?.fullname || "",
       email: user?.email || "",
       phone: user?.phone || "",
       address: user?.address || "",
@@ -42,22 +43,19 @@ const ProfilePage = () => {
     setProfilePicture(user?.profilePicture || null);
   }, [user]);
 
-  // Handle text input changes
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Handle file selection for profile picture
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
     if (selectedFile) {
       setFile(selectedFile);
-      setProfilePicture(URL.createObjectURL(selectedFile)); // Local preview
+      setProfilePicture(URL.createObjectURL(selectedFile));
     }
   };
 
-  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -65,43 +63,40 @@ const ProfilePage = () => {
     setSuccess("");
 
     try {
-      // Log the token to debug
-      console.log("Token being sent:", user?.token);
       if (!user?.token) {
         throw new Error("No token found. Please log in again.");
       }
 
-      // Update profile picture if a file is selected
       let updatedProfilePicture = profilePicture;
       if (file) {
         const formData = new FormData();
         formData.append("profilePicture", file);
 
         const response = await fetch("http://localhost:9999/api/user/upload-profile-picture", {
-          method: "POST", // Reverted to POST
+          method: "POST",
           headers: {
-            "Authorization": `Bearer ${user.token}`,
+            Authorization: `Bearer ${user.token}`,
           },
           body: formData,
         });
 
         const data = await response.json();
         if (!response.ok) {
-          console.log("Profile picture upload error:", data); // Debug log
           throw new Error(data.msg || "Failed to upload profile picture");
         }
-        updatedProfilePicture = data.profilePictureUrl; // Backend returns URL
+        updatedProfilePicture = data.profilePictureUrl;
       }
 
-      // Update user details
       const response = await fetch("http://localhost:9999/api/user/update", {
-        method: "POST", // Reverted to POST
+        method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${user.token}`,
+          Authorization: `Bearer ${user.token}`,
         },
         body: JSON.stringify({
-          name: formData.fullname,
+          user_code: formData.user_code,
+          user_name: formData.user_name,
+          name: formData.name,
           email: formData.email,
           phone: formData.phone,
           address: formData.address,
@@ -113,19 +108,22 @@ const ProfilePage = () => {
 
       const data = await response.json();
       if (response.ok) {
-        // Update localStorage and auth context
         const updatedUser = {
           ...user,
-          ...formData,
+          user_code: formData.user_code,
+          fullname: formData.name,
+          email: formData.email,
+          phone: formData.phone,
+          address: formData.address,
           dateOfBirth: formData.dateOfBirth ? new Date(formData.dateOfBirth) : null,
+          gender: formData.gender,
           profilePicture: updatedProfilePicture,
         };
         localStorage.setItem("user", JSON.stringify(updatedUser));
         login(updatedUser);
         setSuccess("Hồ sơ đã được cập nhật thành công!");
-        setFile(null); // Clear file input
+        setFile(null);
       } else {
-        console.log("User update error:", data); // Debug log
         throw new Error(data.msg || "Không thể cập nhật hồ sơ");
       }
     } catch (err) {
@@ -168,38 +166,38 @@ const ProfilePage = () => {
           <form onSubmit={handleSubmit}>
             <div className="row">
               <div className="col-md-6 mb-3">
-                <label htmlFor="username" className="form-label">
+                <label htmlFor="user_code" className="form-label">
+                  Mã Người Dùng
+                </label>
+                <input
+                  type="text"
+                  id="user_code"
+                  value={formData.user_code}
+                  className="form-control"
+                  disabled
+                />
+              </div>
+              <div className="col-md-6 mb-3">
+                <label htmlFor="user_name" className="form-label">
                   Tên Người Dùng
                 </label>
                 <input
                   type="text"
-                  id="username"
-                  value={user?.email || ""}
+                  id="user_name"
+                  value={formData.user_name}
                   className="form-control"
                   disabled
                 />
               </div>
               <div className="col-md-6 mb-3">
-                <label htmlFor="role" className="form-label">
-                  Vai Trò
-                </label>
-                <input
-                  type="text"
-                  id="role"
-                  value={user?.role || "patient"}
-                  className="form-control"
-                  disabled
-                />
-              </div>
-              <div className="col-md-6 mb-3">
-                <label htmlFor="fullname" className="form-label">
+                <label htmlFor="name" className="form-label">
                   Họ và Tên
                 </label>
                 <input
                   type="text"
-                  id="fullname"
-                  name="fullname"
-                  value={user?.name}
+                  id="name"
+                  name="name"
+                  value={formData.name}
                   onChange={handleInputChange}
                   className="form-control"
                   required

@@ -1,9 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/authContext";
-import { Badge } from "antd";
-import axios from "axios";
-import { Button, Avatar, Dropdown } from "antd";
+import { Badge, Button, Dropdown, Menu, Modal } from "antd";
 import {
   MenuOutlined,
   HomeOutlined,
@@ -19,36 +17,56 @@ import {
   LockOutlined,
   BellOutlined,
 } from "@ant-design/icons";
+import axios from "axios";
+import "../assets/css/Header.css";
 
-const Header = ({ onMenuClick }) => {
+const Header = ({ onMenuClick, menuOpen }) => {
   const { user, token, logout } = useAuth();
   const navigate = useNavigate();
   const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
-    if (!token) return;
+    console.log("Header - user:", user, "token:", token);
+    if (token) {
+      const fetchUnreadCount = async () => {
+        try {
+          const res = await axios.get("http://localhost:9999/api/user/getNoti", {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          setUnreadCount(res.data.unreadCount || 0);
+        } catch (error) {
+          console.error("Error fetching notifications:", error);
+          if (error.response?.status === 401) {
+            Modal.error({
+              title: "Session Expired",
+              content: "Your session has expired. Please log in again.",
+              onOk: () => {
+                logout();
+                navigate("/login");
+              },
+            });
+          }
+        }
+      };
 
-    const fetchUnreadCount = async () => {
-      try {
-        const res = await axios.get("http://localhost:9999/api/user/getNoti", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setUnreadCount(res.data.unreadCount);
-      } catch (error) {
-        console.error("Error fetching notifications:", error);
-      }
-    };
-
-    fetchUnreadCount();
-
-    // ✅ If you still want polling later, safely enable this:
-    // const interval = setInterval(fetchUnreadCount, 5000);
-    // return () => clearInterval(interval);
-  }, [token]);
+      fetchUnreadCount();
+      // Optional: Uncomment for polling
+      // const interval = setInterval(fetchUnreadCount, 5000);
+      // return () => clearInterval(interval);
+    }
+  }, [token, navigate, logout]);
 
   const handleLogout = () => {
-    logout();
-    navigate("/login");
+    Modal.confirm({
+      title: "Confirm Logout",
+      content: "Are you sure you want to log out?",
+      okText: "Logout",
+      cancelText: "Cancel",
+      onOk: () => {
+        logout();
+        navigate("/login");
+      },
+    });
   };
 
   const accountMenuItems = [
@@ -60,7 +78,7 @@ const Header = ({ onMenuClick }) => {
     {
       key: "changepass",
       icon: <LockOutlined />,
-      label: <Link to="/changepass">Change password</Link>,
+      label: <Link to="/changepass">Change Password</Link>,
     },
     {
       type: "divider",
@@ -87,62 +105,41 @@ const Header = ({ onMenuClick }) => {
   ];
 
   return (
-    <nav
-      className="navbar navbar-expand-lg bg-white navbar-light shadow-sm px-5 py-3 py-lg-0"
-      style={{
-        position: "fixed",
-        width: "100%",
-        top: 0,
-        left: 0,
-        zIndex: 3000,
-      }}
-    >
-      {user && (
-        <Button
-          type="text"
-          icon={<MenuOutlined style={{ fontSize: 24 }} />}
-          onClick={onMenuClick}
-          style={{
-            marginRight: 16,
-            border: "none",
-            background: "none",
-            boxShadow: "none",
-            outline: "none",
-          }}
-        />
-      )}
+    <nav className="header">
+      <div className="header-container">
+        {user && (
+          <Button
+            type="text"
+            icon={<MenuOutlined />}
+            onClick={onMenuClick}
+            className="menu-button"
+            aria-label={menuOpen ? "Close menu" : "Open menu"}
+          />
+        )}
 
-      <Link to="/" className="navbar-brand p-0 d-flex align-items-center">
-        <h1
-          className="m-0 text-primary"
-          style={{ fontWeight: 700, fontSize: 32 }}
-        >
-          <i className="fa fa-heartbeat me-2"></i>Kiwicare
-        </h1>
-      </Link>
+        <Link to="/" className="header-brand">
+          <h1 className="header-logo">Kiwicare</h1>
+        </Link>
 
-      <button
-        className="navbar-toggler"
-        type="button"
-        data-bs-toggle="collapse"
-        data-bs-target="#navbarCollapse"
-      >
-        <span className="navbar-toggler-icon"></span>
-      </button>
-
-      <div className="collapse navbar-collapse" id="navbarCollapse">
-        <div className="navbar-nav ms-auto py-0 align-items-center d-flex">
-          <Link to="/" className="nav-item nav-link">
-            <HomeOutlined style={{ marginRight: 8 }} />
-            Home
-          </Link>
-          <Link to="/about" className="nav-item nav-link">
-            <InfoCircleOutlined style={{ marginRight: 8 }} />
-            About
-          </Link>
-          <Dropdown
-            menu={{
-              items: [
+        <Menu
+          mode="horizontal"
+          className="header-menu"
+          items={[
+            {
+              key: "home",
+              icon: <HomeOutlined style={{ fontSize: 18 }} />,
+              label: <Link to="/">Home</Link>,
+            },
+            {
+              key: "about",
+              icon: <InfoCircleOutlined style={{ fontSize: 18 }} />,
+              label: <Link to="/about">About</Link>,
+            },
+            {
+              key: "posts",
+              icon: <BookOutlined style={{ fontSize: 18 }} />,
+              label: "Post",
+              children: [
                 {
                   key: "blogs",
                   label: <Link to="/blogs">Blogs</Link>,
@@ -152,102 +149,55 @@ const Header = ({ onMenuClick }) => {
                   label: <Link to="/news">News</Link>,
                 },
               ],
-            }}
-            trigger={["click"]}
-          >
-            <div
-              className="nav-item nav-link d-flex align-items-center"
-              style={{ cursor: "pointer" }}
-            >
-              <BookOutlined style={{ marginRight: 8 }} />
-              Post
-            </div>
-          </Dropdown>
+            },
+            {
+              key: "services",
+              icon: <MedicineBoxOutlined style={{ fontSize: 18 }} />,
+              label: <Link to="/services">Services</Link>,
+            },
+            {
+              key: "doctors",
+              icon: <TeamOutlined style={{ fontSize: 18 }} />,
+              label: <Link to="/doctors">Doctors</Link>,
+            },
+          ]}
+        />
 
-          <Link to="/services" className="nav-item nav-link">
-            <MedicineBoxOutlined style={{ marginRight: 8 }} />
-            Services
-          </Link>
-          <Link to="/doctors" className="nav-item nav-link">
-            <TeamOutlined style={{ marginRight: 8 }} />
-            Doctors
-          </Link>
-
-          <Link to="/health/calculator" className="nav-item nav-link">
-            BMI
-          </Link>
+        <div className="header-actions">
           {user ? (
             <>
               <Badge count={unreadCount} size="small">
                 <BellOutlined
+                  style={{ fontSize: 20 }}
                   onClick={() => navigate("/notifications")}
-                  style={{
-                    fontSize: 22,
-                    cursor: "pointer",
-                    marginLeft: 24,
-                    color: "#333",
-                  }}
+                  className="notification-icon"
+                  aria-label="Notifications"
                 />
               </Badge>
-
-              <div className="nav-item dropdown">
-                <button
-                  className="nav-link dropdown-toggle btn btn-link"
-                  type="button"
-                  data-bs-toggle="dropdown"
-                  aria-expanded="false"
-                >
-                  Account
-                </button>
-                <ul className="dropdown-menu dropdown-menu-end">
-                  <li>
-                    <Link to="/myprofile" className="dropdown-item">
-                      Profile
-                    </Link>
-                  </li>
-                  <li>
-                    <Link to="/profilemanage" className="dropdown-item">
-                      Profile Manage
-                    </Link>
-                  </li>
-                  <li>
-                    <Link to="/appointmentmanage" className="dropdown-item">
-                      Appointment Manage
-                    </Link>
-                  </li>
-                  <li>
-                    <Link to="/changepass" className="dropdown-item">
-                      Change password
-                    </Link>
-                  </li>
-                  <li>
-                    <hr className="dropdown-divider" />
-                  </li>
-                  <li>
-                    <button className="dropdown-item" onClick={handleLogout}>
-                      Log out
-                    </button>
-                  </li>
-                </ul>
-              </div>
+              <Dropdown menu={{ items: accountMenuItems }} trigger={["click"]}>
+                <Button type="text" className="account-button">
+                  <UserOutlined style={{ fontSize: 18 }} /> Account
+                </Button>
+              </Dropdown>
+              <Button
+                type="primary"
+                icon={<CalendarOutlined style={{ fontSize: 18 }} />}
+                onClick={() => navigate("/appointment")}
+                className="appointment-button"
+              >
+                Appointment
+              </Button>
             </>
           ) : (
-            <Dropdown menu={{ items: guestMenuItems }} trigger={["click"]}>
-              <div
-                className="nav-item nav-link d-flex align-items-center"
-                style={{ cursor: "pointer" }}
-              >
-                <UserOutlined style={{ marginRight: 8 }} />
-                Account
-              </div>
-            </Dropdown>
+            <>
+              <Dropdown menu={{ items: guestMenuItems }} trigger={["click"]}>
+                <Button type="text" className="account-button">
+                  <UserOutlined style={{ fontSize: 18 }} /> Account
+                </Button>
+              </Dropdown>
+            </>
           )}
         </div>
-
-        <Link to="/appointment" className="btn btn-primary py-2 px-4 ms-3">
-          <CalendarOutlined style={{ marginRight: 8 }} />
-          Appointment
-        </Link>
       </div>
     </nav>
   );

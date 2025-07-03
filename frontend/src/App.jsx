@@ -62,7 +62,7 @@ import {
 } from "./components/PrivateRoute";
 import "antd/dist/reset.css";
 import AddMedicalRecord from "./components/AddMedicalRecord";
-import ViewMedicalRecords from "./components/ViewMedicalRecord";
+// import ViewMedicalRecords from "./components/ViewMedicalRecord";
 import CreateServicePage from "./components/staff/CreateServicePage";
 import EditServicePage from "./components/staff/EditService";
 import HealthCalculatorPage from "./pages/HealthCalculatorPage";
@@ -201,11 +201,11 @@ const App = () => {
             <Route path="invoices" element={<InvoiceList />} />
             <Route path="payments" element={<PaymentView />} />
             <Route path="news" element={<NewsManagement />} />
-            <Route path="add/medicalrecords" element={<AddMedicalRecord />} />
+            {/* <Route path="add/medicalrecords" element={<AddMedicalRecord />} />
             <Route
               path="view/medicalrecords"
               element={<ViewMedicalRecords />}
-            />
+            /> */}
 
             <Route path="feedback" element={<FeedbackManagement />} />
             <Route path="qna" element={<QnAView />} />
@@ -223,7 +223,7 @@ const App = () => {
           {/* Public routes */}
           <Route path="/home" element={<HomePage />} />
           <Route path="/service" element={<ServicePage />} />
-          <Route path="/doctor-home" element={<DoctorPage />} />
+          <Route path="/doctors" element={<DoctorPage />} />
 
           <Route path="/blogs" element={<BlogListPage />} />
           <Route path="/news" element={<NewsListPage />} />
