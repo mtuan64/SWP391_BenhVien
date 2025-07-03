@@ -1,5 +1,8 @@
-const express = require('express');
+const { authMiddleware } = require("../../middleware/auth.middleware");
+const express = require("express");
+const verifyToken = require("../../middleware/verifyToken");
 const userRouter = express.Router();
+<<<<<<< HEAD
 const User = require('../../models/User'); // đường dẫn đúng đến file User.js
 const { verifyToken } = require('../../middleware/tokencheck');
 const Employee = require('../../models/Employee');
@@ -53,11 +56,50 @@ userRouter.put('/update', async (req, res) => {
     return res.status(500).json({ message: 'Server error' });
   }
 });
+=======
+const {
+  createPaymentLinkEmbedded,
+} = require("../../controller/staff/PaymentController");
+const {
+  getAllInvoices4User,
+  CompletedInvoices,
+} = require("../../controller/staff/InvoiceController");
+const {
+  createAppointment,
+  getAppointmentsByUser,
+  cancelAppointment,
+} = require("../../controller/user/userService");
+>>>>>>> origin/test
 
+userRouter.get(
+  "/getNoti",
+  authMiddleware,
+  require("../../controller/staff/notificationService").getUserNotifications
+);
+userRouter.put(
+  "/markRead/:id",
+  authMiddleware,
+  require("../../controller/staff/notificationService").markAsRead
+);
 
+userRouter.get("/invoices", verifyToken, getAllInvoices4User);
+userRouter.post("/create-link", createPaymentLinkEmbedded);
+userRouter.put("/pay/success", CompletedInvoices);
 
+<<<<<<< HEAD
 userRouter.get('/profile/my-records', verifyToken, getMyProfiles);
 userRouter.post('/qa', sendQA);
 userRouter.get('/qahistory', getAllQAUser);
 
 module.exports = userRouter;
+=======
+userRouter.get("/", (req, res) => {
+  res.send("User route is working!");
+});
+
+userRouter.post("/create", authMiddleware, createAppointment);
+userRouter.get("/user", authMiddleware, getAppointmentsByUser);
+userRouter.post("/cancel/:id", authMiddleware, cancelAppointment);
+
+module.exports = userRouter;
+>>>>>>> origin/test

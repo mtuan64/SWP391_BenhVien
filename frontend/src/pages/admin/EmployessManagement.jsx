@@ -24,6 +24,7 @@ function EmployeeManagement() {
   const [employees, setEmployees] = useState([]);
   const [searchText, setSearchText] = useState("");
   const [statusFilter, setStatusFilter] = useState(null);
+  const [roleFilter, setRoleFilter] = useState(null);
   const [dateRange, setDateRange] = useState(null);
   const [editingEmployee, setEditingEmployee] = useState(null);
   const [viewingEmployee, setViewingEmployee] = useState(null);
@@ -89,26 +90,38 @@ function EmployeeManagement() {
   const filteredEmployees = employees.filter((emp) => {
     const matchName = emp.name.toLowerCase().includes(searchText.toLowerCase());
     const matchStatus = statusFilter ? emp.status === statusFilter : true;
+    const matchRole = roleFilter ? emp.role === roleFilter : true;
     const matchDate = dateRange
-      ? new Date(emp.createdAt) >= dateRange[0] && new Date(emp.createdAt) <= dateRange[1]
+      ? new Date(emp.createdAt) >= dateRange[0] &&
+        new Date(emp.createdAt) <= dateRange[1]
       : true;
-    return matchName && matchStatus && matchDate;
+    return matchName && matchStatus && matchRole && matchDate;
   });
 
   return (
-    
     <div>
-      <h1>
-        Employee Management
-      </h1>
+      <h1>Employee Management</h1>
       {/* Filters */}
-      <div style={{ marginBottom: 16, display: "flex", gap: 8, flexWrap: "wrap"}}>
+      <div
+        style={{ marginBottom: 16, display: "flex", gap: 8, flexWrap: "wrap" }}
+      >
         <Input
           placeholder="Search by name"
           value={searchText}
           onChange={(e) => setSearchText(e.target.value)}
           style={{ width: 200 }}
         />
+        <Select
+          placeholder="Filter by role"
+          onChange={(value) => setRoleFilter(value)}
+          allowClear
+          style={{ width: 150 }}
+        >
+          <Option value="Admin">Admin</Option>
+          <Option value="Staff">Staff</Option>
+          <Option value="Doctor">Doctor</Option>
+        </Select>
+
         <Select
           placeholder="Filter by status"
           onChange={(value) => setStatusFilter(value)}
@@ -118,12 +131,17 @@ function EmployeeManagement() {
           <Option value="active">Active</Option>
           <Option value="inactive">Inactive</Option>
         </Select>
-        <RangePicker onChange={(dates) => setDateRange(dates)} allowClear format="YYYY-MM-DD" />
+        <RangePicker
+          onChange={(dates) => setDateRange(dates)}
+          allowClear
+          format="YYYY-MM-DD"
+        />
         <Button
           onClick={() => {
             setSearchText("");
             setStatusFilter(null);
             setDateRange(null);
+            setRoleFilter(null);
           }}
         >
           Reset
@@ -186,15 +204,33 @@ function EmployeeManagement() {
       >
         {viewingEmployee && (
           <Descriptions column={1} bordered>
-            <Descriptions.Item label="Name">{viewingEmployee.name}</Descriptions.Item>
-            <Descriptions.Item label="Email">{viewingEmployee.email}</Descriptions.Item>
-            <Descriptions.Item label="Role">{viewingEmployee.role}</Descriptions.Item>
-            <Descriptions.Item label="Status">{viewingEmployee.status}</Descriptions.Item>
-            <Descriptions.Item label="Department">{viewingEmployee.department || "—"}</Descriptions.Item>
-            <Descriptions.Item label="Specialization">{viewingEmployee.specialization || "—"}</Descriptions.Item>
-            <Descriptions.Item label="Services">{viewingEmployee.services || "—"}</Descriptions.Item>
-            <Descriptions.Item label="Schedule">{viewingEmployee.schedule || "—"}</Descriptions.Item>
-            <Descriptions.Item label="Phone">{viewingEmployee.phone || "—"}</Descriptions.Item>
+            <Descriptions.Item label="Name">
+              {viewingEmployee.name}
+            </Descriptions.Item>
+            <Descriptions.Item label="Email">
+              {viewingEmployee.email}
+            </Descriptions.Item>
+            <Descriptions.Item label="Role">
+              {viewingEmployee.role}
+            </Descriptions.Item>
+            <Descriptions.Item label="Status">
+              {viewingEmployee.status}
+            </Descriptions.Item>
+            <Descriptions.Item label="Department">
+              {viewingEmployee.department || "—"}
+            </Descriptions.Item>
+            <Descriptions.Item label="Specialization">
+              {viewingEmployee.specialization || "—"}
+            </Descriptions.Item>
+            <Descriptions.Item label="Services">
+              {viewingEmployee.services || "—"}
+            </Descriptions.Item>
+            <Descriptions.Item label="Schedule">
+              {viewingEmployee.schedule || "—"}
+            </Descriptions.Item>
+            <Descriptions.Item label="Phone">
+              {viewingEmployee.phone || "—"}
+            </Descriptions.Item>
             <Descriptions.Item label="Created At">
               {moment(viewingEmployee.createdAt).format("YYYY-MM-DD HH:mm")}
             </Descriptions.Item>
@@ -215,7 +251,11 @@ function EmployeeManagement() {
           <Form.Item label="Name" name="name" rules={[{ required: true }]}>
             <Input />
           </Form.Item>
-          <Form.Item label="Email" name="email" rules={[{ required: true, type: "email" }]}>
+          <Form.Item
+            label="Email"
+            name="email"
+            rules={[{ required: true, type: "email" }]}
+          >
             <Input />
           </Form.Item>
           <Form.Item label="Role" name="role" rules={[{ required: true }]}>
@@ -256,10 +296,18 @@ function EmployeeManagement() {
           <Form.Item label="Name" name="name" rules={[{ required: true }]}>
             <Input />
           </Form.Item>
-          <Form.Item label="Email" name="email" rules={[{ required: true, type: "email" }]}>
+          <Form.Item
+            label="Email"
+            name="email"
+            rules={[{ required: true, type: "email" }]}
+          >
             <Input />
           </Form.Item>
-          <Form.Item label="Password" name="password" rules={[{ required: true }]}>
+          <Form.Item
+            label="Password"
+            name="password"
+            rules={[{ required: true }]}
+          >
             <Input.Password />
           </Form.Item>
           <Form.Item label="Role" name="role" rules={[{ required: true }]}>

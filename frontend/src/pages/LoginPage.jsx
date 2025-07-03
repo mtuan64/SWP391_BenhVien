@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/authContext";
 import "../assets/css/Login.css";
+import { Modal } from "antd";
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");
@@ -29,13 +30,23 @@ const LoginPage = () => {
         localStorage.setItem("token", data.token);
 
         // Update auth context
-        login(data.user);
+        login(data.user, data.token);
 
         // Slight delay to ensure context update propagates
         setTimeout(() => navigate("/"), 0);
       } else {
-        console.error("Login failed:", data.msg);
-        alert(data.msg);
+        if (response.status === 403) {
+          Modal.warning({
+            title: "Tài khoản bị khóa",
+            content:
+              "Tài khoản của bạn đã bị vô hiệu hóa. Vui lòng liên hệ quản trị viên để được hỗ trợ. Gửi email tới: abc@gmail.com",
+          });
+        } else {
+          Modal.error({
+            title: "Đăng nhập thất bại",
+            content: data.message || "Có lỗi xảy ra. Vui lòng thử lại.",
+          });
+        }
       }
     } catch (error) {
       console.error("Login error:", error);

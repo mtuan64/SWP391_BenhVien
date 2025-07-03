@@ -1,357 +1,436 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
-  Button,
-  TextField,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  DialogContentText,
-} from "@mui/material";
-import "../assets/css/BlogListPage.css";
-import { useNavigate } from "react-router-dom";
-import EditIcon from "@mui/icons-material/Edit";
-import DeleteIcon from "@mui/icons-material/Delete";
-import AddIcon from "@mui/icons-material/Add";
+import { Link } from "react-router-dom";
+import "../../src/assets/css/BlogListPage.css";
 
 const BlogListPage = () => {
   const [blogs, setBlogs] = useState([]);
-  const [editingBlog, setEditingBlog] = useState(null);
-  const [newBlog, setNewBlog] = useState({
-    title: "",
-    content: "",
-    image: "",
-  });
-  const [openEdit, setOpenEdit] = useState(false);
-  const [openAdd, setOpenAdd] = useState(false);
-  const [openDeleteConfirm, setOpenDeleteConfirm] = useState(false);
-  const [imageFile, setImageFile] = useState(null);
-  const [blogToDelete, setBlogToDelete] = useState(null);
-  const navigate = useNavigate();
+  const [topViewedBlogs, setTopViewedBlogs] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [blogsPerPage] = useState(6);
+  const [currentLatestIndex, setCurrentLatestIndex] = useState(0);
+
+  const carouselIntervalRef = useRef(null);
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    const user = JSON.parse(localStorage.getItem("user"));
+    const fetchData = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const headers = token ? { Authorization: `Bearer ${token}` } : {};
 
-    if (!token || !user || user.role !== "admin") {
-      navigate("/");
-      return;
-    }
+        const [blogsResponse, categoriesResponse, topViewedResponse] =
+          await Promise.all([
+            axios.get("http://localhost:9999/api/staff/blogs", { headers }),
+            axios.get("http://localhost:9999/api/staff/categories", { headers }),
+            axios.get("http://localhost:9999/api/staff/blogs/top-viewed", {
+              headers,
+            }),
+          ]);
 
-    fetchBlogs();
-  }, [navigate]);
-
-  const fetchBlogs = async () => {
-    try {
-      const response = await axios.get("http://localhost:9999/api/blogs", {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      });
-      setBlogs(response.data);
-    } catch (error) {
-      console.error("Error fetching blogs:", error);
-    }
-  };
-
-  const handleUpdateBlog = async () => {
-    try {
-      let updatedBlog = { ...editingBlog };
-      if (imageFile) {
-        const formData = new FormData();
-        formData.append("image", imageFile);
-        const uploadResponse = await axios.post(
-          "http://localhost:9999/api/blogs/upload",
-          formData,
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-          }
+        const transformedBlogs = blogsResponse.data.map((blog) => ({
+          ...blog,
+          content: Array.isArray(blog.content)
+            ? blog.content
+            : [
+                {
+                  type: "paragraph",
+                  text: blog.content || "No content available",
+                },
+              ],
+        }));
+        const sortedBlogs = transformedBlogs.sort(
+          (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
         );
-        updatedBlog.image = uploadResponse.data.url;
-      }
-      const response = await axios.put(
-        `http://localhost:9999/api/blogs/${editingBlog._id}`,
-        {
-          title: updatedBlog.title,
-          content: updatedBlog.content,
-          image: updatedBlog.image,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        }
-      );
-      setBlogs(
-        blogs.map((blog) =>
-          blog._id === editingBlog._id ? response.data : blog
-        )
-      );
-      setEditingBlog(null);
-      setOpenEdit(false);
-      setImageFile(null);
-    } catch (error) {
-      console.error("Error updating blog:", error);
-    }
-  };
-
-  const handleDeleteBlog = async () => {
-    try {
-      await axios.delete(
-        `http://localhost:9999/api/blogs/${blogToDelete._id}`,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        }
-      );
-      setBlogs(blogs.filter((blog) => blog._id !== blogToDelete._id));
-      setOpenDeleteConfirm(false);
-      setBlogToDelete(null);
-    } catch (error) {
-      console.error("Error deleting blog:", error);
-    }
-  };
-
-  const handleAddBlog = async () => {
-    try {
-      let blogToAdd = { ...newBlog };
-      if (imageFile) {
-        const formData = new FormData();
-        formData.append("image", imageFile);
-        const uploadResponse = await axios.post(
-          "http://localhost:9999/api/blogs/upload",
-          formData,
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-          }
+        setBlogs(sortedBlogs);
+        setCategories(categoriesResponse.data);
+        setTopViewedBlogs(topViewedResponse.data);
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+        setLoading(false);
+        alert(
+          "Failed to load blogs, categories, or top viewed posts. Please try again later."
         );
-        blogToAdd.image = uploadResponse.data.url;
       }
-      const response = await axios.post(
-        "http://localhost:9999/api/blogs",
-        {
-          title: blogToAdd.title,
-          content: blogToAdd.content,
-          image: blogToAdd.image,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        }
-      );
-      setBlogs([...blogs, response.data]);
-      setNewBlog({ title: "", content: "", image: "" });
-      setImageFile(null);
-      setOpenAdd(false);
-    } catch (error) {
-      console.error("Error adding blog:", error);
-    }
-  };
+    };
+    fetchData();
+  }, []);
 
-  const handleOpenEdit = (blog) => {
-    setEditingBlog({
-      _id: blog._id,
-      title: blog.title,
-      content: blog.content,
-      image: blog.image,
+  useEffect(() => {
+    if (currentPage !== 1) return;
+
+    const startCarousel = () => {
+      carouselIntervalRef.current = setInterval(() => {
+        setCurrentLatestIndex((prevIndex) => {
+          const latestBlogsLength = Math.min(blogs.length, 3);
+          return (prevIndex + 1) % latestBlogsLength;
+        });
+      }, 5000);
+    };
+
+    startCarousel();
+
+    return () => {
+      if (carouselIntervalRef.current) {
+        clearInterval(carouselIntervalRef.current);
+      }
+    };
+  }, [currentPage, blogs]);
+
+  const handlePrev = () => {
+    if (carouselIntervalRef.current) {
+      clearInterval(carouselIntervalRef.current);
+    }
+    setCurrentLatestIndex((prevIndex) => {
+      const latestBlogsLength = Math.min(blogs.length, 3);
+      return (prevIndex - 1 + latestBlogsLength) % latestBlogsLength;
     });
-    setOpenEdit(true);
+    setTimeout(() => {
+      carouselIntervalRef.current = setInterval(() => {
+        setCurrentLatestIndex((prevIndex) => {
+          const latestBlogsLength = Math.min(blogs.length, 3);
+          return (prevIndex + 1) % latestBlogsLength;
+        });
+      }, 5000);
+    }, 10000);
   };
 
-  const handleCloseEdit = () => {
-    setOpenEdit(false);
-    setEditingBlog(null);
-    setImageFile(null);
+  const handleNext = () => {
+    if (carouselIntervalRef.current) {
+      clearInterval(carouselIntervalRef.current);
+    }
+    setCurrentLatestIndex((prevIndex) => {
+      const latestBlogsLength = Math.min(blogs.length, 3);
+      return (prevIndex + 1) % latestBlogsLength;
+    });
+    setTimeout(() => {
+      carouselIntervalRef.current = setInterval(() => {
+        setCurrentLatestIndex((prevIndex) => {
+          const latestBlogsLength = Math.min(blogs.length, 3);
+          return (prevIndex + 1) % latestBlogsLength;
+        });
+      }, 5000);
+    }, 10000);
   };
 
-  const handleOpenAdd = () => {
-    setOpenAdd(true);
+  if (loading) {
+    return (
+      <div className="blogpage-loading">
+        <div className="blogpage-spinner"></div>
+        <p>Loading...</p>
+      </div>
+    );
+  }
+
+  const latestBlogs = blogs.slice(0, 3);
+  const filteredListBlogs = selectedCategory
+    ? blogs.filter((blog) => {
+        const categoryId = blog.categoryId?._id || blog.categoryId;
+        return categoryId && categoryId === selectedCategory;
+      })
+    : blogs;
+
+  const indexOfLastBlog = currentPage * blogsPerPage;
+  const indexOfFirstBlog = indexOfLastBlog - blogsPerPage;
+  const currentListBlogs = filteredListBlogs.slice(
+    indexOfFirstBlog,
+    indexOfLastBlog
+  );
+  const totalPages = Math.ceil(filteredListBlogs.length / blogsPerPage);
+
+  const paginate = (pageNumber) => {
+    setCurrentPage(pageNumber);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const handleCloseAdd = () => {
-    setOpenAdd(false);
-    setNewBlog({ title: "", content: "", image: "" });
-    setImageFile(null);
+  const handleCategorySelect = (categoryId) => {
+    setSelectedCategory(categoryId);
+    setCurrentPage(1);
   };
 
-  const handleOpenDeleteConfirm = (blog) => {
-    setBlogToDelete(blog);
-    setOpenDeleteConfirm(true);
+  const truncateText = (text, maxLength) => {
+    if (!text || text.length <= maxLength) return text || "";
+    return text.substring(0, maxLength - 3) + "...";
   };
 
-  const handleCloseDeleteConfirm = () => {
-    setOpenDeleteConfirm(false);
-    setBlogToDelete(null);
+  const getContentSummary = (content) => {
+    if (!Array.isArray(content) || content.length === 0)
+      return "No content available";
+    const firstItem = content[0];
+    return truncateText(firstItem.text, 50);
+  };
+
+  const getCategoryColor = (categoryName) => {
+    const colors = {
+      Productivity: "#ffcccc",
+      Development: "#e6ccff",
+      "UI/UX": "#cce0ff",
+      Tutorials: "#ccffcc",
+    };
+    return colors[categoryName] || "#e0e0e0";
+  };
+
+  const getCategoryName = (categoryId) => {
+    if (!categoryId) return "Uncategorized";
+    const category = categories.find(
+      (cat) => cat._id === (categoryId._id || categoryId)
+    );
+    return category?.name || "Uncategorized";
   };
 
   return (
-    <div className="blog-list-page">
-      <h1>Blog List</h1>
-      <Button
-        variant="contained"
-        color="primary"
-        startIcon={<AddIcon />}
-        onClick={handleOpenAdd}
-      >
-        Add Blog
-      </Button>
-      <TableContainer component={Paper}>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>Title</TableCell>
-              <TableCell>Content</TableCell>
-              <TableCell>Image</TableCell>
-              <TableCell>Actions</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {blogs.map((blog) => (
-              <TableRow key={blog._id}>
-                <TableCell>{blog.title}</TableCell>
-                <TableCell>{blog.content}</TableCell>
-                <TableCell>
-                  {blog.image && (
+    <div>
+      <div>
+      {/* Hero Carousel */}
+      <div id="heroCarousel" className="carousel slide carousel-fade" data-bs-ride="carousel">
+        <div className="carousel-inner">
+          <div className="carousel-item active">
+            <img
+              src="https://img4.thuthuatphanmem.vn/uploads/2020/07/05/background-y-te_034617740.jpg"
+              className="d-block w-100"
+              alt="KiwiCare Doctors Banner"
+              style={{ objectFit: 'cover', height: '80vh' }}
+            />
+            <div
+              className="carousel-caption d-flex flex-column justify-content-center align-items-center"
+              style={{
+                backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                top: 0,
+                bottom: 0,
+                left: 0,
+                right: 0,
+                position: 'absolute'
+              }}
+            >
+              <div className="text-center text-white">
+                <h1 className="display-3 fw-bold">Blogs</h1>
+                <p className="lead mt-3">Bài viết, thông tin về sức khỏe, y tế, cộng đồng</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      </div>
+      <div className="blogpage-page">
+        <div className="blogpage-layout">
+          <aside className="blogpage-sidebar">
+            <h3 className="blogpage-sidebar-title">Bài viết nhiều lượt truy cập nhất</h3>
+            <div className="blogpage-featured-posts">
+              {topViewedBlogs.slice(0, 5).map((blog) => (
+                <div key={blog._id} className="blogpage-featured-post-card">
+                  <Link to={`/blog/${blog.slug}`}>
                     <img
-                      src={blog.image}
+                      src={blog.image || "https://via.placeholder.com/100x100"}
                       alt={blog.title}
-                      style={{ width: "50px" }}
+                      className="blogpage-featured-post-image"
+                      onError={(e) =>
+                        (e.target.src = "https://via.placeholder.com/100x100")
+                      }
                     />
+                  </Link>
+                  <div className="blogpage-featured-post-content">
+                    <Link
+                      to={`/blog/${blog.slug}`}
+                      className="blogpage-featured-post-title-link"
+                    >
+                      <h4 className="blogpage-featured-post-title">
+                        {truncateText(blog.title, 20)}
+                      </h4>
+                    </Link>
+                    <p className="blogpage-featured-post-excerpt">
+                      {getContentSummary(blog.content)}
+                    </p>
+                    <Link
+                      to={`/blog/${blog.slug}`}
+                      className="blogpage-read-more"
+                    >
+                      Chi tiết
+                    </Link>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </aside>
+
+          <div className="blogpage-content-main">
+            {currentPage === 1 && latestBlogs.length > 0 && (
+              <section className="blogpage-latest-blog">
+                <h2 className="blogpage-section-title">Bài viết mới nhất</h2>
+                <div className="blogpage-latest-blog-carousel">
+                  <button
+                    className="blogpage-carousel-btn prev"
+                    onClick={handlePrev}
+                    aria-label="Previous blog"
+                    disabled={latestBlogs.length <= 1}
+                  >
+                    &lt;
+                  </button>
+                  <div
+                    className="blogpage-latest-blog-wrapper"
+                    style={{
+                      transform: `translateX(-${currentLatestIndex * 100}%)`,
+                    }}
+                  >
+                    {latestBlogs.map((blog) => (
+                      <div key={blog._id} className="blogpage-latest-blog-card">
+                        <div className="blogpage-blog-image">
+                          <Link to={`/blog/${blog.slug}`}>
+                            <img
+                              src={
+                                blog.image ||
+                                "https://via.placeholder.com/1200x400"
+                              }
+                              alt={blog.title}
+                              className="blogpage-latest-blog-image"
+                              onError={(e) =>
+                                (e.target.src =
+                                  "https://via.placeholder.com/1200x400")
+                              }
+                            />
+                          </Link>
+                        </div>
+                        <div className="blogpage-blog-content">
+                          <span className="blogpage-blog-category">
+                            {getCategoryName(blog.categoryId)}
+                          </span>
+                          <Link
+                            to={`/blog/${blog.slug}`}
+                            className="blogpage-blog-title-link"
+                          >
+                            <h3 className="blogpage-blog-title">
+                              {truncateText(blog.title, 60)}
+                            </h3>
+                          </Link>
+                          <p className="blogpage-blog-excerpt">
+                            {getContentSummary(blog.content)}
+                          </p>
+                          <Link
+                            to={`/blog/${blog.slug}`}
+                            className="blogpage-read-more"
+                          >
+                            Chi tiết
+                          </Link>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <button
+                    className="blogpage-carousel-btn next"
+                    onClick={handleNext}
+                    aria-label="Next blog"
+                    disabled={latestBlogs.length <= 1}
+                  >
+                    &gt;
+                  </button>
+                </div>
+              </section>
+            )}
+
+            <section className="blogpage-list-blogs">
+              <h2 className="blogpage-section-title">Tất cả các Bài viết</h2>
+              <div className="blogpage-category-filter">
+                <button
+                  className={`blogpage-category-btn ${
+                    selectedCategory === null ? "active" : ""
+                  }`}
+                  onClick={() => handleCategorySelect(null)}
+                >
+                  All Posts
+                </button>
+                {categories.map((category) => (
+                  <button
+                    key={category._id}
+                    className={`blogpage-category-btn ${
+                      selectedCategory === category._id ? "active" : ""
+                    }`}
+                    style={{ backgroundColor: getCategoryColor(category.name) }}
+                    onClick={() => handleCategorySelect(category._id)}
+                  >
+                    {category.name}
+                  </button>
+                ))}
+              </div>
+              <div className="blogpage-list-grid">
+                {currentListBlogs.map((blog) => (
+                  <div key={blog._id} className="blogpage-item">
+                    <div className="blogpage-blog-image">
+                      <Link to={`/blog/${blog.slug}`}>
+                        <img
+                          src={
+                            blog.image || "https://via.placeholder.com/260x160"
+                          }
+                          alt={blog.title}
+                          className="blogpage-list-blog-image"
+                          onError={(e) =>
+                            (e.target.src =
+                              "https://via.placeholder.com/260x160")
+                          }
+                        />
+                      </Link>
+                    </div>
+                    <div className="blogpage-blog-content">
+                      <Link
+                        to={`/blog/${blog.slug}`}
+                        className="blogpage-blog-title-link"
+                      >
+                        <h4 className="blogpage-blog-title">
+                          {truncateText(blog.title, 50)}
+                        </h4>
+                      </Link>
+                      <p className="blogpage-blog-excerpt">
+                        {getContentSummary(blog.content)}
+                      </p>
+                      <Link
+                        to={`/blog/${blog.slug}`}
+                        className="btn blogpage-read-more"
+                      >
+                        Chi tiết
+                      </Link>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              {totalPages > 1 && (
+                <div className="blogpage-pagination">
+                  <button
+                    onClick={() => paginate(currentPage - 1)}
+                    disabled={currentPage === 1}
+                    className="blogpage-pagination-btn"
+                    aria-label="Previous page"
+                  >
+                    &lt;
+                  </button>
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                    (number) => (
+                      <button
+                        key={number}
+                        onClick={() => paginate(number)}
+                        className={`blogpage-pagination-btn ${
+                          currentPage === number ? "active" : ""
+                        }`}
+                        aria-label={`Page ${number}`}
+                      >
+                        {number}
+                      </button>
+                    )
                   )}
-                </TableCell>
-                <TableCell>
-                  <Button
-                    color="primary"
-                    onClick={() => handleOpenEdit(blog)}
-                    startIcon={<EditIcon />}
-                  />
-                  <Button
-                    color="secondary"
-                    onClick={() => handleOpenDeleteConfirm(blog)}
-                    startIcon={<DeleteIcon />}
-                  />
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
-
-      {/* Edit Dialog */}
-      <Dialog open={openEdit} onClose={handleCloseEdit}>
-        <DialogTitle>Edit Blog</DialogTitle>
-        <DialogContent>
-          <TextField
-            autoFocus
-            margin="dense"
-            label="Title"
-            type="text"
-            fullWidth
-            value={editingBlog?.title || ""}
-            onChange={(e) =>
-              setEditingBlog({ ...editingBlog, title: e.target.value })
-            }
-          />
-          <TextField
-            margin="dense"
-            label="Content"
-            type="text"
-            fullWidth
-            multiline
-            rows={4}
-            value={editingBlog?.content || ""}
-            onChange={(e) =>
-              setEditingBlog({ ...editingBlog, content: e.target.value })
-            }
-          />
-          <input
-            type="file"
-            accept="image/*"
-            onChange={(e) => setImageFile(e.target.files[0])}
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseEdit} color="primary">
-            Cancel
-          </Button>
-          <Button onClick={handleUpdateBlog} color="primary">
-            Update
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* Add Dialog */}
-      <Dialog open={openAdd} onClose={handleCloseAdd}>
-        <DialogTitle>Add Blog</DialogTitle>
-        <DialogContent>
-          <TextField
-            autoFocus
-            margin="dense"
-            label="Title"
-            type="text"
-            fullWidth
-            value={newBlog.title}
-            onChange={(e) => setNewBlog({ ...newBlog, title: e.target.value })}
-          />
-          <TextField
-            margin="dense"
-            label="Content"
-            type="text"
-            fullWidth
-            multiline
-            rows={4}
-            value={newBlog.content}
-            onChange={(e) =>
-              setNewBlog({ ...newBlog, content: e.target.value })
-            }
-          />
-          <input
-            type="file"
-            accept="image/*"
-            onChange={(e) => setImageFile(e.target.files[0])}
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseAdd} color="primary">
-            Cancel
-          </Button>
-          <Button onClick={handleAddBlog} color="primary">
-            Add
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* Delete Confirm Dialog */}
-      <Dialog open={openDeleteConfirm} onClose={handleCloseDeleteConfirm}>
-        <DialogTitle>Delete Blog</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            Are you sure you want to delete this blog?
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseDeleteConfirm} color="primary">
-            Cancel
-          </Button>
-          <Button onClick={handleDeleteBlog} color="secondary">
-            Delete
-          </Button>
-        </DialogActions>
-      </Dialog>
+                  <button
+                    onClick={() => paginate(currentPage + 1)}
+                    disabled={currentPage === totalPages}
+                    className="blogpage-pagination-btn"
+                    aria-label="Next page"
+                  >
+                    &gt;
+                  </button>
+                </div>
+              )}
+            </section>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
