@@ -17,7 +17,7 @@ const DoctorDetail = () => {
   useEffect(() => {
     const fetchDoctor = async () => {
       try {
-        const res = await axios.get(`/api/user/doctr/${doctorId}`);
+        const res = await axios.get(`/api/user/doctor/${doctorId}`);
         console.log("API Response:", res.data);
         if (res.data.doctor) {
           setDoctor(res.data.doctor);
