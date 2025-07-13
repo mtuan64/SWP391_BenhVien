@@ -98,6 +98,7 @@ const Header = ({ onMenuClick, menuOpen }) => {
         <Link to="/services" className="header-link"><MedicineBoxOutlined /> Services</Link>
         <Link to="/doctors" className="header-link"><TeamOutlined /> Doctors</Link>
         <Link to="/qa" className="header-link">Q/A</Link>
+        <Link to="/faq" className="header-link">FAQ</Link>
         <Link to="/health/calculator" className="header-link">BMI</Link>
 
         {user ? (

@@ -78,6 +78,8 @@ import NotFoundPage from "./pages/NotFoundPage";
 import QAHistories from "./pages/QAHistories";
 import ProfileStaff from "./pages/staff/ProfileStaff";
 import ProfileDoctor from "./pages/ProfileDoctor";
+// them FAQ
+import FAQList from "./pages/FAQ.jsx";
 
 const DRAWER_WIDTH = 240;
 
@@ -279,6 +281,7 @@ const AppRoutes = () => {
 
           <Route path="/qahistory" element={<QAHistories />} />
           <Route path="/qa" element={<SendQAForm />} />
+          <Route path="/faq" element={<FAQList />} /> {/*them FAQ cho user xem*/}
 
           {/* Protected routes */}
           <Route
