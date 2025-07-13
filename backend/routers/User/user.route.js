@@ -67,6 +67,7 @@ const {
   getAppointmentsByUser,
   cancelAppointment,
 } = require("../../controller/user/userService");
+const { getAllFAQ, markAsFAQ } = require("../../controller/staff/staffService");
 
 userRouter.get(
   "/getNoti",
@@ -86,6 +87,10 @@ userRouter.put("/pay/success", CompletedInvoices);
 userRouter.get('/profile/my-records', verifyToken1, getMyProfiles);
 userRouter.post('/qa', sendQA);
 userRouter.get('/qahistory', getAllQAUser);
+// them router FAQ
+userRouter.get('/faqs',getAllFAQ);
+
+////
 
 module.exports = userRouter;
 userRouter.get("/", (req, res) => {
