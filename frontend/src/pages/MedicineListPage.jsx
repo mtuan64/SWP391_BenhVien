@@ -14,12 +14,18 @@ const MedicineListPage = () => {
     const [medicines, setMedicines] = useState([]);
     const [search, setSearch] = useState("");
     const [activeLetter, setActiveLetter] = useState("");
+    const [totalMedicines, setTotalMedicines] = useState(0);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [medicinesPerPage] = useState(10); // Mặc định 10 thuốc mỗi trang
 
     useEffect(() => {
-        axios.get("/api/user/medicines")
-            .then(res => setMedicines(res.data.data || []))
+        axios.get(`/api/user/medicines?page=${currentPage}&limit=${medicinesPerPage}`)
+            .then(res => {
+                setMedicines(res.data.data || []);
+                setTotalMedicines(res.data.totalMedicines || 0);
+            })
             .catch(err => console.error(err));
-    }, []);
+    }, [currentPage]);
 
     // Tìm kiếm tên thuốc
     const filtered = medicines
@@ -32,7 +38,6 @@ const MedicineListPage = () => {
     // Tạo danh sách các chữ cái có thuốc
     const availableLetters = [...new Set(medicines.map(med => med.name[0].toUpperCase()))];
 
-
     // Loại bỏ những thuốc không có _id để tránh lỗi khi click link
     const safeFiltered = filtered.filter(med => med._id && med.name);
 
@@ -40,6 +45,16 @@ const MedicineListPage = () => {
     const middle = Math.ceil(safeFiltered.length / 2);
     const column1 = safeFiltered.slice(0, middle);
     const column2 = safeFiltered.slice(middle);
+
+    // Tính toán tổng số trang
+    const totalPages = Math.ceil(totalMedicines / medicinesPerPage);
+
+    // Handle chuyển trang
+    const handlePageChange = (page) => {
+        if (page >= 1 && page <= totalPages) {
+            setCurrentPage(page);
+        }
+    };
 
     return (
         <>
@@ -97,6 +112,31 @@ const MedicineListPage = () => {
                             </div>
                         ))}
                     </div>
+                </div>
+
+                {/* Pagination Section */}
+                <div className="d-flex justify-content-center py-4">
+                    <h5 className="text-muted">Tổng số thuốc: {totalMedicines}</h5>
+                </div>
+                <div className="d-flex justify-content-center py-4 align-items-center">
+                    <button
+                        className="btn btn-secondary me-2"
+                        onClick={() => handlePageChange(currentPage - 1)}
+                        disabled={currentPage === 1}
+                    >
+                        Trước
+                    </button>
+
+                    {/* Chữ trang được căn giữa */}
+                    <span className="mx-3">{`Trang ${currentPage} / ${totalPages}`}</span>
+
+                    <button
+                        className="btn btn-secondary ms-2"
+                        onClick={() => handlePageChange(currentPage + 1)}
+                        disabled={currentPage === totalPages}
+                    >
+                        Sau
+                    </button>
                 </div>
             </div>
         </>

@@ -13,16 +13,24 @@ const DoctorPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedSpecialization, setSelectedSpecialization] = useState("");
   const [doctors, setDoctors] = useState([]);
+  const [allDoctors, setAllDoctors] = useState([]);
+  const [totalDoctors, setTotalDoctors] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [doctorsPerPage] = useState(10); // Số bác sĩ mỗi trang
 
   useEffect(() => {
-    const fetchDoctor = async () => {
+    const fetchDoctors = async () => {
       try {
-        const res = await axios.get(`/api/user/doctor`);
-        console.log("API Response:", res.data);
+        const params = {
+          page: currentPage,
+          limit: doctorsPerPage,
+          searchTerm: searchTerm,
+          specialization: selectedSpecialization,
+        };
+        const res = await axios.get("/api/user/doctor", { params });
         if (res.data.doctors) {
           setDoctors(res.data.doctors);
-        } else if (res.data) {
-          setDoctors(res.data);
+          setTotalDoctors(res.data.totalDoctors); // Tổng số bác sĩ
         } else {
           throw new Error("Invalid response format");
         }
@@ -31,19 +39,37 @@ const DoctorPage = () => {
       }
     };
 
-    fetchDoctor();
+    fetchDoctors();
+  }, [currentPage, searchTerm, selectedSpecialization]);
+
+  useEffect(() => {
+    const fetchAllDoctors = async () => {
+      try {
+        const res = await axios.get("/api/user/doctor");
+        if (res.data.doctors) {
+          setAllDoctors(res.data.doctors);
+        } else {
+          throw new Error("Invalid response format");
+        }
+      } catch (error) {
+        console.error("Error fetching doctor details:", error);
+      }
+    };
+
+    fetchAllDoctors();
   }, []);
 
-  const specialties = [...new Set(doctors.map(doctor => doctor.specialization).filter(Boolean))];
+  const specialties = [...new Set(allDoctors.map(doctor => doctor.specialization).filter(Boolean))];
 
-  // Filter doctors based on search term and selected specialty
-  const filteredDoctors = doctors.filter(doctor => {
-    const fullName = doctor.name ? doctor.name.toLowerCase() : "";
-    return (
-      fullName.includes(searchTerm.toLowerCase()) &&
-      (selectedSpecialization === "" || doctor.specialization === selectedSpecialization)
-    );
-  });
+  // Calculate total pages
+  const totalPages = Math.ceil(totalDoctors / doctorsPerPage);
+
+  // Handle page change
+  const handlePageChange = (page) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+    }
+  };
 
   return (
     <>
@@ -115,7 +141,7 @@ const DoctorPage = () => {
               </div>
             </Col>
 
-            {filteredDoctors.map((doctor, index) => (
+            {doctors.map((doctor, index) => (
               <Col
                 lg={4}
                 key={doctor._id}
@@ -137,7 +163,7 @@ const DoctorPage = () => {
                     <p className="mb-2">
                       <strong>Chuyên ngành:</strong> {doctor.specialization || 'Không rõ'}
                     </p>
-                    <Link to={`/doctr/${doctor._id}`} className="btn btn-primary mt-2">
+                    <Link to={`/doctor/${doctor._id}`} className="btn btn-primary mt-2">
                       Xem chi tiết
                     </Link>
                   </div>
@@ -146,6 +172,29 @@ const DoctorPage = () => {
             ))}
           </Row>
         </Container>
+      </div>
+
+      {/* Pagination Section */}
+      <div className="d-flex justify-content-center py-4">
+        <h5 className="text-muted">Tổng số bác sĩ: {totalDoctors}</h5>
+      </div>
+
+      <div className="d-flex justify-content-center py-4 align-items-center">
+        <button
+          className="btn btn-secondary me-2"
+          onClick={() => handlePageChange(currentPage - 1)}
+          disabled={currentPage === 1}
+        >
+          Trước
+        </button>
+        <span>{`Trang ${currentPage} / ${totalPages}`}</span>
+        <button
+          className="btn btn-secondary ms-2"
+          onClick={() => handlePageChange(currentPage + 1)}
+          disabled={currentPage === totalPages}
+        >
+          Sau
+        </button>
       </div>
     </>
   );

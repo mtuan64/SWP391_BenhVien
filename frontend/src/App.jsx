@@ -227,13 +227,13 @@ const App = () => {
 
           {/* Public routes */}
           <Route path="/home" element={<HomePage />} />
-          <Route path="/service" element={<ServicePage />} />
+          <Route path="/service-home" element={<ServicePage />} />
           <Route path="/doctor-home" element={<DoctorPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/medicines-home" element={<MedicineListPage />} />
-          <Route path="/department" element={<DepartmentPage />} />
+          <Route path="/department-home" element={<DepartmentPage />} />
           <Route path="/myprofile" element={<ProfilePage />} />
           <Route path="/invoice" element={<InvoiceUser />} />
           <Route path="/profilemanage" element={<ProfileManagePage />} />

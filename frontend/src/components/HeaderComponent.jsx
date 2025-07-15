@@ -117,7 +117,7 @@ const Header = ({ onMenuClick }) => {
           </Dropdown>
 
           <Link to="/service" className="nav-item nav-link">Service</Link>
-          <Link to="/doctr-home" className="nav-item nav-link">Doctor</Link>
+          <Link to="/doctor-home" className="nav-item nav-link">Doctor</Link>
           <Link to="/medicines-home" className="nav-item nav-link">Medicine</Link>
           <Link to="/department" className="nav-item nav-link">Department</Link>
           <Link to="/services" className="nav-item nav-link">

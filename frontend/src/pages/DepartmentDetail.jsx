@@ -49,7 +49,7 @@ const DepartmentDetail = () => {
         return (
             <div className="text-center py-5">
                 <h3>{error}</h3>
-                <Link to="/department" className="btn btn-primary mt-3">Back to Department Home</Link>
+                <Link to="/department-home" className="btn btn-primary mt-3">Back to Department Home</Link>
             </div>
         );
     }
@@ -72,7 +72,7 @@ const DepartmentDetail = () => {
                     <b>Mô tả chuyên khoa:</b>
                     <div>{department.description || "Chưa cập nhật mô tả."}</div>
                 </div>
-                <Link className="btn btn-secondary mt-4" to="/department">
+                <Link className="btn btn-secondary mt-4" to="/department-home">
                     Quay lại danh sách chuyên khoa
                 </Link>
             </div>

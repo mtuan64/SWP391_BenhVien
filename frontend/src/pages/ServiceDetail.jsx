@@ -50,7 +50,7 @@ const ServiceDetail = () => {
         return (
             <div className="text-center py-5">
                 <h3>{error}</h3>
-                <Link to="/service" className="btn btn-primary mt-3">Back to Service Home</Link>
+                <Link to="/service-home" className="btn btn-primary mt-3">Back to Service Home</Link>
             </div>
         );
     }
@@ -77,7 +77,7 @@ const ServiceDetail = () => {
                     <b>Giá dịch vụ:</b>
                     <span>{service.price?.toLocaleString()} VNĐ</span>
                 </div>
-                <Link className="btn btn-secondary mt-4" to="/service">Quay lại danh sách dịch vụ</Link>
+                <Link className="btn btn-secondary mt-4" to="/service-home">Quay lại danh sách dịch vụ</Link>
             </div>
         </>
 

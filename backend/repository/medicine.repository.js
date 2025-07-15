@@ -8,6 +8,17 @@ async function getAllMedicines() {
     return await Medicine.find().populate('supplier');
 }
 
+const countMedicines = async () => {
+  const result = await Medicine.countDocuments();
+  return result;
+};
+
+const getMedicinesWithPagination = async (skip, limit) => {
+  const medicines = await Medicine.find().skip(skip).limit(limit).exec();
+  return medicines;
+};
+
+
 async function getMedicineById(id) {
     return await Medicine.findById(id);
 }
@@ -23,6 +34,8 @@ async function deleteMedicine(id) {
 module.exports = {
     createMedicine,
     getAllMedicines,
+    countMedicines,
+    getMedicinesWithPagination,
     getMedicineById,
     updateMedicine,
     deleteMedicine,

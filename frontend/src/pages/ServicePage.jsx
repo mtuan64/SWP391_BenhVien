@@ -29,30 +29,41 @@ const ServiceBox = ({ image, title, description, buttonUrl }) => (
   </div>
 );
 
-
 const ServicePage = () => {
   const [services, setServices] = useState([]);
+  const [totalServices, setTotalServices] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [servicesPerPage] = useState(2);  // Mặc định 6 dịch vụ mỗi trang
+
   useEffect(() => {
-    const fetchService = async () => {
+    const fetchServices = async () => {
       try {
-        const res = await axios.get(`/api/user/service`);
+        const res = await axios.get(`/api/user/service?page=${currentPage}&limit=${servicesPerPage}`);
         console.log("API Response:", res.data);
-        if (Array.isArray(res.data.data)) {
-          setServices(res.data.data);
-        } else if (Array.isArray(res.data.services)) {
+        if (Array.isArray(res.data.services)) {
           setServices(res.data.services);
+          setTotalServices(res.data.totalServices);  // Tổng số dịch vụ
         } else {
           setServices([]);
         }
       } catch (error) {
         setServices([]);
-        console.error("Error fetching doctor details:", error);
+        console.error("Error fetching services:", error);
       }
     };
 
-    fetchService();
-    window.scrollTo(0, 0);
-  }, []);
+    fetchServices();
+  }, [currentPage]); // Khi currentPage thay đổi, sẽ gọi lại API
+
+  // Tính toán tổng số trang
+  const totalPages = Math.ceil(totalServices / servicesPerPage);
+
+  // Handle chuyển trang
+  const handlePageChange = (page) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+    }
+  };
 
   return (
     <>
@@ -86,9 +97,34 @@ const ServicePage = () => {
             </div>
           </div>
         </div>
+
+        {/* Pagination Section */}
+        <div className="d-flex justify-content-center py-4">
+          <h5 className="text-muted">Tổng số dịch vụ: {totalServices}</h5>
+        </div>
+
+        <div className="d-flex justify-content-center py-4 align-items-center">
+          <button
+            className="btn btn-secondary me-2"
+            onClick={() => handlePageChange(currentPage - 1)}
+            disabled={currentPage === 1}
+          >
+            Trước
+          </button>
+
+          {/* Chữ trang được căn giữa */}
+          <span className="mx-3">{`Trang ${currentPage} / ${totalPages}`}</span>
+
+          <button
+            className="btn btn-secondary ms-2"
+            onClick={() => handlePageChange(currentPage + 1)}
+            disabled={currentPage === totalPages}
+          >
+            Sau
+          </button>
+        </div>
       </Fragment>
     </>
-
   );
 };
 
