@@ -8,7 +8,7 @@ const employeeSchema = new mongoose.Schema({
   role: { type: String, enum: ['Doctor', 'Staff', 'Admin'], required: true },
   degree: { type: String, required: true },
   expYear: { type: String },
-  department: { type: String },
+  department: { type: mongoose.Schema.Types.ObjectId, ref: 'Department', required: true },
   specialization: { type: String },
   phone: { type: String },
   createdAt: { type: Date },
