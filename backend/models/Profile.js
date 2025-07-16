@@ -1,6 +1,5 @@
 const mongoose = require("mongoose");
 
-
 const profileSchema = new mongoose.Schema(
   {
     name: { type: String, required: true },
@@ -14,7 +13,17 @@ const profileSchema = new mongoose.Schema(
     medicine: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Medicine",
-    }, userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: false }
+    },
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: false,
+    },
+    cccd:{type: String, required: true},
+    serviceId:{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Service",
+    }
   },
   { timestamps: true }
 );
