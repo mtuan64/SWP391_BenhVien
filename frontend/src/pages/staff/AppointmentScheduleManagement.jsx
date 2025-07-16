@@ -1,17 +1,5 @@
 import React, { useEffect, useState } from "react";
-import {
-  Table,
-  Button,
-  Container,
-  Spinner,
-  Modal,
-  Form,
-  InputGroup,
-  FormControl,
-  Pagination,
-  Row,
-  Col,
-} from "react-bootstrap";
+import {Table,Button,Container,Spinner,Modal,Form,InputGroup,FormControl,Pagination,Row,Col,} from "react-bootstrap";
 import { FaEdit, FaTrash, FaSearch, FaRedo } from "react-icons/fa";
 import FooterComponent from "../../components/FooterComponent";
 import axios from "axios";
@@ -470,22 +458,20 @@ const AppointmentScheduleManagement = () => {
           <Col md={2} sm={6} className="mb-3">
             <Form.Group>
               <Form.Label>Department</Form.Label>
-              <Form.Select
-                value={departmentFilter}
-                onChange={(e) => {
-                  setDepartmentFilter(e.target.value);
-                  setCurrentPage(1);
-                }}
-                aria-label="Filter by department"
-              >
-                <option value="all">All Departments</option>
-                {Array.isArray(departments) &&
-                  departments.map((dept) => (
-                    <option key={dept._id} value={dept.name}>
-                      {String(dept.name)}
-                    </option>
-                  ))}
-              </Form.Select>
+          <Form.Select
+            value={departmentFilter}
+            onChange={(e) => {
+              setDepartmentFilter(e.target.value);
+              setCurrentPage(1);
+            }}
+          >
+            <option value="all">All Departments</option>
+            {departments.map((dept) => (
+              <option key={dept._id} value={dept._id}>
+                {dept.name}
+              </option>
+            ))}
+          </Form.Select>
             </Form.Group>
           </Col>
           <Col md={2} sm={6} className="mb-3">
