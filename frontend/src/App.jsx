@@ -18,7 +18,6 @@ import AboutPage from "./pages/AboutPage";
 import ProfilePage from "./pages/ProfilePage";
 import HomePage from "./pages/Homepage";
 import AppointmentPage from "./pages/AppointmentPage";
-import ListAppointmentPage from "./pages/ListAppointmentPage.jsx";
 import ProfileManagePage from "./pages/ProfileManagePage";
 import AppointmentManagePage from "./pages/AppointmentManagePage";
 import MedicalLabPage from "./pages/BlogTestPage.jsx";
@@ -28,6 +27,8 @@ import StaffScheduleManager from "./pages/staff/StaffScheduleManager";
 import Changepass from "./pages/ChangePassword";
 import ResetPassword from "./pages/ResetPassword";
 import ForgotPassword from "./pages/ForgotPassword";
+import SendQAForm from "./pages/sendQA";
+
 import AdminLayout from "./components/admin/AdminLayout";
 import Dashboard from "./pages/admin/Dashboard";
 import AccountManagement from "./pages/admin/AccountManagement";
@@ -48,12 +49,13 @@ import NotificationManagement from "./pages/staff/NotificationManagement";
 import UserManagement from "./pages/staff/UserManagement";
 import MedicalRecord from "./pages/staff/MedicalRecord";
 import MedicineManagement from "./pages/staff/MedicineManagement";
+import Header from "./components/HeaderComponent";
+import MenuComponent from "./components/MenuComponent";
+import FooterComponent from "./components/FooterComponent";
 import InvoiceList from "./components/InvoiceList";
 import PaymentSuccess from "./components/PaymentSuccess";
 import PaymentFail from "./components/PaymentFail";
 import CreateInvoice from "./components/staff/CreateInvoice";
-import MenuComponent from "./components/MenuComponent";
-import FooterComponent from "./components/FooterComponent";
 import NotificationCenter from "./pages/NotificationCenter";
 import NotificationDetail from "./pages/NotificationDetail";
 import {
@@ -71,74 +73,75 @@ import BlogListPage from "./pages/BlogListPage";
 import NewsListPage from "./pages/NewsListPage";
 import NewsDetail from "./pages/NewsDetail";
 import BlogDetail from "./pages/BlogDetail";
-import ViewMedicalRecord from "./pages/ViewMedicalRecord";
-import Header from "./components/HeaderComponent";
+// import ViewMedicalRecord from "./pages/ViewMedicalRecord";
 import NotFoundPage from "./pages/NotFoundPage";
-import MedicineListPage from "./pages/MedicineListPage.jsx";
-import MedicineDetail from "./pages/MedicineDetail";
-import ServiceDetail from "./pages/ServiceDetail.jsx";
-import DepartmentPage from "./pages/DepartmentListPage.jsx";
-import DepartmentDetail from "./pages/DepartmentDetail.jsx";
+import QAHistories from "./pages/QAHistories";
+import ProfileStaff from "./pages/staff/ProfileStaff";
+import ProfileDoctor from "./pages/ProfileDoctor";
+
 const DRAWER_WIDTH = 240;
 
+// Redirect logic based on role and current path
 const RoleRedirect = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const user = JSON.parse(localStorage.getItem("user"));
-  const role = user?.role || "patient";
-
   useEffect(() => {
-    if (!user) return;
-
+    const user = JSON.parse(localStorage.getItem("user"));
+    const role = user?.role || "patient";
     const path = location.pathname;
 
+    if (!user) return;
+
     if (path === "/") {
-      // Điều hướng ban đầu
-      if (role === "Admin") navigate("/admin/");
-      else if (role === "Staff") navigate("/staff/");
-      else if (role === "Doctor") navigate("/doctor");
-      else navigate("/");
-    } else {
-      // Nếu đã vào nhầm layout (sai path so với role) thì redirect lại
-      if (role === "Admin" && !path.startsWith("/admin")) navigate("/admin/");
-      if (role === "Staff" && !path.startsWith("/staff")) navigate("/staff/");
-      if (role === "Doctor" && !path.startsWith("/doctor")) navigate("/doctor");
-      if (
-        role === "patient" &&
-        (path.startsWith("/admin") ||
-          path.startsWith("/staff") ||
-          path === "/doctor")
-      )
-        navigate("/home");
+      if (role === "Admin") navigate("/admin", { replace: true });
+      else if (role === "Staff") navigate("/staff", { replace: true });
+      else if (role === "Doctor") navigate("/doctor", { replace: true });
+      else navigate("/home", { replace: true });
+      return;
     }
-  }, [navigate, location.pathname]);
+
+    if (role === "Admin" && !path.startsWith("/admin")) {
+      navigate("/admin", { replace: true });
+    }
+    // else if (role === "Staff" && !path.startsWith("/staff")) {
+    //   navigate("/staff", { replace: true });
+    // } else if (role === "Doctor" && !path.startsWith("/doctor")) {
+    //   navigate("/doctor", { replace: true });
+    // } 
+    else if (
+      role === "patient" &&
+      (path.startsWith("/admin") || path.startsWith("/staff"))
+    ) {
+      navigate("/home", { replace: true });
+    }
+  }, [navigate, location]);
 
   return null;
 };
-const getRole = () => {
-  try {
-    const user = JSON.parse(localStorage.getItem("user"));
-    const role = user?.role;
-    return role || "patient";
-  } catch {
-    return "patient";
-  }
-};
 
-const App = () => {
+// Main routes + layout
+const AppRoutes = () => {
   const [menuOpen, setMenuOpen] = useState(false);
-
-  const role = getRole();
-  const isPatient = role === "patient";
-  const user = JSON.parse(localStorage.getItem("user"));
+  const [role, setRole] = useState("patient");
+  const [user, setUser] = useState(null);
+  const location = useLocation();
 
   const toggleMenu = () => setMenuOpen((open) => !open);
-  console.log(isPatient);
-  return (
-    <Router>
-      {isPatient && <Header onMenuClick={toggleMenu} menuOpen={menuOpen} />}
 
+  useEffect(() => {
+    const storedUser = JSON.parse(localStorage.getItem("user"));
+    const userRole = storedUser?.role?.toLowerCase() || "patient";
+
+    setUser(storedUser);
+    setRole(userRole);
+  }, [location.pathname]);
+
+  const isPatient = role === "patient";
+
+  return (
+    <>
+      {isPatient && <Header onMenuClick={toggleMenu} menuOpen={menuOpen} />}
       {isPatient && user && (
         <MenuComponent
           isOpen={menuOpen}
@@ -157,22 +160,7 @@ const App = () => {
         <RoleRedirect />
 
         <Routes>
-          <Route path="/doctor" element={<DoctorLayout />}>
-            <Route path="medical-profile" element={<UserMedicalProfile />} />
-            <Route path="medicine" element={<div>View Medicine Page</div>} />
-            <Route
-              path="appointments"
-              element={<div>Appointment List Page</div>}
-            />
-            <Route
-              path="notifications"
-              element={<div>Notifications Page</div>}
-            />
-            <Route path="work-schedule" element={<WorkSchedulePage />} />
-          </Route>
-
-          <Route path="/" element={<HomePage />} />
-          {/* Admin Layout Routes */}
+          {/* Admin */}
           <Route
             path="/admin/*"
             element={
@@ -186,7 +174,7 @@ const App = () => {
             <Route path="employees" element={<EmployeeManagement />} />
           </Route>
 
-          {/* Staff Layout Routes */}
+          {/* Staff */}
           <Route
             path="/staff/*"
             element={
@@ -206,8 +194,8 @@ const App = () => {
             <Route path="invoices" element={<InvoiceList />} />
             <Route path="payments" element={<PaymentView />} />
             <Route path="news" element={<NewsManagement />} />
-            {/* <Route path="add/medicalrecords" element={<AddMedicalRecord />} />
-            <Route
+            <Route path="add/medicalrecords" element={<AddMedicalRecord />} />
+            {/* <Route
               path="view/medicalrecords"
               element={<ViewMedicalRecords />}
             /> */}
@@ -223,8 +211,26 @@ const App = () => {
             <Route path="medicalrecord" element={<MedicalRecord />} />
             <Route path="medicines" element={<MedicineManagement />} />
             <Route path="schedule" element={<StaffScheduleManager />} />
+            <Route path="profile" element={<ProfileStaff />} />
+
           </Route>
 
+
+          <Route path="/doctor" element={<PrivateRouteByRole allowedRoles={["Doctor"]}><DoctorLayout /></PrivateRouteByRole>}>
+            <Route path="medical-profile" element={<UserMedicalProfile />} />
+            <Route path="medicine" element={<div>View Medicine Page</div>} />
+            <Route
+              path="appointments"
+              element={<div>Appointment List Page</div>}
+            />
+            <Route
+              path="notifications"
+              element={<div>Notifications Page</div>}
+            />
+            <Route path="work-schedule" element={<WorkSchedulePage />} />
+
+            <Route path="profile" element={<ProfileDoctor />} />
+          </Route>
           {/* Public routes */}
           <Route path="/home" element={<HomePage />} />
           <Route path="/service" element={<ServicePage />} />
@@ -234,20 +240,18 @@ const App = () => {
           <Route path="/news" element={<NewsListPage />} />
           <Route path="/blog/:slug" element={<BlogDetail />} />
           <Route path="/news/:slug" element={<NewsDetail />} />
-          <Route
+          {/* <Route
             path="/view_medicalrecord"
             element={
               <PrivateRouteByRole allowedRoles={["patient"]}>
                 <ViewMedicalRecord />
               </PrivateRouteByRole>
             }
-          />
+          /> */}
           <Route path="/doctors" element={<DoctorPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/about" element={<AboutPage />} />
-          <Route path="/medicines-home" element={<MedicineListPage />} />
-          <Route path="/department-home" element={<DepartmentPage />} />
           <Route path="/myprofile" element={<ProfilePage />} />
           <Route path="/invoice" element={<InvoiceUser />} />
           <Route path="/profilemanage" element={<ProfileManagePage />} />
@@ -255,11 +259,6 @@ const App = () => {
           <Route path="/appointmentmanage" element={<AppointmentManagePage />} />
           <Route path="/not-found" element={<NotFoundPage />} />
           <Route path="/doctor/:doctorId" element={<DoctorDetail />} />
-          <Route path="/medicines/:medicineId" element={<MedicineDetail />} />
-          <Route path="service/:serviceId" element={<ServiceDetail />} />
-          <Route path="/department/:departmentId" element={<DepartmentDetail />} />
-          <Route path="/myappointments" element={<ListAppointmentPage />} />
-
 
           {/* <Route path="/medicalrecord" element={<AddMedicalRecord />} />
           <Route path="/medicalrecords" element={<ViewMedicalRecords />} /> */}
@@ -277,9 +276,40 @@ const App = () => {
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/notifications" element={<NotificationCenter />} />
           <Route path="/notifications/:id" element={<NotificationDetail />} />
+
+          <Route path="/qahistory" element={<QAHistories />} />
+          <Route path="/qa" element={<SendQAForm />} />
+
+          {/* Protected routes */}
+          <Route
+            path="/appointment"
+            element={
+              <PrivateRoute>
+                <AppointmentPage />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/medicalrecords"
+            element={
+              <PrivateRoute>
+                <MedicalRecord />
+              </PrivateRoute>
+            }
+          />
         </Routes>
       </div>
+
       {isPatient && <FooterComponent />}
+    </>
+  );
+};
+
+// Root App component that wraps with <Router>
+const App = () => {
+  return (
+    <Router>
+      <AppRoutes />
     </Router>
   );
 };

@@ -1,6 +1,4 @@
 import React from 'react';
-import HeaderComponent from "../components/HeaderComponent";
-import FooterComponent from "../components/FooterComponent";
 import MilestoneSection from "../components/MilestoneSection";
 import TopBarComponent from '../components/TopBarComponent';
 
@@ -228,6 +226,7 @@ const AboutPage = () => {
           </div>
         </section>
       </div>
+
     </>
   );
 };

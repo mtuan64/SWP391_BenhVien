@@ -1,5 +1,17 @@
 import React, { useEffect, useState } from "react";
-import { Table, Button, Container, Spinner, Modal, Form, InputGroup, FormControl, Pagination, Row, Col } from "react-bootstrap";
+import {
+  Table,
+  Button,
+  Container,
+  Spinner,
+  Modal,
+  Form,
+  InputGroup,
+  FormControl,
+  Pagination,
+  Row,
+  Col,
+} from "react-bootstrap";
 import { FaEdit, FaTrash, FaSearch, FaRedo } from "react-icons/fa";
 import axios from "axios";
 import "../../assets/css/AppointmentScheduleManagement.css";
@@ -49,7 +61,14 @@ const AppointmentScheduleManagement = () => {
     fetchAppointments();
     fetchDepartments();
     fetchUsers();
-  }, [currentPage, statusFilter, departmentFilter, searchTerm, startDate, endDate]);
+  }, [
+    currentPage,
+    statusFilter,
+    departmentFilter,
+    searchTerm,
+    startDate,
+    endDate,
+  ]);
 
   useEffect(() => {
     if (form.userId) {
@@ -81,13 +100,20 @@ const AppointmentScheduleManagement = () => {
   const fetchAppointments = async () => {
     try {
       setLoading(true);
-      const params = { page: currentPage, limit: itemsPerPage, search: searchTerm };
+      const params = {
+        page: currentPage,
+        limit: itemsPerPage,
+        search: searchTerm,
+      };
       if (statusFilter !== "all") params.status = statusFilter;
       if (departmentFilter !== "all") params.department = departmentFilter;
       if (startDate) params.startDate = startDate;
       if (endDate) params.endDate = endDate;
 
-      const res = await axios.get("http://localhost:9999/api/appointmentScheduleManagement", { params });
+      const res = await axios.get(
+        "http://localhost:9999/api/appointmentScheduleManagement",
+        { params }
+      );
       const { appointments, pagination } = res.data;
       setAppointments(appointments || []);
       setFilteredAppointments(appointments || []);
@@ -103,8 +129,8 @@ const AppointmentScheduleManagement = () => {
 
   const fetchDepartments = async () => {
     try {
-const res = await axios.get("http://localhost:9999/api/departments");
-setDepartments(res.data.departments || []);
+      const res = await axios.get("http://localhost:9999/api/departments");
+      setDepartments(res.data.departments || []);
     } catch (error) {
       console.error("Failed to fetch departments: ", error);
       setError("Failed to load departments.");
@@ -113,7 +139,9 @@ setDepartments(res.data.departments || []);
 
   const fetchUsers = async () => {
     try {
-      const res = await axios.get("http://localhost:9999/api/appointmentScheduleManagement/users");
+      const res = await axios.get(
+        "http://localhost:9999/api/appointmentScheduleManagement/users"
+      );
       setUsers(res.data);
     } catch (err) {
       console.error("Failed to fetch users:", err);
@@ -121,42 +149,47 @@ setDepartments(res.data.departments || []);
     }
   };
 
-const fetchAvailableDoctors = async (date, departmentId) => {
-  try {
-    setIsFormLoading(true);
+  const fetchAvailableDoctors = async (date, departmentId) => {
+    try {
+      setIsFormLoading(true);
 
-    const selectedDept = departments.find((d) => d._id === departmentId);
-    if (!selectedDept) {
-      console.warn("Department not found for ID:", departmentId);
+      const selectedDept = departments.find((d) => d._id === departmentId);
+      if (!selectedDept) {
+        console.warn("Department not found for ID:", departmentId);
+        setAvailableDoctors([]);
+        return;
+      }
+
+      const departmentName = selectedDept.name;
+      const formattedDate = new Date(date).toISOString().split("T")[0];
+
+      const res = await axios.get(
+        "http://localhost:9999/api/appointmentScheduleManagement/doctors",
+        {
+          params: { department: departmentName, date: formattedDate },
+        }
+      );
+
+      setAvailableDoctors(res.data || []);
+    } catch (error) {
+      console.error("Failed to fetch doctors:", error);
       setAvailableDoctors([]);
-      return;
+      setError("Failed to fetch available doctors.");
+    } finally {
+      setIsFormLoading(false);
     }
-
-    const departmentName = selectedDept.name;
-    const formattedDate = new Date(date).toISOString().split("T")[0];
-
-    const res = await axios.get("http://localhost:9999/api/appointmentScheduleManagement/doctors", {
-      params: { department: departmentName, date: formattedDate }
-    });
-
-    setAvailableDoctors(res.data || []);
-  } catch (error) {
-    console.error("Failed to fetch doctors:", error);
-    setAvailableDoctors([]);
-    setError("Failed to fetch available doctors.");
-  } finally {
-    setIsFormLoading(false);
-  }
-};
-
+  };
 
   const fetchSchedules = async (doctorId, date) => {
     try {
       setIsFormLoading(true);
       const formattedDate = new Date(date).toISOString().split("T")[0];
-      const res = await axios.get(`http://localhost:9999/api/appointmentScheduleManagement/schedules/${doctorId}`, {
-        params: { date: formattedDate }
-      });
+      const res = await axios.get(
+        `http://localhost:9999/api/appointmentScheduleManagement/schedules/${doctorId}`,
+        {
+          params: { date: formattedDate },
+        }
+      );
       setSchedules(res.data || []);
     } catch (err) {
       console.error("Failed to fetch schedules:", err);
@@ -173,7 +206,9 @@ const fetchAvailableDoctors = async (date, departmentId) => {
         console.error("Invalid userId format:", userId);
         return;
       }
-      const res = await axios.get(`http://localhost:9999/api/appointmentScheduleManagement/profiles/${userId}`);
+      const res = await axios.get(
+        `http://localhost:9999/api/appointmentScheduleManagement/profiles/${userId}`
+      );
       setProfiles(res.data);
     } catch (err) {
       console.error("Failed to fetch profiles:", err);
@@ -195,10 +230,13 @@ const fetchAvailableDoctors = async (date, departmentId) => {
 
   const validateForm = () => {
     const errors = {};
-    if (!form.appointmentDate) errors.appointmentDate = "Please select an appointment date.";
+    if (!form.appointmentDate)
+      errors.appointmentDate = "Please select an appointment date.";
     if (!form.department) errors.department = "Please select a department.";
-    if (availableDoctors.length > 0 && !form.doctorId) errors.doctorId = "Please select a doctor.";
-    if (form.doctorId && schedules.length > 0 && !form.timeSlot) errors.timeSlot = "Please select a time slot.";
+    if (availableDoctors.length > 0 && !form.doctorId)
+      errors.doctorId = "Please select a doctor.";
+    if (form.doctorId && schedules.length > 0 && !form.timeSlot)
+      errors.timeSlot = "Please select a time slot.";
     if (!form.userId) errors.userId = "Please select a user.";
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
@@ -228,7 +266,9 @@ const fetchAvailableDoctors = async (date, departmentId) => {
   function handleEdit(appointment) {
     setCurrentAppointment(appointment);
     setForm({
-      appointmentDate: appointment.appointmentDate ? appointment.appointmentDate.slice(0, 10) : "",
+      appointmentDate: appointment.appointmentDate
+        ? appointment.appointmentDate.slice(0, 10)
+        : "",
       department: appointment.department || "",
       doctorId: appointment.doctorId || "",
       timeSlot: appointment.appointmentDate || "",
@@ -294,17 +334,20 @@ const fetchAvailableDoctors = async (date, departmentId) => {
       if (!form.profileId || form.profileId === "") {
         console.warn("No profile selected, creating new");
         const selectedUser = users.find((u) => u._id === form.userId);
-        const newProfile = await axios.post("http://localhost:9999/api/appointmentScheduleManagement/profiles", {
-          userId: form.userId,
-          name: selectedUser?.name,
-          gender: "Other",
-          dateOfBirth: "2000-01-01",
-          diagnose: "",
-          note: "",
-          issues: "",
-          doctorId: form.doctorId || null,
-          medicine: null,
-        });
+        const newProfile = await axios.post(
+          "http://localhost:9999/api/appointmentScheduleManagement/profiles",
+          {
+            userId: form.userId,
+            name: selectedUser?.name,
+            gender: "Other",
+            dateOfBirth: "2000-01-01",
+            diagnose: "",
+            note: "",
+            issues: "",
+            doctorId: form.doctorId || null,
+            medicine: null,
+          }
+        );
         payload.profileId = newProfile.data._id;
       }
       if (!payload.profileId) {
@@ -312,17 +355,26 @@ const fetchAvailableDoctors = async (date, departmentId) => {
         return;
       }
       if (currentAppointment) {
-        await axios.put(`http://localhost:9999/api/appointmentScheduleManagement/${currentAppointment._id}`, payload);
+        await axios.put(
+          `http://localhost:9999/api/appointmentScheduleManagement/${currentAppointment._id}`,
+          payload
+        );
         alert("Appointment updated successfully!");
       } else {
-        await axios.post("http://localhost:9999/api/appointmentScheduleManagement", payload);
+        await axios.post(
+          "http://localhost:9999/api/appointmentScheduleManagement",
+          payload
+        );
         alert("Appointment created successfully!");
       }
       setShowModal(false);
       fetchAppointments();
     } catch (error) {
       console.error("Error submitting data:", error);
-      alert("Error creating/updating appointment: " + (error?.response?.data?.message || error.message));
+      alert(
+        "Error creating/updating appointment: " +
+          (error?.response?.data?.message || error.message)
+      );
     } finally {
       setIsFormLoading(false);
     }
@@ -335,13 +387,17 @@ const fetchAvailableDoctors = async (date, departmentId) => {
 
   async function confirmDelete() {
     try {
-      await axios.delete(`http://localhost:9999/api/appointmentScheduleManagement/${deleteAppointmentId}`);
+      await axios.delete(
+        `http://localhost:9999/api/appointmentScheduleManagement/${deleteAppointmentId}`
+      );
       setShowDeleteModal(false);
       setDeleteAppointmentId(null);
       fetchAppointments();
       alert("Appointment deleted successfully!");
     } catch (error) {
-      alert("Delete failed: " + (error.response?.data?.message || error.message));
+      alert(
+        "Delete failed: " + (error.response?.data?.message || error.message)
+      );
     }
   }
 
@@ -358,16 +414,21 @@ const fetchAvailableDoctors = async (date, departmentId) => {
     doc.name.toLowerCase().includes(doctorSearchTerm.toLowerCase())
   );
 
-  const filteredUsers = users.filter((user) =>
-    user.name.toLowerCase().includes(userSearchTerm.toLowerCase()) ||
-    (user.phone && user.phone.toLowerCase().includes(userSearchTerm.toLowerCase())) ||
-    (user.user_code && user.user_code.toLowerCase().includes(userSearchTerm.toLowerCase()))
+  const filteredUsers = users.filter(
+    (user) =>
+      user.name.toLowerCase().includes(userSearchTerm.toLowerCase()) ||
+      (user.phone &&
+        user.phone.toLowerCase().includes(userSearchTerm.toLowerCase())) ||
+      (user.user_code &&
+        user.user_code.toLowerCase().includes(userSearchTerm.toLowerCase()))
   );
 
   return (
     <>
       <Container className="py-5">
-        <h2 className="mb-4 text-primary fw-bold">Appointment Schedule Management</h2>
+        <h2 className="mb-4 text-primary fw-bold">
+          Appointment Schedule Management
+        </h2>
 
         <Row className="mb-4 align-items-end filter-card">
           <Col md={3} sm={12} className="mb-3">
@@ -408,24 +469,22 @@ const fetchAvailableDoctors = async (date, departmentId) => {
           <Col md={2} sm={6} className="mb-3">
             <Form.Group>
               <Form.Label>Department</Form.Label>
-<Form.Select
-  value={departmentFilter}
-  onChange={(e) => {
-    setDepartmentFilter(e.target.value);
-    setCurrentPage(1);
-  }}
-  aria-label="Filter by department"
->
-  <option value="all">All Departments</option>
-  {Array.isArray(departments) &&
-    departments.map((dept) => (
-      <option key={dept._id} value={dept.name}>
-        {String(dept.name)}
-      </option>
-    ))}
-</Form.Select>
-
-
+              <Form.Select
+                value={departmentFilter}
+                onChange={(e) => {
+                  setDepartmentFilter(e.target.value);
+                  setCurrentPage(1);
+                }}
+                aria-label="Filter by department"
+              >
+                <option value="all">All Departments</option>
+                {Array.isArray(departments) &&
+                  departments.map((dept) => (
+                    <option key={dept._id} value={dept.name}>
+                      {String(dept.name)}
+                    </option>
+                  ))}
+              </Form.Select>
             </Form.Group>
           </Col>
           <Col md={2} sm={6} className="mb-3">
@@ -522,13 +581,22 @@ const fetchAvailableDoctors = async (date, departmentId) => {
                       <td>{formatDateTime(appointment.appointmentDate)}</td>
                       <td>{appointment.doctorName || "N/A"}</td>
                       <td>
-                        {departments.find((d) => d._id === appointment.department)?.name || appointment.department}
+                        {departments.find(
+                          (d) => d._id === appointment.department
+                        )?.name || appointment.department}
                       </td>
                       <td>{appointment.type}</td>
                       <td>{appointment.userName || "N/A"}</td>
-                      <td className="user-code">{appointment.userCode || "N/A"}</td>
+                      <td className="user-code">
+                        {appointment.userCode || "N/A"}
+                      </td>
                       <td>{appointment.userPhone || "N/A"}</td>
-                      <td>{!appointment.profileId || appointment.profileId === "null" ? "N/A" : appointment.profileId}</td>
+                      <td>
+                        {!appointment.profileId ||
+                        appointment.profileId === "null"
+                          ? "N/A"
+                          : appointment.profileId}
+                      </td>
                       <td>{appointment.status}</td>
                       <td>{appointment.reminderSent ? "Yes" : "No"}</td>
                       <td>
@@ -562,7 +630,8 @@ const fetchAvailableDoctors = async (date, departmentId) => {
             <div className="d-flex justify-content-between align-items-center mt-4">
               <div className="text-muted">
                 Showing {(currentPage - 1) * itemsPerPage + 1} to{" "}
-                {Math.min(currentPage * itemsPerPage, totalItems)} of {totalItems} appointments
+                {Math.min(currentPage * itemsPerPage, totalItems)} of{" "}
+                {totalItems} appointments
               </div>
               <Pagination>
                 <Pagination.Prev
@@ -591,7 +660,9 @@ const fetchAvailableDoctors = async (date, departmentId) => {
 
       <Modal show={showModal} onHide={() => setShowModal(false)} centered>
         <Modal.Header closeButton className="bg-primary text-white">
-          <Modal.Title>{currentAppointment ? "Update Appointment" : "Add New Appointment"}</Modal.Title>
+          <Modal.Title>
+            {currentAppointment ? "Update Appointment" : "Add New Appointment"}
+          </Modal.Title>
         </Modal.Header>
         <Modal.Body className="p-4">
           <Form>
@@ -604,14 +675,20 @@ const fetchAvailableDoctors = async (date, departmentId) => {
                 <Form.Control
                   type="date"
                   name="appointmentDate"
-                  value={form.appointmentDate ? form.appointmentDate.split("T")[0] : ""}
+                  value={
+                    form.appointmentDate
+                      ? form.appointmentDate.split("T")[0]
+                      : ""
+                  }
                   onChange={handleChange}
                   required
                   className={formErrors.appointmentDate ? "border-danger" : ""}
                   aria-label="Select appointment date"
                 />
                 {formErrors.appointmentDate && (
-                  <div className="text-danger small mt-1">{formErrors.appointmentDate}</div>
+                  <div className="text-danger small mt-1">
+                    {formErrors.appointmentDate}
+                  </div>
                 )}
               </Form.Group>
 
@@ -619,26 +696,28 @@ const fetchAvailableDoctors = async (date, departmentId) => {
                 <Form.Label className="fw-medium">
                   Department <span className="text-danger">*</span>
                 </Form.Label>
-<Form.Select
-  name="department"
-  value={form.department}
-  onChange={handleChange}
-  required
-  disabled={!form.appointmentDate}
-  className={formErrors.department ? "border-danger" : ""}
-  aria-label="Select department"
->
-  <option value="">Select department</option>
-  {Array.isArray(departments) &&
-    departments.map((dept) => (
-      <option key={dept._id} value={dept._id}>
-        {dept.name}
-      </option>
-    ))}
-</Form.Select>
+                <Form.Select
+                  name="department"
+                  value={form.department}
+                  onChange={handleChange}
+                  required
+                  disabled={!form.appointmentDate}
+                  className={formErrors.department ? "border-danger" : ""}
+                  aria-label="Select department"
+                >
+                  <option value="">Select department</option>
+                  {Array.isArray(departments) &&
+                    departments.map((dept) => (
+                      <option key={dept._id} value={dept._id}>
+                        {dept.name}
+                      </option>
+                    ))}
+                </Form.Select>
 
                 {formErrors.department && (
-                  <div className="text-danger small mt-1">{formErrors.department}</div>
+                  <div className="text-danger small mt-1">
+                    {formErrors.department}
+                  </div>
                 )}
               </Form.Group>
 
@@ -686,10 +765,14 @@ const fetchAvailableDoctors = async (date, departmentId) => {
                       ))}
                     </Form.Select>
                     {formErrors.doctorId && (
-                      <div className="text-danger small mt-1">{formErrors.doctorId}</div>
+                      <div className="text-danger small mt-1">
+                        {formErrors.doctorId}
+                      </div>
                     )}
                     {doctorSearchTerm && filteredDoctors.length === 0 && (
-                      <div className="text-muted small mt-1">No doctors found matching your search.</div>
+                      <div className="text-muted small mt-1">
+                        No doctors found matching your search.
+                      </div>
                     )}
                   </Form.Group>
 
@@ -712,14 +795,21 @@ const fetchAvailableDoctors = async (date, departmentId) => {
                           .filter((slot) => slot.status === "Available")
                           .map((slot, i) => (
                             <option key={i} value={slot.startTime}>
-                              {new Date(slot.startTime).toLocaleTimeString("en-GB")} -{" "}
-                              {new Date(slot.endTime).toLocaleTimeString("en-GB")}
+                              {new Date(slot.startTime).toLocaleTimeString(
+                                "en-GB"
+                              )}{" "}
+                              -{" "}
+                              {new Date(slot.endTime).toLocaleTimeString(
+                                "en-GB"
+                              )}
                             </option>
                           ))
                       )}
                     </Form.Select>
                     {formErrors.timeSlot && (
-                      <div className="text-danger small mt-1">{formErrors.timeSlot}</div>
+                      <div className="text-danger small mt-1">
+                        {formErrors.timeSlot}
+                      </div>
                     )}
                     {form.doctorId && schedules.length === 0 && (
                       <div className="text-muted small mt-1">
@@ -769,15 +859,20 @@ const fetchAvailableDoctors = async (date, departmentId) => {
                   <option value="">Select user</option>
                   {filteredUsers.map((user) => (
                     <option key={user._id} value={user._id}>
-                      {user.name} ({user.phone || "N/A"}) - {user.user_code || "N/A"}
+                      {user.name} ({user.phone || "N/A"}) -{" "}
+                      {user.user_code || "N/A"}
                     </option>
                   ))}
                 </Form.Select>
                 {formErrors.userId && (
-                  <div className="text-danger small mt-1">{formErrors.userId}</div>
+                  <div className="text-danger small mt-1">
+                    {formErrors.userId}
+                  </div>
                 )}
                 {userSearchTerm && filteredUsers.length === 0 && (
-                  <div className="text-muted small mt-1">No users found matching your search.</div>
+                  <div className="text-muted small mt-1">
+                    No users found matching your search.
+                  </div>
                 )}
               </Form.Group>
 
@@ -866,9 +961,13 @@ const fetchAvailableDoctors = async (date, departmentId) => {
             variant="primary"
             onClick={handleSubmit}
             disabled={isFormLoading || !form.timeSlot}
-            aria-label={currentAppointment ? "Save appointment" : "Add appointment"}
+            aria-label={
+              currentAppointment ? "Save appointment" : "Add appointment"
+            }
           >
-            {isFormLoading ? <Spinner animation="border" size="sm" className="me-2" /> : null}
+            {isFormLoading ? (
+              <Spinner animation="border" size="sm" className="me-2" />
+            ) : null}
             {currentAppointment ? "Save" : "Add"}
           </Button>
         </Modal.Footer>
@@ -899,6 +998,7 @@ const fetchAvailableDoctors = async (date, departmentId) => {
         </Modal.Footer>
       </Modal>
 
+      <FooterComponent />
     </>
   );
 };

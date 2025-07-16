@@ -1,7 +1,6 @@
 // models/User.js
 const mongoose = require('mongoose');
 const Counter = require('./Counter');
-
 const userSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true, index: true },
   password: { type: String, required: true },
@@ -35,5 +34,4 @@ userSchema.pre('save', async function (next) {
     next();
   }
 });
-
 module.exports = mongoose.models.User || mongoose.model('User', userSchema);

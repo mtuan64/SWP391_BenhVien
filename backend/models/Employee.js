@@ -16,6 +16,9 @@ const employeeSchema = new mongoose.Schema({
   status: { type: String, enum: ['active', 'inactive'], default: 'active' },
   schedule: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Schedule' }], 
   services: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Services' }],
+  emailVerificationCode: { type: String },
+verificationExpires: { type: Date },
+
 }, { timestamps: true });
 
 employeeSchema.index({ role: 1, status: 1 }); // Index for doctor queries

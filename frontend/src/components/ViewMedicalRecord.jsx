@@ -19,25 +19,25 @@
 
 //     const navigate = useNavigate(); // Initialize navigate hook
 
-//     const fetchProfiles = async () => {
-//         try {
-//             setLoading(true);
-//             const res = await axios.get('http://localhost:9999/api/staff/medical-records', {
-//                 params: { page, limit, search, sortBy, order },
-//             });
-//             if (res.data.success) {
-//                 setProfiles(res.data.data);
-//                 setTotalPages(res.data.totalPages);
-//                 setError('');
-//             } else {
-//                 setError(res.data.message || 'Không thể tải dữ liệu');
-//             }
-//         } catch (err) {
-//             setError('Lỗi kết nối server');
-//         } finally {
-//             setLoading(false);
-//         }
-//     };
+    const fetchProfiles = async () => {
+        try {
+            setLoading(true);
+            const res = await axios.get('http://localhost:9999/api/staff/medical-records', {
+                params: { page, limit, search, sortBy, order },
+            });
+            if (res.data.success) {
+                setProfiles(res.data.data);
+                setTotalPages(res.data.totalPages);
+                setError('');
+            } else {
+                setError(res.data.message || 'Không thể tải dữ liệu');
+            }
+        } catch (err) {
+            setError('Lỗi kết nối server');
+        } finally {
+            setLoading(false);
+        }
+    };
 
 //     useEffect(() => {
 //         fetchProfiles();

@@ -1,5 +1,4 @@
 const express = require("express");
-const staffRouter = express.Router();
 const {
   getNotifications,
   createNotification,
@@ -7,7 +6,7 @@ const {
   deleteNotification,
   getAllUserEmails,
 } = require("../../controller/staff/notificationService");
-const staffService = require('../../controller/staff/staffService');
+const staffRouter = express.Router();
 const { getAllServices, createService, deleteService, getServiceById, updateService } = require('../../controller/staff/servicesControlelr');
 const staffController = require('../../controller/staff/staffService');
 const { createMedicalRecord, allMedicalRecord, editMedicalRecord, createProfile, getAllProfiles } = require('../../controller/staff/medicalRecordController');

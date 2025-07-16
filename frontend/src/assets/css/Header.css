@@ -1,92 +1,146 @@
-.header {
+/* src/components/Header.css */
+.header-nav {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
-  background: #fff;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  padding: 16px 32px;
   z-index: 3000;
-}
-
-.header-container {
+  background-color: white;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  padding: 12px 24px;
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-.header-brand {
-  display: flex;
   align-items: center;
-  text-decoration: none;
+  font-family: sans-serif;
 }
 
-.header-logo {
-  margin: 0;
-  color: #1890ff;
-  font-weight: 700;
-  font-size: 32px;
-}
-
-.navbar-nav.header-menu {
-  flex-grow: 1;
-  margin: 0 16px;
-  background: transparent !important;
-}
-
-.navbar-nav .nav-item.nav-link {
-  font-size: 16px;
-  color: #333;
-}
-
-.navbar-nav .nav-item.nav-link:hover,
-.navbar-nav .nav-item.nav-link.active {
-  color: #1890ff;
-}
-
-.header-actions {
+.header-left {
   display: flex;
   align-items: center;
   gap: 16px;
 }
 
-.menu-button,
-.account-button {
-  font-size: 16px !important;
-  color: #333 !important;
+.header-logo h1 {
+  font-size: 24px;
+  font-weight: bold;
+  color: #0070f3;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
-.notification-icon {
-  font-size: 22px !important;
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.header-link {
+  color: #444;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: color 0.3s ease;
   cursor: pointer;
-  color: #333;
 }
 
-.appointment-button {
+.header-link:hover {
+  color: #0070f3;
+}
+
+.dropdown-trigger {
+  cursor: pointer;
+}
+
+.bell-icon {
+  font-size: 20px;
+  color: #444;
+  cursor: pointer;
+}
+
+.account-menu-wrapper {
+  position: relative;
+}
+
+.account-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #444;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.account-button:hover {
+  color: #0070f3;
+}
+
+.dropdown-arrow {
+  width: 16px;
+  height: 16px;
+}
+
+.account-dropdown {
+  display: none;
+  position: absolute;
+  right: 0;
+  top: 36px;
+  background-color: white;
+  border: 1px solid #ddd;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  border-radius: 4px;
+  min-width: 180px;
+  list-style: none;
+  padding: 8px 0;
+  z-index: 1000;
+}
+
+.account-menu-wrapper:hover .account-dropdown {
+  display: block;
+}
+
+.account-dropdown li {
   padding: 8px 16px;
 }
 
-/* Responsive adjustments */
-@media (max-width: 768px) {
-  .header {
-    padding: 16px;
-  }
+.account-dropdown li:hover {
+  background-color: #f5f5f5;
+}
 
-  .navbar-nav.header-menu {
-    display: none; /* Hide menu on mobile; rely on drawer */
-  }
+.account-dropdown li hr {
+  margin: 4px 0;
+  border: none;
+  border-top: 1px solid #ddd;
+}
 
-  .header-actions {
-    gap: 8px;
-  }
+.account-dropdown button {
+  background: none;
+  border: none;
+  width: 100%;
+  text-align: left;
+  padding: 0;
+  color: #333;
+  cursor: pointer;
+}
 
-  .navbar-toggler {
-    display: block !important; /* Ensure toggler is visible */
-  }
+.account-dropdown button:hover {
+  background-color: #f5f5f5;
+}
 
-  .navbar-collapse.show {
-    display: block !important; /* Ensure collapse is visible when toggled */
-  }
+.appointment-button {
+  background-color: #0070f3;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 4px;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: background-color 0.3s ease;
+}
+
+.appointment-button:hover {
+  background-color: #005bb5;
 }
