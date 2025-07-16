@@ -147,6 +147,7 @@ const Header = ({ onMenuClick, menuOpen }) => {
                 <li><Link to="/profilemanage">Profile Manage</Link></li>
                 <li><Link to="/appointmentmanage">Appointment Manage</Link></li>
                 <li><Link to="/qahistory">Q/A History</Link></li>
+                <li><Link to="/invoice">Invoice</Link></li>
                 <li><Link to="/changepass">Change Password</Link></li>
                 <li><hr /></li>
                 <li><button onClick={handleLogout}>Log out</button></li>
