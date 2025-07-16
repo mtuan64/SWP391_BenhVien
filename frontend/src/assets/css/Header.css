@@ -30,19 +30,19 @@
   font-size: 32px;
 }
 
-.header-menu {
+.navbar-nav.header-menu {
   flex-grow: 1;
   margin: 0 16px;
   background: transparent !important;
 }
 
-.header-menu .ant-menu-item {
+.navbar-nav .nav-item.nav-link {
   font-size: 16px;
   color: #333;
 }
 
-.header-menu .ant-menu-item:hover,
-.header-menu .ant-menu-item-selected {
+.navbar-nav .nav-item.nav-link:hover,
+.navbar-nav .nav-item.nav-link.active {
   color: #1890ff;
 }
 
@@ -54,12 +54,12 @@
 
 .menu-button,
 .account-button {
-  font-size: 16px;
-  color: #333;
+  font-size: 16px !important;
+  color: #333 !important;
 }
 
 .notification-icon {
-  font-size: 22px;
+  font-size: 22px !important;
   cursor: pointer;
   color: #333;
 }
@@ -74,11 +74,19 @@
     padding: 16px;
   }
 
-  .header-menu {
+  .navbar-nav.header-menu {
     display: none; /* Hide menu on mobile; rely on drawer */
   }
 
   .header-actions {
     gap: 8px;
+  }
+
+  .navbar-toggler {
+    display: block !important; /* Ensure toggler is visible */
+  }
+
+  .navbar-collapse.show {
+    display: block !important; /* Ensure collapse is visible when toggled */
   }
 }

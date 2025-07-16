@@ -18,6 +18,7 @@ import AboutPage from "./pages/AboutPage";
 import ProfilePage from "./pages/ProfilePage";
 import HomePage from "./pages/Homepage";
 import AppointmentPage from "./pages/AppointmentPage";
+import ListAppointmentPage from "./pages/ListAppointmentPage.jsx";
 import ProfileManagePage from "./pages/ProfileManagePage";
 import AppointmentManagePage from "./pages/AppointmentManagePage";
 import MedicalLabPage from "./pages/BlogTestPage.jsx";
@@ -73,7 +74,11 @@ import BlogDetail from "./pages/BlogDetail";
 import ViewMedicalRecord from "./pages/ViewMedicalRecord";
 import Header from "./components/HeaderComponent";
 import NotFoundPage from "./pages/NotFoundPage";
-
+import MedicineListPage from "./pages/MedicineListPage.jsx";
+import MedicineDetail from "./pages/MedicineDetail";
+import ServiceDetail from "./pages/ServiceDetail.jsx";
+import DepartmentPage from "./pages/DepartmentListPage.jsx";
+import DepartmentDetail from "./pages/DepartmentDetail.jsx";
 const DRAWER_WIDTH = 240;
 
 const RoleRedirect = () => {
@@ -103,7 +108,7 @@ const RoleRedirect = () => {
         role === "patient" &&
         (path.startsWith("/admin") ||
           path.startsWith("/staff") ||
-          path.startsWith("/doctor"))
+          path === "/doctor")
       )
         navigate("/home");
     }
@@ -223,7 +228,7 @@ const App = () => {
           {/* Public routes */}
           <Route path="/home" element={<HomePage />} />
           <Route path="/service" element={<ServicePage />} />
-          <Route path="/doctors" element={<DoctorPage />} />
+          <Route path="/doctor-home" element={<DoctorPage />} />
 
           <Route path="/blogs" element={<BlogListPage />} />
           <Route path="/news" element={<NewsListPage />} />
@@ -241,6 +246,8 @@ const App = () => {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/about" element={<AboutPage />} />
+          <Route path="/medicines-home" element={<MedicineListPage />} />
+          <Route path="/department-home" element={<DepartmentPage />} />
           <Route path="/myprofile" element={<ProfilePage />} />
           <Route path="/invoice" element={<InvoiceUser />} />
           <Route path="/profilemanage" element={<ProfileManagePage />} />
@@ -248,6 +255,11 @@ const App = () => {
           <Route path="/appointmentmanage" element={<AppointmentManagePage />} />
           <Route path="/not-found" element={<NotFoundPage />} />
           <Route path="/doctor/:doctorId" element={<DoctorDetail />} />
+          <Route path="/medicines/:medicineId" element={<MedicineDetail />} />
+          <Route path="service/:serviceId" element={<ServiceDetail />} />
+          <Route path="/department/:departmentId" element={<DepartmentDetail />} />
+          <Route path="/myappointments" element={<ListAppointmentPage />} />
+
 
           {/* <Route path="/medicalrecord" element={<AddMedicalRecord />} />
           <Route path="/medicalrecords" element={<ViewMedicalRecords />} /> */}

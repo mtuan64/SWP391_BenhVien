@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/authContext";
-import { Badge, Button, Dropdown, Menu, Modal } from "antd";
+import { Badge, Button, Avatar, Dropdown, Modal } from "antd"; // Added Modal import
 import {
   MenuOutlined,
   HomeOutlined,
@@ -17,8 +17,6 @@ import {
   LockOutlined,
   BellOutlined,
 } from "@ant-design/icons";
-import axios from "axios";
-import "../assets/css/Header.css";
 
 const Header = ({ onMenuClick, menuOpen }) => {
   const { user, token, logout } = useAuth();
@@ -50,11 +48,8 @@ const Header = ({ onMenuClick, menuOpen }) => {
       };
 
       fetchUnreadCount();
-      // Optional: Uncomment for polling
-      // const interval = setInterval(fetchUnreadCount, 5000);
-      // return () => clearInterval(interval);
     }
-  }, [token, navigate, logout]);
+  }, [token, logout, navigate]);
 
   const handleLogout = () => {
     Modal.confirm({
@@ -76,9 +71,19 @@ const Header = ({ onMenuClick, menuOpen }) => {
       label: <Link to="/myprofile">Profile</Link>,
     },
     {
+      key: "profilemanage",
+      icon: <UserOutlined />,
+      label: <Link to="/profilemanage">Profile Manage</Link>,
+    },
+    {
+      key: "appointmentmanage",
+      icon: <CalendarOutlined />,
+      label: <Link to="/appointmentmanage">Appointment Manage</Link>,
+    },
+    {
       key: "changepass",
       icon: <LockOutlined />,
-      label: <Link to="/changepass">Change Password</Link>,
+      label: <Link to="/changepass">Change password</Link>,
     },
     {
       type: "divider",
@@ -105,41 +110,60 @@ const Header = ({ onMenuClick, menuOpen }) => {
   ];
 
   return (
-    <nav className="header">
-      <div className="header-container">
-        {user && (
-          <Button
-            type="text"
-            icon={<MenuOutlined />}
-            onClick={onMenuClick}
-            className="menu-button"
-            aria-label={menuOpen ? "Close menu" : "Open menu"}
-          />
-        )}
+    <nav
+      className="navbar navbar-expand-lg bg-white navbar-light shadow-sm px-5 py-3 py-lg-0 header"
+      style={{
+        position: "fixed",
+        width: "100%",
+        top: 0,
+        left: 0,
+        zIndex: 3000,
+      }}
+    >
+      {user && (
+        <Button
+          type="text"
+          icon={<MenuOutlined style={{ fontSize: 24 }} />}
+          onClick={onMenuClick}
+          className="menu-button"
+          style={{
+            marginRight: 16,
+            border: "none",
+            background: "none",
+            boxShadow: "none",
+            outline: "none",
+          }}
+        />
+      )}
 
-        <Link to="/" className="header-brand">
-          <h1 className="header-logo">Kiwicare</h1>
-        </Link>
+      <Link to="/" className="navbar-brand p-0 d-flex align-items-center header-brand">
+        <h1 className="m-0 text-primary header-logo">
+          <i className="fa fa-heartbeat me-2"></i>Kiwicare
+        </h1>
+      </Link>
 
-        <Menu
-          mode="horizontal"
-          className="header-menu"
-          items={[
-            {
-              key: "home",
-              icon: <HomeOutlined style={{ fontSize: 18 }} />,
-              label: <Link to="/">Home</Link>,
-            },
-            {
-              key: "about",
-              icon: <InfoCircleOutlined style={{ fontSize: 18 }} />,
-              label: <Link to="/about">About</Link>,
-            },
-            {
-              key: "posts",
-              icon: <BookOutlined style={{ fontSize: 18 }} />,
-              label: "Post",
-              children: [
+      <button
+        className="navbar-toggler"
+        type="button"
+        data-bs-toggle="collapse"
+        data-bs-target="#navbarCollapse"
+      >
+        <span className="navbar-toggler-icon"></span>
+      </button>
+
+      <div className="collapse navbar-collapse header-menu" id="navbarCollapse">
+        <div className="navbar-nav ms-auto py-0 align-items-center d-flex header-actions">
+          <Link to="/" className="nav-item nav-link">
+            <HomeOutlined style={{ marginRight: 8 }} />
+            Home
+          </Link>
+          <Link to="/about" className="nav-item nav-link">
+            <InfoCircleOutlined style={{ marginRight: 8 }} />
+            About
+          </Link>
+          <Dropdown
+            menu={{
+              items: [
                 {
                   key: "blogs",
                   label: <Link to="/blogs">Blogs</Link>,
@@ -149,21 +173,28 @@ const Header = ({ onMenuClick, menuOpen }) => {
                   label: <Link to="/news">News</Link>,
                 },
               ],
-            },
-            {
-              key: "services",
-              icon: <MedicineBoxOutlined style={{ fontSize: 18 }} />,
-              label: <Link to="/services">Services</Link>,
-            },
-            {
-              key: "doctors",
-              icon: <TeamOutlined style={{ fontSize: 18 }} />,
-              label: <Link to="/doctors">Doctors</Link>,
-            },
-          ]}
-        />
-
-        <div className="header-actions">
+            }}
+            trigger={["click"]}
+          >
+            <div
+              className="nav-item nav-link d-flex align-items-center"
+              style={{ cursor: "pointer" }}
+            >
+              <BookOutlined style={{ marginRight: 8 }} />
+              Post
+            </div>
+          </Dropdown>
+          <Link to="/services" className="nav-item nav-link">
+            <MedicineBoxOutlined style={{ marginRight: 8 }} />
+            Services
+          </Link>
+          <Link to="/doctors" className="nav-item nav-link">
+            <TeamOutlined style={{ marginRight: 8 }} />
+            Doctors
+          </Link>
+          <Link to="/health/calculator" className="nav-item nav-link">
+            BMI
+          </Link>
           {user ? (
             <>
               <Badge count={unreadCount} size="small">
@@ -179,23 +210,13 @@ const Header = ({ onMenuClick, menuOpen }) => {
                   <UserOutlined style={{ fontSize: 18 }} /> Account
                 </Button>
               </Dropdown>
-              <Button
-                type="primary"
-                icon={<CalendarOutlined style={{ fontSize: 18 }} />}
-                onClick={() => navigate("/appointment")}
-                className="appointment-button"
-              >
-                Appointment
-              </Button>
             </>
           ) : (
-            <>
-              <Dropdown menu={{ items: guestMenuItems }} trigger={["click"]}>
-                <Button type="text" className="account-button">
-                  <UserOutlined style={{ fontSize: 18 }} /> Account
-                </Button>
-              </Dropdown>
-            </>
+            <Dropdown menu={{ items: guestMenuItems }} trigger={["click"]}>
+              <Button type="text" className="account-button">
+                <UserOutlined style={{ fontSize: 18 }} /> Account
+              </Button>
+            </Dropdown>
           )}
         </div>
       </div>

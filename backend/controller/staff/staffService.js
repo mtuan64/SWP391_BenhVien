@@ -1,3 +1,5 @@
+const Schedule = require('../../models/Schedule');
+
 module.exports.createCheckup = async (req, res) => {
   try {
     const { patientId, doctorId, date, time, symptoms } = req.body;
@@ -12,7 +14,7 @@ module.exports.createCheckup = async (req, res) => {
   }
 };
 
-const Schedule = require('../../models/Schedule');
+
 
 module.exports.createSchedule = async (req, res) => {
   try {

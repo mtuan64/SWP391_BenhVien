@@ -13,10 +13,15 @@ const departmentSchema = new mongoose.Schema({
   description: {
     type: String,
     trim: true
-  }
+  },
+  image: { 
+    type: String
+  },
 }, {
   collection: 'departments', 
   timestamps: true
 });
 
 module.exports = mongoose.model('Department', departmentSchema);
+
+

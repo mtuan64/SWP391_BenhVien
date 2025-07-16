@@ -1,6 +1,7 @@
 const { authMiddleware } = require("../../middleware/auth.middleware");
 const express = require("express");
 const verifyToken = require("../../middleware/verifyToken");
+const userService = require("../../controller/user/userService");
 const userRouter = express.Router();
 const {
   createPaymentLinkEmbedded,
@@ -37,5 +38,14 @@ userRouter.get("/", (req, res) => {
 userRouter.post("/create", authMiddleware, createAppointment);
 userRouter.get("/user", authMiddleware, getAppointmentsByUser);
 userRouter.post("/cancel/:id", authMiddleware, cancelAppointment);
+
+userRouter.get('/doctor', userService.getAllDoctors);
+userRouter.get('/doctor/:doctorId', userService.getDoctorById);
+userRouter.get('/service', userService.getAllServices);
+userRouter.get('/service/:serviceId', userService.getServiceById);
+userRouter.get('/department', userService.getAllDepartment);
+userRouter.get('/department/:departmentId', userService.getDepartmentById);
+userRouter.get('/medicines', userService.getAllMedicines);
+userRouter.get('/medicines/:medicineId', userService.getMedicineById);
 
 module.exports = userRouter;
