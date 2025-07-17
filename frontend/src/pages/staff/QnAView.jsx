@@ -27,17 +27,18 @@ const QnAView = () => {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [sort, setSort] = useState("");
-  const [searchId, setSearchId] = useState("");
+  // const [searchId, setSearchId] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [replyMessages, setReplyMessages] = useState({});
   const [loading, setLoading] = useState(false);
   const [expandedCards, setExpandedCards] = useState({});
+    const [titleFilter, setTitleFilter] = useState("");
 
   const fetchQuestions = async () => {
     setLoading(true);
     try {
       const res = await axios.get('/api/staff/qa', {
-        params: { sort, searchId, statusfilter: statusFilter, page, limit: 5 }
+        params: { sort, statusfilter: statusFilter, page, limit: 5 }
       });
 
       setQuestions(res.data.data);
@@ -52,8 +53,11 @@ const QnAView = () => {
 
   useEffect(() => {
     fetchQuestions();
-  }, [sort, searchId, statusFilter, page]);
-
+  }, [sort, statusFilter, page]);
+  const filteredData = questions.filter(q =>
+    q.title.toLowerCase().includes(titleFilter.toLowerCase()) ||
+    q.message?.toLowerCase().includes(titleFilter.toLowerCase())
+  );
   const handleReply = async (id) => {
     const replyMessage = replyMessages[id];
     if (!replyMessage) return alert("Vui lòng nhập nội dung phản hồi.");
@@ -169,14 +173,14 @@ const QnAView = () => {
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <div className="group">
-              <label className="block text-sm font-semibold text-gray-700 mb-3">Tìm theo Title</label>
+              <label className="block text-sm font-semibold text-gray-700 mb-3">Tìm theo Chủ đề/Câu hỏi</label>
               <div className="relative">
                 <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-blue-500 transition-colors duration-200" />
                 <input
                   type="text"
-                  placeholder="Nhập title..."
-                  value={searchId}
-                  onChange={(e) => setSearchId(e.target.value)}
+                  placeholder="Nhập ..."
+                  value={titleFilter}
+                  onChange={(e) => setTitleFilter(e.target.value)}
                   className="w-full pl-12 pr-4 py-4 border-2 border-gray-200 rounded-2xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-300 bg-gray-50/50 focus:bg-white text-gray-800 placeholder-gray-500"
                 />
               </div>
@@ -245,7 +249,7 @@ const QnAView = () => {
               </div>
             ) : (
               <div className="space-y-6 mb-12">
-                {questions.map((q, index) => (
+                {filteredData.map((q, index) => (
                   <div
                     key={q._id}
                     className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-2xl border border-white/40 overflow-hidden transition-all duration-300 hover:shadow-3xl hover:scale-[1.02]"
