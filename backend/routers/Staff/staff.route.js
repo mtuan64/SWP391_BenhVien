@@ -7,9 +7,9 @@ const {
   getAllUserEmails,
 } = require("../../controller/staff/notificationService");
 const staffRouter = express.Router();
-const {getAllQA,replyQA} = require('../../controller/staff/staffService');
-staffRouter.get('/qa',getAllQA);
-staffRouter.put('/qa/:id',replyQA);
+const { getAllQA, replyQA } = require('../../controller/staff/staffService');
+staffRouter.get('/qa', getAllQA);
+staffRouter.put('/qa/:id', replyQA);
 module.exports = staffRouter;
 const { getAllServices, createService, deleteService, getServiceById, updateService } = require('../../controller/staff/servicesControlelr');
 const staffController = require('../../controller/staff/staffService');
@@ -27,6 +27,8 @@ staffRouter.put('/medical-records/:id', editMedicalRecord);
 staffRouter.get('/invoices', invoiceController.getAllInvoices);
 staffRouter.get('/services/:invoiceId', invoiceController.getServices);
 staffRouter.post('/invoices', invoiceController.CreateInvoices);
+staffRouter.post('/appointmentinvoices', invoiceController.CreateInvoices2);
+
 staffRouter.put('/services/paid/:invoiceId', paymentController.paidServices);
 staffRouter.delete('/services/delete/:invoiceId', paymentController.deleteInvoice);
 staffRouter.get('/payments', paymentController.getPayments);

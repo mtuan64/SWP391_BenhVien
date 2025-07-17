@@ -259,3 +259,34 @@ exports.getProfilesByUserId = async (req, res) => {
     });
   }
 };
+
+exports.CreateInvoices2 = async (req, res) => {
+  const { orderCode, serviceId, amount, userId, profileId } = req.body;
+
+  try {
+    // Lấy dịch vụ từ DB
+    const service = await Service.findById(serviceId);
+    if (!service) {
+      return res.status(404).json({ message: "Service không tồn tại" });
+    }
+
+    // Tạo hóa đơn
+    const newInvoice = new Invoice({
+      userId,
+      profileId,
+      services: [service._id],
+      invoiceNumber: orderCode || "INV-" + Math.floor(1000 + Math.random() * 9000),
+      totalAmount: amount || service.price || 0,
+      status: "Paid",
+      createdAt: new Date(),
+      updatedAt: new Date()
+    });
+
+    await newInvoice.save();
+    res.status(200).json({ message: "Tạo hóa đơn thành công", invoice: newInvoice });
+  } catch (error) {
+    console.error("Error tạo hóa đơn:", error);
+    res.status(500).json({ message: "Lỗi server khi tạo hóa đơn" });
+  }
+};
+
