@@ -7,9 +7,15 @@ const {
   getAllUserEmails,
 } = require("../../controller/staff/notificationService");
 const staffRouter = express.Router();
+<<<<<<< HEAD
 const { getAllQA, replyQA } = require('../../controller/staff/staffService');
 staffRouter.get('/qa', getAllQA);
 staffRouter.put('/qa/:id', replyQA);
+=======
+const {getAllQA,replyQA,getFeedbacksForStaff} = require('../../controller/staff/staffService');
+staffRouter.get('/qa',getAllQA);
+staffRouter.put('/qa/:id',replyQA);
+>>>>>>> 4825e778c40c4fbaf5d632ed6a26d1cbf3d0324e
 module.exports = staffRouter;
 const { getAllServices, createService, deleteService, getServiceById, updateService } = require('../../controller/staff/servicesControlelr');
 const staffController = require('../../controller/staff/staffService');
@@ -58,4 +64,8 @@ staffRouter.post('/create/services', createService); // POST /api/staff/services
 staffRouter.put('/update/services/:id', updateService); // PUT /api/staff/services/:id - Update a service
 staffRouter.delete('/delete/services/:id', deleteService); // DELETE /api/staff/services/:id - Delete a service
 // staffRouter.get('/labtestresult/:profileId', LabTestbyProfileId);
+
+// Feedback
+staffRouter.get('/feedback', getFeedbacksForStaff);
+
 module.exports = staffRouter;

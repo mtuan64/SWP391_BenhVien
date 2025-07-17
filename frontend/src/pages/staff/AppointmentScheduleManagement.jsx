@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import {Table,Button,Container,Spinner,Modal,Form,InputGroup,FormControl,Pagination,Row,Col,} from "react-bootstrap";
+import { Table, Button, Container, Spinner, Modal, Form, InputGroup, FormControl, Pagination, Row, Col, } from "react-bootstrap";
 import { FaEdit, FaTrash, FaSearch, FaRedo } from "react-icons/fa";
 import FooterComponent from "../../components/FooterComponent";
 import axios from "axios";
@@ -217,6 +217,7 @@ const AppointmentScheduleManagement = () => {
     });
   };
 
+
   const validateForm = () => {
     const errors = {};
     if (!form.appointmentDate)
@@ -362,7 +363,7 @@ const AppointmentScheduleManagement = () => {
       console.error("Error submitting data:", error);
       alert(
         "Error creating/updating appointment: " +
-          (error?.response?.data?.message || error.message)
+        (error?.response?.data?.message || error.message)
       );
     } finally {
       setIsFormLoading(false);
@@ -373,6 +374,23 @@ const AppointmentScheduleManagement = () => {
     setDeleteAppointmentId(appointmentId);
     setShowDeleteModal(true);
   }
+
+  // Thêm handler mới
+  const handleSendReminder = async (appointmentId) => {
+    if (!window.confirm('Bạn có chắc muốn gửi reminder cho lịch hẹn này?')) return;
+    try {
+      const res = await axios.post(`http://localhost:9999/api/appointmentScheduleManagement/send-reminder/${appointmentId}`);
+      // Update local state
+      setFilteredAppointments(prev =>
+        prev.map(appt =>
+          appt._id === appointmentId ? { ...appt, reminderSent: true } : appt
+        )
+      );
+      alert('Reminder sent successfully!');
+    } catch (err) {
+      alert('Failed to send reminder: ' + (err.response?.data?.error || err.message));
+    }
+  };
 
   async function confirmDelete() {
     try {
@@ -458,20 +476,20 @@ const AppointmentScheduleManagement = () => {
           <Col md={2} sm={6} className="mb-3">
             <Form.Group>
               <Form.Label>Department</Form.Label>
-          <Form.Select
-            value={departmentFilter}
-            onChange={(e) => {
-              setDepartmentFilter(e.target.value);
-              setCurrentPage(1);
-            }}
-          >
-            <option value="all">All Departments</option>
-            {departments.map((dept) => (
-              <option key={dept._id} value={dept._id}>
-                {dept.name}
-              </option>
-            ))}
-          </Form.Select>
+              <Form.Select
+                value={departmentFilter}
+                onChange={(e) => {
+                  setDepartmentFilter(e.target.value);
+                  setCurrentPage(1);
+                }}
+              >
+                <option value="all">All Departments</option>
+                {departments.map((dept) => (
+                  <option key={dept._id} value={dept._id}>
+                    {dept.name}
+                  </option>
+                ))}
+              </Form.Select>
             </Form.Group>
           </Col>
           <Col md={2} sm={6} className="mb-3">
@@ -580,12 +598,45 @@ const AppointmentScheduleManagement = () => {
                       <td>{appointment.userPhone || "N/A"}</td>
                       <td>
                         {!appointment.profileId ||
-                        appointment.profileId === "null"
+                          appointment.profileId === "null"
                           ? "N/A"
                           : appointment.profileId}
                       </td>
                       <td>{appointment.status}</td>
                       <td>{appointment.reminderSent ? "Yes" : "No"}</td>
+                      <td>
+                        <div className="d-flex gap-2">
+                          <Button
+                            variant="primary"
+                            size="sm"
+                            onClick={() => handleEdit(appointment)}
+                            title="Edit Appointment"
+                            aria-label="Edit appointment"
+                          >
+                            <FaEdit />
+                          </Button>
+                          <Button
+                            variant="danger"
+                            size="sm"
+                            onClick={() => handleDeleteClick(appointment._id)}
+                            title="Delete Appointment"
+                            aria-label="Delete appointment"
+                          >
+                            <FaTrash />
+                          </Button>
+                          {!appointment.reminderSent && appointment.status === "Booked" && (
+                            <Button
+                              variant="warning"
+                              size="sm"
+                              onClick={() => handleSendReminder(appointment._id)}
+                              title="Send Reminder"
+                              aria-label="Send reminder"
+                            >
+                              Send Reminder
+                            </Button>
+                          )}
+                        </div>
+                      </td>
                       <td>
                         <div className="d-flex gap-2">
                           <Button
