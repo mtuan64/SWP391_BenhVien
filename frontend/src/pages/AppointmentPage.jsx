@@ -36,22 +36,6 @@ const AppointmentPage = () => {
     { id: "confirm", title: "Xác nhận", desc: "" },
   ];
 
-  // useEffect(() => {
-  //   const fetchProfiles = async () => {
-  //     try {
-  //       const res = await axios.get("http://localhost:9999/api/profile/user", {
-  //         headers: {
-  //           Authorization: `Bearer ${token}`,
-  //         },
-  //       });
-  //       setProfiles(res.data);
-  //     } catch (err) {
-  //       console.error("Error fetching profiles:", err);
-  //     }
-  //   };
-  //   fetchProfiles();
-  // }, []);
-
   useEffect(() => {
     const fetchDoctors = async () => {
       try {
@@ -74,7 +58,7 @@ const AppointmentPage = () => {
         const res = await axios.get("http://localhost:9999/api/departments", {
           params: {
             page: 1,
-            limit: 50, // lấy đủ hết các khoa 
+            limit: 50,
             search: "",
           },
           headers: {
@@ -112,15 +96,10 @@ const AppointmentPage = () => {
           Authorization: `Bearer ${token}`,
         },
       });
-
-      // console.log("Profile created:", res.data);
-      // setSelectedProfile(res._id);
-      // const updated = await axios.get("http://localhost:9999/api/profile/user", {
-      //   headers: {
-      //     Authorization: `Bearer ${token}`,
-      //   },
-      // });
-      // setProfiles(updated.data);
+      console.log("Profile created:", res.data);
+      const newProfile = res.data.profile;
+      setSelectedProfile(newProfile._id);
+      setProfiles([...profiles, newProfile]);
 
       setSuccess(true);
       setStep("department");
@@ -137,6 +116,12 @@ const AppointmentPage = () => {
     setError(null);
     try {
       const appointmentDate = buildAppointmentDate(selectedDate, selectedTime);
+      if (!appointmentDate) {
+        setError("Ngày giờ không hợp lệ.");
+        return;
+      }
+      console.log("Sending appointmentDate:", appointmentDate);  // Debug format sent
+
       const res = await axios.post("http://localhost:9999/api/user/create", {
         profileId: selectedProfile,
         doctorId: selectedDoctor,
@@ -152,23 +137,26 @@ const AppointmentPage = () => {
       setSuccess(true);
       setStep("confirm");
     } catch (err) {
-      console.error("Error creating appointment:", err);
+      console.error("Error creating appointment:", err.response?.data);
       setError("Đặt lịch thất bại.");
     } finally {
       setLoading(false);
     }
   };
 
-  // Thêm useEffect để fetch time slots khi có doctor và date
   useEffect(() => {
     const fetchAvailableTimeSlots = async () => {
-      if (!selectedDoctor || !selectedDate || !token) return;  // Thêm check token để tránh call nếu unauth.
+      if (!selectedDoctor || !selectedDate || !token) return;
 
       try {
-        const formattedDate = selectedDate.toISOString().split('T')[0]; // YYYY-MM-DD
+        // FIXED: Use local date string to avoid timezone shift
+        const year = selectedDate.getFullYear();
+        const month = (selectedDate.getMonth() + 1).toString().padStart(2, '0');
+        const day = selectedDate.getDate().toString().padStart(2, '0');
+        const formattedDate = `${year}-${month}-${day}`;
 
-        const res = await axios.get(`http://localhost:9999/api/appointmentScheduleManagement/schedules/${selectedDoctor}`, {  // Sửa path: Dùng template để inject doctorId vào path.
-          params: {  // Chỉ giữ date, vì doctorId giờ là path param.
+        const res = await axios.get(`http://localhost:9999/api/appointmentScheduleManagement/schedules/${selectedDoctor}`, {
+          params: {
             date: formattedDate,
           },
           headers: {
@@ -176,23 +164,15 @@ const AppointmentPage = () => {
           },
         });
 
-        // Giả sử res.data là array schedules (từ getDoctorSchedules) – filter available slots
         const availableSlots = res.data.flatMap(schedule =>
           schedule.timeSlots
             .filter(slot => slot.status === 'Available')
-            .map(slot => ({ startTime: slot.startTime, endTime: slot.endTime }))
+            .map(slot => ({ startTime: new Date(slot.startTime), endTime: new Date(slot.endTime) }))
         );
-        setAvailableTimeSlots(availableSlots);  // Set state với slots filtered.
-
+        setAvailableTimeSlots(availableSlots);
       } catch (err) {
         console.error("Error fetching time slots:", err);
-        if (err.response?.status === 401) {
-          // Handle unauthorized (token invalid) – ví dụ redirect login.
-          // setError("Phiên đăng nhập hết hạn, vui lòng đăng nhập lại.");
-        } else if (err.response?.status === 404) {
-          // setError("Không có lịch cho bác sĩ này.");
-        }
-        setAvailableTimeSlots([]); // Reset nếu lỗi
+        setAvailableTimeSlots([]);
       }
     };
     fetchAvailableTimeSlots();
@@ -201,135 +181,117 @@ const AppointmentPage = () => {
   // Hàm format time từ Date thành "HH:MM Sáng/Chiều"
   const formatTimeSlot = (startTime) => {
     const date = new Date(startTime);
+    if (isNaN(date.getTime())) return "Invalid time";  // Fallback if invalid
     const hours = date.getHours();
     const minutes = date.getMinutes().toString().padStart(2, '0');
     const period = hours < 12 ? 'Sáng' : 'Chiều';
-    const formattedHours = (hours % 12 || 12).toString().padStart(2, '0'); // 12-hour format
+    const formattedHours = (hours % 12 || 12).toString().padStart(2, '0');
     return `${formattedHours}:${minutes} ${period}`;
   };
 
-  // Cập nhật buildAppointmentDate để dùng startTime từ slot
   const buildAppointmentDate = (selectedDate, selectedTime) => {
     if (!selectedDate || !selectedTime) return null;
 
-    // selectedTime giờ là startTime Date object từ DB
-    const appointmentDate = new Date(selectedDate);
-    appointmentDate.setHours(selectedTime.getHours(), selectedTime.getMinutes(), 0, 0);
-    return appointmentDate;
+    const date = new Date(selectedDate);
+    const time = new Date(selectedTime);
+
+    date.setHours(time.getHours());
+    date.setMinutes(time.getMinutes());
+    date.setSeconds(0);
+    date.setMilliseconds(0);
+
+    if (isNaN(date.getTime())) return null;
+
+    const year = date.getFullYear();
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const day = date.getDate().toString().padStart(2, '0');
+    const hours = date.getHours().toString().padStart(2, '0');
+    const minutes = date.getMinutes().toString().padStart(2, '0');
+    const seconds = '00';
+    const milliseconds = '000';
+
+    return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}.${milliseconds}`;
   };
 
   const renderStepContent = () => {
     switch (step) {
       case "profile":
-        if (profiles.length === 0) {
-          return (
-            <div className="p-4 bg-white rounded shadow-sm">
-              <h3 className="text-primary fw-bold mb-4">Tạo Hồ Sơ Mới</h3>
+        return (
+          <div className="p-4 bg-white rounded shadow-sm">
+            <h3 className="text-primary fw-bold mb-4">Tạo Hồ Sơ Mới</h3>
 
-              {error && <div className="alert alert-danger">{error}</div>}
-              {success && (
-                <div className="alert alert-success">Tạo hồ sơ thành công!</div>
-              )}
+            {error && <div className="alert alert-danger">{error}</div>}
+            {success && (
+              <div className="alert alert-success">Tạo hồ sơ thành công!</div>
+            )}
 
-              <div className="mb-3">
-                <label className="form-label">Họ và tên</label>
-                <input
-                  type="text"
-                  className="form-control"
-                  value={profileName}
-                  onChange={(e) => setProfileName(e.target.value)}
-                  placeholder="Nhập Họ và Tên"
-                />
-              </div>
-
-              <div className="mb-3">
-                <label className="form-label">Giới tính</label>
-                <select
-                  className="form-select"
-                  value={profileGender}
-                  onChange={(e) => setProfileGender(e.target.value)}
-                >
-                  <option value="">Chọn giới tính</option>
-                  <option value="Male">Nam</option>
-                  <option value="Female">Nữ</option>
-                  <option value="Other">Khác</option>
-                </select>
-              </div>
-
-              <div className="mb-3">
-                <label className="form-label">CMND/CCCD</label>
-                <input
-                  type="text"
-                  className="form-control"
-                  value={profileIdentityNumber}
-                  onChange={(e) => setProfileIdentityNumber(e.target.value)}
-                  maxLength={12}
-                  placeholder="Nhập số CMND hoặc CCCD"
-                />
-              </div>
-
-              <div className="mb-3">
-                <label className="form-label">Ngày sinh</label>
-                <input
-                  type="date"
-                  name="dateOfBirth"
-                  className="form-control"
-                  value={profileDateOfBirth}
-                  onChange={(e) => setProfileDateOfBirth(e.target.value)}
-                  max={new Date().toISOString().split("T")[0]}
-                />
-              </div>
-
-              <div className="text-end mt-4">
-                <button
-                  className="btn btn-primary"
-                  onClick={handleCreateProfile}
-                  disabled={
-                    loading ||
-                    !profileName ||
-                    !profileGender ||
-                    !profileIdentityNumber ||
-                    !profileDateOfBirth
-                  }
-                >
-                  {loading ? "Đang tạo..." : "Tạo hồ sơ"}
-                </button>
-              </div>
+            <div className="mb-3">
+              <label className="form-label">Họ và tên</label>
+              <input
+                type="text"
+                className="form-control"
+                value={profileName}
+                onChange={(e) => setProfileName(e.target.value)}
+                placeholder="Nhập Họ và Tên"
+              />
             </div>
-          );
-        }
-      // return (
-      //   <div className="p-4 bg-white rounded shadow-sm">
-      //     <h3 className="text-primary fw-bold mb-4">Chọn Hồ Sơ</h3>
-      //     <Row>
-      //       {profiles.map((profile) => (
-      //         <Col key={profile._id} md={6} className="mb-4">
-      //           <label
-      //             className={`border p-4 rounded text-center cursor-pointer hover:bg-light ${selectedProfile === profile._id ? "border-primary" : ""
-      //               }`}
-      //             onClick={() => setSelectedProfile(profile._id)}
-      //           >
-      //             <input type="radio" name="profile" className="d-none" />
-      //             <h5 className="fw-semibold">{profile.name}</h5>
-      //             <p className="text-muted small">
-      //               {profile.gender} -{" "}
-      //               {new Date(profile.dateOfBirth).toLocaleDateString()}
-      //             </p>
-      //           </label>
-      //         </Col>
-      //       ))}
-      //     </Row>
-      //     <div className="text-end mt-4">
-      //       <button
-      //         className="btn btn-primary"
-      //         onClick={() => setStep("department")}
-      //         disabled={!selectedProfile}
-      //       >
-      //         Tiếp Theo
-      //       </button>
-      //     </div>
-      //   </div>
-      // );
+
+            <div className="mb-3">
+              <label className="form-label">Giới tính</label>
+              <select
+                className="form-select"
+                value={profileGender}
+                onChange={(e) => setProfileGender(e.target.value)}
+              >
+                <option value="">Chọn giới tính</option>
+                <option value="Male">Nam</option>
+                <option value="Female">Nữ</option>
+                <option value="Other">Khác</option>
+              </select>
+            </div>
+
+            <div className="mb-3">
+              <label className="form-label">CMND/CCCD</label>
+              <input
+                type="text"
+                className="form-control"
+                value={profileIdentityNumber}
+                onChange={(e) => setProfileIdentityNumber(e.target.value)}
+                maxLength={12}
+                placeholder="Nhập số CMND hoặc CCCD"
+              />
+            </div>
+
+            <div className="mb-3">
+              <label className="form-label">Ngày sinh</label>
+              <input
+                type="date"
+                name="dateOfBirth"
+                className="form-control"
+                value={profileDateOfBirth}
+                onChange={(e) => setProfileDateOfBirth(e.target.value)}
+                max={new Date().toISOString().split("T")[0]}
+              />
+            </div>
+
+            <div className="text-end mt-4">
+              <button
+                className="btn btn-primary"
+                onClick={handleCreateProfile}
+                disabled={
+                  loading ||
+                  !profileName ||
+                  !profileGender ||
+                  !profileIdentityNumber ||
+                  !profileDateOfBirth
+                }
+              >
+                {loading ? "Đang tạo..." : "Tạo hồ sơ"}
+              </button>
+            </div>
+          </div>
+        );
+
 
       case "department":
         return (
@@ -412,6 +374,7 @@ const AppointmentPage = () => {
                         )}
                       </div>
                       <h5 className="doctor-name">{doctor.name}</h5>
+                      <p className="doctor-degree">{doctor.degree}</p>
                       <p className="doctor-experience">
                         {doctor.expYear} năm kinh nghiệm
                       </p>
@@ -451,7 +414,9 @@ const AppointmentPage = () => {
                 />
               </Col>
               <Col md={6}>
-                {availableTimeSlots.length === 0 ? (
+                {!Array.isArray(availableTimeSlots) ? (
+                  <p className="text-muted">Đang tải hoặc lỗi dữ liệu slot.</p>
+                ) : availableTimeSlots.length === 0 ? (
                   <p className="text-muted">Không có slot available cho ngày này.</p>
                 ) : (
                   <div className="d-flex flex-wrap gap-2">
@@ -460,8 +425,8 @@ const AppointmentPage = () => {
                       return (
                         <button
                           key={index}
-                          className={`btn btn-outline-primary btn-sm ${selectedTime?.toISOString() === slot.startTime.toISOString() ? "btn-primary text-white" : ""}`}
-                          onClick={() => setSelectedTime(slot.startTime)} // Lưu Date object
+                          className={`btn btn-outline-primary btn-sm ${new Date(selectedTime).toISOString() === new Date(slot.startTime).toISOString() ? "btn-primary text-white" : ""}`}
+                          onClick={() => setSelectedTime(new Date(slot.startTime))}
                         >
                           {formatted}
                         </button>
