@@ -1,12 +1,12 @@
 const User = require("../../models/User");
 const jwt = require("jsonwebtoken");
-const mongoose = require('mongoose');
-const nodemailer = require('nodemailer');
-const Employee = require('../../models/Employee');
-const bcrypt = require('bcrypt');
-const Counter = require('../../models/Counter');
+const mongoose = require("mongoose");
+const nodemailer = require("nodemailer");
+const Employee = require("../../models/Employee");
+const bcrypt = require("bcrypt");
+const Counter = require("../../models/Counter");
 
-require('dotenv').config();
+require("dotenv").config();
 const Login = async (req, res) => {
   const { email, password } = req.body;
   try {
@@ -17,22 +17,11 @@ const Login = async (req, res) => {
       return res.status(400).json({ message: "Invalid email" });
     }
 
-    // So sánh mật khẩu
     const target = user || employee;
     const isMatch = await bcrypt.compare(password, target.password);
-    
     if (!isMatch) {
       return res.status(400).json({ message: "Invalid password" });
     }
-
-    // Payload
-    const payload = {
-      id: target._id,
-      email: target.email,
-      name: target.name,
-      role: target.role || "patient", // optional
-      status: target.status,
-    };
 
     if (target.status === "inactive") {
       return res
@@ -40,15 +29,49 @@ const Login = async (req, res) => {
         .json({ message: "You are banned from the system" });
     }
 
-    // Tạo JWT
+    const payload = {
+      id: target._id,
+      email: target.email,
+      name: target.name,
+      role: target.role || "patient",
+      status: target.status,
+    };
+
     const token = jwt.sign(payload, process.env.JWT_SECRET, {
       expiresIn: "1h",
     });
+
+    // 🔍 Kiểm tra thông tin còn thiếu
+    let incompleteProfile = false;
+    let missingFields = [];
+
+    if (employee) {
+      if (employee.role === "Doctor") {
+        const requiredFields = [
+          "department",
+          "avatar",
+          "degree",
+          "expYear",
+          "specialization",
+          "phone",
+        ];
+        missingFields = requiredFields.filter((field) => !employee[field]);
+      } else if (employee.role === "Staff") {
+        const requiredFields = ["avatar", "phone"];
+        missingFields = requiredFields.filter((field) => !employee[field]);
+      }
+    }
+
+    if (missingFields.length > 0) {
+      incompleteProfile = true;
+    }
 
     return res.status(200).json({
       message: "OK",
       token,
       user: target,
+      incompleteProfile,
+      missingFields,
     });
   } catch (error) {
     console.error("Login error:", error);
@@ -89,7 +112,7 @@ const Signup = async (req, res) => {
     // 5) Trả kết quả về cho Postman (kèm user_code)
     return res.status(200).json({
       message: "Đăng ký thành công",
-      user_code: savedUser.user_code,  
+      user_code: savedUser.user_code,
       user: {
         _id: savedUser._id,
         email: savedUser.email,
@@ -101,10 +124,7 @@ const Signup = async (req, res) => {
       },
     });
   } catch (error) {
-
-    
-res.status(500).json({ message: "Lỗi máy chủ", error: error.message });
-
+    res.status(500).json({ message: "Lỗi máy chủ", error: error.message });
   }
 };
 
@@ -112,14 +132,14 @@ const check = async (req, res) => {
   res.status(200).json({ message: "API hoat dong" });
 };
 
-
-
 const changePassword = async (req, res) => {
   try {
     const { email, newPassword } = req.body;
 
     if (!email || !newPassword) {
-      return res.status(400).json({ message: "Email và mật khẩu mới là bắt buộc" });
+      return res
+        .status(400)
+        .json({ message: "Email và mật khẩu mới là bắt buộc" });
     }
 
     // Tìm trong bảng User
@@ -128,7 +148,9 @@ const changePassword = async (req, res) => {
     if (user) {
       user.password = await bcrypt.hash(newPassword, 10);
       await user.save();
-      return res.status(200).json({ message: "Đổi mật khẩu thành công (user)" });
+      return res
+        .status(200)
+        .json({ message: "Đổi mật khẩu thành công (user)" });
     }
 
     // Nếu không tìm thấy trong User, thử Employee
@@ -137,10 +159,14 @@ const changePassword = async (req, res) => {
     if (employee) {
       employee.password = await bcrypt.hash(newPassword, 10);
       await employee.save();
-      return res.status(200).json({ message: "Đổi mật khẩu thành công (employee)" });
+      return res
+        .status(200)
+        .json({ message: "Đổi mật khẩu thành công (employee)" });
     }
 
-    return res.status(404).json({ message: "Không tìm thấy người dùng hoặc nhân viên" });
+    return res
+      .status(404)
+      .json({ message: "Không tìm thấy người dùng hoặc nhân viên" });
   } catch (error) {
     console.error("Lỗi trong changePassword:", error);
     res.status(500).json({ message: "Lỗi server", error: error.message });
@@ -186,7 +212,7 @@ const forgotPassword = async (req, res) => {
       // Nếu không có trong User, tìm trong Employee
       let employee = await Employee.findOne({ email });
       if (!employee) {
-        return res.status(404).json({ message: 'Email not registered' });
+        return res.status(404).json({ message: "Email not registered" });
       }
       employee.emailVerificationCode = otp;
       employee.verificationExpires = expirationTime;
@@ -197,7 +223,7 @@ const forgotPassword = async (req, res) => {
     const mailOptions = {
       from: process.env.EMAIL_USER,
       to: email,
-      subject: 'Mã xác minh đặt lại mật khẩu',
+      subject: "Mã xác minh đặt lại mật khẩu",
       html: `
         <h3>Mã xác minh</h3>
         <p>Mã xác minh của bạn là: <strong>${otp}</strong></p>
@@ -242,7 +268,9 @@ const resetPassword = async (req, res) => {
       user.emailVerificationCode = null;
       user.verificationExpires = null;
       await user.save();
-      return res.status(200).json({ message: 'Password reset successfully (user)' });
+      return res
+        .status(200)
+        .json({ message: "Password reset successfully (user)" });
     }
 
     // Nếu không có trong User, tìm trong Employee
@@ -253,7 +281,7 @@ const resetPassword = async (req, res) => {
     });
 
     if (!employee) {
-      return res.status(400).json({ message: 'Invalid or expired OTP' });
+      return res.status(400).json({ message: "Invalid or expired OTP" });
     }
 
     employee.password = await bcrypt.hash(newPassword, 10);
@@ -261,7 +289,9 @@ const resetPassword = async (req, res) => {
     employee.verificationExpires = null;
     await employee.save();
 
-    return res.status(200).json({ message: 'Password reset successfully (employee)' });
+    return res
+      .status(200)
+      .json({ message: "Password reset successfully (employee)" });
   } catch (error) {
     console.error("Error in resetPassword:", error);
     return res
@@ -270,8 +300,11 @@ const resetPassword = async (req, res) => {
   }
 };
 
-
-
 module.exports = {
-  Login, Signup, check, changePassword, forgotPassword, resetPassword
-}
+  Login,
+  Signup,
+  check,
+  changePassword,
+  forgotPassword,
+  resetPassword,
+};

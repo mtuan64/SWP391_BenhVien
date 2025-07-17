@@ -1,6 +1,7 @@
 require("dotenv").config();
 const User = require("../../models/User");
 const Employee = require("../../models/Employee");
+const Department = require("../../models/Department");
 const bcrypt = require("bcrypt");
 
 // Admin - user manage
@@ -66,7 +67,9 @@ module.exports.delUsers = async (req, res) => {
 
 module.exports.getEmployees = async (req, res) => {
   try {
-    const employees = await Employee.find({}, "-password");
+    const employees = await Employee.find({}, "-password")
+      .populate("department", "name");
+
     res.json(employees);
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -91,7 +94,6 @@ module.exports.createEmployees = async (req, res) => {
   } catch (err) {
     res.status(400).json({ message: err.message });
     console.log(err);
-    
   }
 };
 
@@ -132,5 +134,15 @@ module.exports.delEmployees = async (req, res) => {
     res.json({ message: "Employee deleted successfully" });
   } catch (err) {
     res.status(500).json({ message: err.message });
+  }
+};
+
+module.exports.getAllDepartments = async (req, res) => {
+  try {
+    const departments = await Department.find().select("name");
+    res.json(departments);
+  } catch (error) {
+    console.error("Error fetching departments:", error);
+    res.status(500).json({ message: "Failed to get departments" });
   }
 };

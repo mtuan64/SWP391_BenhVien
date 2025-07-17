@@ -19,20 +19,34 @@ const LoginPage = () => {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ email: email, password: password }),
+        body: JSON.stringify({ email, password }),
       });
 
       const data = await response.json();
+
       if (response.ok) {
         console.log("Login successful, user data:", data.user);
 
         localStorage.setItem("user", JSON.stringify(data.user));
         localStorage.setItem("token", data.token);
 
-        // Update auth context
+        
+        if (data.incompleteProfile && data.missingFields?.length > 0) {
+          Modal.warning({
+            title: "Thiếu thông tin hồ sơ",
+            content: `Bạn cần cập nhật các trường sau: ${data.missingFields.join(
+              ", "
+            )}`,
+            onOk: () => {
+              navigate("/doctor/profile");
+            },
+          });
+        }
+
+        // Cập nhật context
         login(data.user, data.token);
 
-        // Slight delay to ensure context update propagates
+        // Điều hướng
         setTimeout(() => navigate("/"), 0);
       } else {
         if (response.status === 403) {

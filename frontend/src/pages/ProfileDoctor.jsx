@@ -13,11 +13,14 @@ const ProfileDoctor = () => {
     department: user?.department || "",
     specialization: user?.specialization || "",
   });
-  const [profilePicture, setProfilePicture] = useState(user?.profilePicture || null);
+  const [profilePicture, setProfilePicture] = useState(
+    user?.profilePicture || null
+  );
   const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [departments, setDepartments] = useState([]);
 
   useEffect(() => {
     if (!user) {
@@ -33,6 +36,22 @@ const ProfileDoctor = () => {
       specialization: user?.specialization || "",
     });
     setProfilePicture(user?.profilePicture || null);
+  }, [user]);
+
+  useEffect(() => {
+    const fetchDepartments = async () => {
+      try {
+        const res = await fetch("http://localhost:9999/api/admin/getDepart");
+        const data = await res.json();
+        setDepartments(data);
+      } catch (err) {
+        console.error("Failed to fetch departments:", err);
+      }
+    };
+
+    if (user?.role === "Doctor") {
+      fetchDepartments();
+    }
   }, [user]);
 
   const handleInputChange = (e) => {
@@ -53,16 +72,20 @@ const ProfileDoctor = () => {
         const uploadFormData = new FormData();
         uploadFormData.append("profilePicture", file);
 
-        const uploadRes = await fetch("http://localhost:9999/api/user/upload-profile-picture", {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${user.token}`,
-          },
-          body: uploadFormData,
-        });
+        const uploadRes = await fetch(
+          "http://localhost:9999/api/user/upload-profile-picture",
+          {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${user.token}`,
+            },
+            body: uploadFormData,
+          }
+        );
 
         const uploadData = await uploadRes.json();
-        if (!uploadRes.ok) throw new Error(uploadData.msg || "Upload ảnh thất bại");
+        if (!uploadRes.ok)
+          throw new Error(uploadData.msg || "Upload ảnh thất bại");
 
         updatedProfilePicture = uploadData.profilePictureUrl;
       }
@@ -80,7 +103,8 @@ const ProfileDoctor = () => {
           status: "active",
           profilePicture: updatedProfilePicture,
           department: user.role === "Doctor" ? formData.department : undefined,
-          specialization: user.role === "Doctor" ? formData.specialization : undefined,
+          specialization:
+            user.role === "Doctor" ? formData.specialization : undefined,
         }),
       });
 
@@ -204,14 +228,20 @@ const ProfileDoctor = () => {
                     <label htmlFor="department" className="form-label">
                       Khoa
                     </label>
-                    <input
-                      type="text"
+                    <select
                       id="department"
                       name="department"
                       value={formData.department}
                       onChange={handleInputChange}
                       className="form-control"
-                    />
+                    >
+                      <option value="">-- Chọn Khoa --</option>
+                      {departments.map((dept) => (
+                        <option key={dept._id} value={dept._id}>
+                          {dept.name}
+                        </option>
+                      ))}
+                    </select>
                   </div>
 
                   <div className="col-md-6 mb-3">
@@ -231,11 +261,19 @@ const ProfileDoctor = () => {
               )}
             </div>
 
-            <button type="submit" className="btn btn-primary mt-3" disabled={loading}>
+            <button
+              type="submit"
+              className="btn btn-primary mt-3"
+              disabled={loading}
+            >
               {loading ? "Đang Lưu..." : "Lưu Thay Đổi"}
             </button>
-             <br></br>
-            <button type="button" onClick={() => navigate("/changepass")} className="btn btn-primary mt-3">
+            <br></br>
+            <button
+              type="button"
+              onClick={() => navigate("/changepass")}
+              className="btn btn-primary mt-3"
+            >
               Change password
             </button>
           </form>
