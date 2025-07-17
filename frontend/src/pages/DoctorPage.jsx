@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import { Container, Row, Col, Form, InputGroup } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import axios from "axios";
-import HeaderComponent from "../components/HeaderComponent";
 import "../assets/css/DoctorPage.css";
 import HeroBanner from "../components/HeroBanner";
 import TopBarComponent from "../components/TopBarComponent";
@@ -76,8 +75,6 @@ const DoctorPage = () => {
       {/* Topbar */}
       <TopBarComponent />
 
-      {/* Header */}
-      <HeaderComponent />
 
       {/* Hero Carousel */}
       <HeroBanner

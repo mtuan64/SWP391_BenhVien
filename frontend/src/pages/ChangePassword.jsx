@@ -1,7 +1,5 @@
 import { Container, Row, Col, Form, InputGroup } from "react-bootstrap";
 import { Link } from "react-router-dom";
-import HeaderComponent from "../components/HeaderComponent";
-import FooterComponent from "../components/FooterComponent";
 import React, { useState, useEffect } from 'react';
 import { jwtDecode } from 'jwt-decode';
 import bcrypt from 'bcryptjs';
@@ -126,7 +124,6 @@ const Changepass = () => {
           </Col>
         </Row>
       </div>
-<HeaderComponent />
     <Container fluid className="py-5">
   <Container>
     <Row className="justify-content-center">
@@ -180,8 +177,6 @@ const Changepass = () => {
     </Row>
   </Container>
 </Container>
-
-<FooterComponent />
     </>
   );
 };

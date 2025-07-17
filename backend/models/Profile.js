@@ -1,45 +1,59 @@
-// Update profile (luồng STAFF)
-exports.updateProfile = async (req, res) => {
-  try {
-    const { profileId } = req.params;
-    const {
-      diagnose,
-      note,
-      issues,
-      medicine,
-      doctorId
-    } = req.body;
+const mongoose = require('mongoose');
 
-    // Tìm profile theo ID
-    const profile = await Profile.findById(profileId);
-    if (!profile) {
-      return res.status(404).json({
-        success: false,
-        message: 'Không tìm thấy hồ sơ'
-      });
-    }
+const profileSchema = new mongoose.Schema({
+  name: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  identityNumber: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  dateOfBirth: {
+    type: Date,
+    required: true
+  },
+  gender: {
+    type: String,
+    enum: ['Male', 'Female', 'Other'],
+    required: true
+  },
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    default: null
+  },
+  diagnose: {
+    type: String,
+    trim: true
+  },
+  note: {
+    type: String,
+    trim: true
+  },
+  issues: {
+    type: String,
+    trim: true
+  },
+  doctorId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Employee',
+    default: null
+  },
+  medicine: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Medicine',
+    default: null
+  },
+  service: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Service',
+    default: null
+  },
+}, {
+  timestamps: true
+});
 
-    // Cập nhật thông tin nếu có
-    if (diagnose !== undefined) profile.diagnose = diagnose;
-    if (note !== undefined) profile.note = note;
-    if (issues !== undefined) profile.issues = issues;
-    if (medicine !== undefined) profile.medicine = medicine;
-    if (doctorId !== undefined) profile.doctorId = doctorId;
-
-    const updatedProfile = await profile.save();
-
-    res.status(200).json({
-      success: true,
-      message: 'Cập nhật hồ sơ thành công',
-      data: updatedProfile
-    });
-
-  } catch (error) {
-    console.error('Lỗi khi cập nhật hồ sơ:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Lỗi server khi cập nhật hồ sơ',
-      error: error.message
-    });
-  }
-};
+module.exports = mongoose.model('Profile', profileSchema);
