@@ -283,6 +283,18 @@ exports.CreateInvoices2 = async (req, res) => {
     });
 
     await newInvoice.save();
+    const payment = new Payment({
+      invoiceId: newInvoice._id,
+      userId: newInvoice.userId?._id,
+      profileId: newInvoice.profileId?._id,
+      amount: newInvoice.totalAmount || 0, // đảm bảo Invoice có trường này
+      method,
+      status: "Completed",
+      paymentDate: new Date()
+    });
+
+    await payment.save();
+
     res.status(200).json({ message: "Tạo hóa đơn thành công", invoice: newInvoice });
   } catch (error) {
     console.error("Error tạo hóa đơn:", error);
