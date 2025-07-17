@@ -5,6 +5,7 @@ const User = require("../../models/User");
 const Employee = require("../../models/Employee");
 const Schedule = require('../../models/Schedule');
 const Profile = require('../../models/Profile');
+const { sendAppointmentReminder } = require('../../utils/mailService');
 
 // Lấy danh sách lịch hẹn có kèm tên bác sĩ, người dùng, số điện thoại và user_code với phân trang
 exports.getAllAppointments = async (req, res) => {
@@ -241,5 +242,41 @@ exports.createProfile = async (req, res) => {
   } catch (error) {
     console.error("Error creating profile:", error);
     res.status(500).json({ message: "Error creating profile", error: error.message });
+  }
+};
+
+exports.sendReminder = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const appointment = await Appointment.findById(id)
+      .populate('userId', 'name email')
+      .populate('doctorId', 'name');
+
+    if (!appointment) {
+      return res.status(404).json({ error: 'Appointment not found' });
+    }
+
+    if (appointment.reminderSent) {
+      return res.status(400).json({ error: 'Reminder already sent' });
+    }
+
+    if (appointment.status !== 'Booked') {
+      return res.status(400).json({ error: 'Can only send reminder for booked appointments' });
+    }
+
+    await sendAppointmentReminder({
+      to: appointment.userId.email,
+      patientName: appointment.userId.name,
+      doctorName: appointment.doctorId.name,
+      date: appointment.appointmentDate,
+    });
+
+    appointment.reminderSent = true;
+    await appointment.save();
+
+    res.json({ message: 'Reminder sent successfully' });
+  } catch (err) {
+    console.error('Error sending reminder:', err);
+    res.status(500).json({ error: 'Failed to send reminder' });
   }
 };

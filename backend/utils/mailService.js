@@ -28,4 +28,25 @@ const sendAppointmentConfirmation = async ({ to, patientName, doctorName, date, 
     return transporter.sendMail(mailOptions);
 };
 
-module.exports = { sendAppointmentConfirmation };
+// NEW: Function gửi reminder 1 giờ trước lịch hẹn
+const sendAppointmentReminder = async ({ to, patientName, doctorName, date }) => {
+    const mailOptions = {
+        from: `"Hospital Reminder" <${process.env.MAIL_USER}>`,
+        to,
+        subject: 'Appointment Reminder - 1 Hour Left',
+        html: `
+      <h3>Appointment Reminder</h3>
+      <p>Hi <b>${patientName}</b>,</p>
+      <p>Your appointment with <b>Dr. ${doctorName}</b> is starting in 1 hour.</p>
+      <p><b>Date & Time:</b> ${new Date(date).toLocaleString()}</p>
+      <p>Please arrive on time. If you need to reschedule, contact us immediately.</p>
+      <br/>
+      <p>Thank you!</p>
+      <p>KiwiCare Team</p>
+    `
+    };
+
+    return transporter.sendMail(mailOptions);
+};
+
+module.exports = { sendAppointmentConfirmation, sendAppointmentReminder };

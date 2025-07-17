@@ -14,5 +14,6 @@ router.get("/profiles/:userId", appointmentController.getProfilesByUser);
 router.get("/schedules/:doctorId", appointmentController.getDoctorSchedules);
 router.post("/profiles", appointmentController.createProfile);
 router.get('/profiles/:userId', appointmentController.getProfilesByUser);
+router.post('/send-reminder/:id', appointmentController.sendReminder);
 
 module.exports = router;
