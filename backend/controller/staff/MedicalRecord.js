@@ -97,16 +97,16 @@ exports.searchUserByCode = async (req, res) => {
   }
 };
 
-// Create new profile
+// Create profile (luồng STAFF)
 exports.createProfile = async (req, res) => {
   try {
-    const { user_code, name, dateOfBirth, gender, diagnose, note, issues, doctorId, medicine } = req.body;
+    const { name, identityNumber, dateOfBirth, gender } = req.body;
 
     // Kiểm tra các trường bắt buộc
-    if (!user_code || !name || !dateOfBirth || !gender || !doctorId || !medicine) {
+    if (!name || !identityNumber || !dateOfBirth || !gender) {
       return res.status(400).json({
         success: false,
-        message: 'Mã người dùng, tên, ngày sinh, giới tính, bác sĩ, và thuốc là bắt buộc'
+        message: 'Tên, CCCD, ngày sinh, và giới tính là bắt buộc'
       });
     }
 
@@ -126,76 +126,30 @@ exports.createProfile = async (req, res) => {
       });
     }
 
-    const user = await User.findOne({ user_code });
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: 'Không tìm thấy người dùng với mã được cung cấp'
-      });
-    }
-
-    const doctor = await Employee.findById(doctorId);
-    const medicineDoc = await Medicine.findById(medicine);
-    if (!doctor || !medicineDoc) {
-      return res.status(404).json({
-        success: false,
-        message: 'Bác sĩ hoặc thuốc không tìm thấy'
-      });
-    }
-
+    // Lưu hồ sơ
     const profile = new Profile({
       name,
-      user: user._id,
+      identityNumber,
       dateOfBirth,
       gender,
-      diagnose,
-      note,
-      issues,
-      doctorId,
-      medicine
+      createdBy: req.user._id // nhân viên đang đăng nhập tạo hồ sơ
     });
 
     const savedProfile = await profile.save();
 
-    await User.findByIdAndUpdate(user._id, {
-      $push: { profiles: savedProfile._id }
-    });
-
-    const populatedProfile = await Profile.findById(savedProfile._id)
-      .populate('user', 'name user_code')
-      .populate('doctorId', 'name email role')
-      .populate('medicine', 'name type unitPrice');
-
     res.status(201).json({
       success: true,
       data: {
-        _id: populatedProfile._id,
-        name: populatedProfile.name,
-        userName: populatedProfile.user?.name,
-        userCode: populatedProfile.user?.user_code,
-        dateOfBirth: populatedProfile.dateOfBirth,
-        gender: populatedProfile.gender,
-        diagnose: populatedProfile.diagnose,
-        note: populatedProfile.note,
-        issues: populatedProfile.issues,
-        doctor: populatedProfile.doctorId ? {
-          _id: populatedProfile.doctorId._id,
-          name: populatedProfile.doctorId.name,
-          email: populatedProfile.doctorId.email,
-          role: populatedProfile.doctorId.role
-        } : null,
-        medicine: populatedProfile.medicine ? {
-          _id: populatedProfile.medicine._id,
-          name: populatedProfile.medicine.name,
-          type: populatedProfile.medicine.type,
-          unitPrice: populatedProfile.medicine.unitPrice
-        } : null,
-        createdAt: populatedProfile.createdAt,
-        updatedAt: populatedProfile.updatedAt
+        _id: savedProfile._id,
+        name: savedProfile.name,
+        identityNumber: savedProfile.identityNumber,
+        dateOfBirth: savedProfile.dateOfBirth,
+        gender: savedProfile.gender,
+        createdAt: savedProfile.createdAt
       }
     });
   } catch (error) {
-    console.error('Lỗi khi tạo hồ sơ:', error);
+    console.error('Lỗi khi tạo hồ sơ (staff):', error);
     res.status(500).json({
       success: false,
       message: 'Lỗi server khi tạo hồ sơ',
@@ -203,6 +157,7 @@ exports.createProfile = async (req, res) => {
     });
   }
 };
+
 
 // Update profile
 exports.updateProfile = async (req, res) => {

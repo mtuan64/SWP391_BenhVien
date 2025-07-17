@@ -1,4 +1,3 @@
-// src/components/Header.jsx
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/authContext";
@@ -62,6 +61,22 @@ const Header = ({ onMenuClick, menuOpen }) => {
   return (
     <nav className="header-nav">
       <div className="header-left">
+        {/* <Button
+          type="text"
+          icon={<MenuOutlined style={{ fontSize: 24 }} />}
+          onClick={(e) => {
+            e.stopPropagation();
+            onMenuClick();
+          }}
+          style={{ border: "none", background: "none" }}
+        /> */}
+
+        <Link to="/" className="header-logo">
+          <h1><i className="fa fa-heartbeat"></i> Kiwicare</h1>
+        </Link>
+      </div>
+
+      <div className="header-right">
         <Button
           type="text"
           icon={<MenuOutlined style={{ fontSize: 24 }} />}
@@ -71,15 +86,8 @@ const Header = ({ onMenuClick, menuOpen }) => {
           }}
           style={{ border: "none", background: "none" }}
         />
-
-        <Link to="/" className="header-logo">
-          <h1><i className="fa fa-heartbeat"></i> Kiwicare</h1>
-        </Link>
-      </div>
-
-      <div className="header-right">
-        <Link to="/home" className="header-link"><HomeOutlined /> Home</Link>
-        <Link to="/about" className="header-link"><InfoCircleOutlined /> About</Link>
+        <Link to="/" className="header-link"><HomeOutlined /> <span>Home</span></Link>
+        <Link to="/about" className="header-link"><InfoCircleOutlined /> <span>About</span></Link>
 
         <Dropdown
           menu={{
@@ -91,15 +99,28 @@ const Header = ({ onMenuClick, menuOpen }) => {
           trigger={["click"]}
         >
           <div className="header-link dropdown-trigger">
-            <BookOutlined /> Post
+            <BookOutlined /> <span>Post</span>
+          </div>
+        </Dropdown>
+        <Dropdown
+          menu={{
+            items: [
+              { key: "Foods", label: <Link to="/health/food">Foods</Link> },
+              { key: "BMI", label: <Link to="/health/calculator">BMI</Link> },
+            ],
+          }}
+          trigger={["click"]}
+        >
+          <div className="header-link dropdown-trigger">
+            <BookOutlined /> <span>Health</span>
           </div>
         </Dropdown>
 
-        <Link to="/services" className="header-link"><MedicineBoxOutlined /> Services</Link>
-        <Link to="/doctors" className="header-link"><TeamOutlined /> Doctors</Link>
-        <Link to="/qa" className="header-link">Q/A</Link>
-        <Link to="/health/calculator" className="header-link">BMI</Link>
-
+        <Link to="/services" className="header-link"><MedicineBoxOutlined /> <span>Services</span></Link>
+        <Link to="/doctors" className="header-link"><TeamOutlined /> <span>Doctors</span></Link>
+        <Link to="/qa" className="header-link"><span>Q/A</span></Link>
+        {/* <Link to="/health/calculator" className="header-link"><span>BMI</span></Link>
+        <Link to="/health/food" className="header-link"><span>Food</span></Link> */}
         {user ? (
           <>
             <Badge count={unreadCount} size="small" overflowCount={99}>
@@ -111,6 +132,7 @@ const Header = ({ onMenuClick, menuOpen }) => {
 
             <div className="account-menu-wrapper">
               <button className="account-button">
+                <UserOutlined />
                 <span>Account</span>
                 <svg className="dropdown-arrow" fill="currentColor" viewBox="0 0 20 20">
                   <path
@@ -125,6 +147,7 @@ const Header = ({ onMenuClick, menuOpen }) => {
                 <li><Link to="/profilemanage">Profile Manage</Link></li>
                 <li><Link to="/appointmentmanage">Appointment Manage</Link></li>
                 <li><Link to="/qahistory">Q/A History</Link></li>
+                <li><Link to="/invoice">Invoice</Link></li>
                 <li><Link to="/changepass">Change Password</Link></li>
                 <li><hr /></li>
                 <li><button onClick={handleLogout}>Log out</button></li>
@@ -134,13 +157,13 @@ const Header = ({ onMenuClick, menuOpen }) => {
         ) : (
           <Dropdown menu={{ items: guestMenuItems }} trigger={["click"]}>
             <div className="header-link dropdown-trigger">
-              <UserOutlined /> Account
+              <UserOutlined /> <span>Account</span>
             </div>
           </Dropdown>
         )}
 
         <Link to="/appointment" className="appointment-button">
-          <CalendarOutlined /> Appointment
+          <CalendarOutlined /> <span>Appointment</span>
         </Link>
       </div>
     </nav>
