@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { useAuth } from "../context/authContext";
+import { useAuth } from "../../context/authContext";
 import { useNavigate } from "react-router-dom";
-import "../assets/css/ProfilePage.css";
+import "../../assets/css/ProfilePage.css";
 
-const ProfilePage = () => {
+const ProfileStaff = () => {
   const { user, login } = useAuth();
   const navigate = useNavigate();
 
@@ -131,18 +131,7 @@ const ProfilePage = () => {
                   disabled
                 />
               </div>
-              <div className="col-md-6 mb-3">
-                <label htmlFor="email" className="form-label">
-                  User code
-                </label>
-                <input
-                  type="text"
-                  id="Usercode"
-                  value={user?.user_code || ""}
-                  className="form-control"
-                  disabled
-                />
-              </div>
+              
               <div className="col-md-6 mb-3">
                 <label htmlFor="role" className="form-label">
                   Vai Trò
@@ -213,4 +202,4 @@ const ProfilePage = () => {
   );
 };
 
-export default ProfilePage;
+export default ProfileStaff;

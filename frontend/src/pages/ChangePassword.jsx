@@ -4,6 +4,7 @@ import HeaderComponent from "../components/HeaderComponent";
 import FooterComponent from "../components/FooterComponent";
 import React, { useState, useEffect } from 'react';
 import { jwtDecode } from 'jwt-decode';
+import bcrypt from 'bcryptjs';
 const Changepass = () => {
   const [email, setEmail] = useState('');
   const [oldPassword, setOldPassword] = useState('');
@@ -54,11 +55,12 @@ const Changepass = () => {
         return;
       }
     }
-    if (oldPassword !== storedPassword) {
-      setError('Mật khẩu cũ không đúng.');
-      setIsLoading(false);
-      return;
-    }
+     const isMatch = await bcrypt.compare(oldPassword, storedPassword);
+  if (!isMatch) {
+    setError('Mật khẩu cũ không đúng.');
+    setIsLoading(false);
+    return;
+  }
     if (!validatePassword(newPassword)) {
       setError('Mật khẩu mới phải dài ít nhất 8 ký tự.');
       setIsLoading(false);

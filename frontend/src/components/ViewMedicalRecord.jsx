@@ -33,7 +33,7 @@ const ViewMedicalRecords = () => {
                 setError(res.data.message || 'Không thể tải dữ liệu');
             }
         } catch (err) {
-            setError('Lỗi kết nối server');
+            setError('Lỗi kết nối server' + err);
         } finally {
             setLoading(false);
         }

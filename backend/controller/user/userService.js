@@ -1,12 +1,120 @@
+const Profile = require("../../models/Profile");
+const Question = require("../../models/Question");
+const User = require("../../models/User");
 const Appointment = require("../../models/Appointment");
 const { sendAppointmentConfirmation } = require("../../utils/mailService");
-const User = require("../../models/User");
-const Profile = require("../../models/Profile");
 const Employee = require("../../models/Employee");
+
 const doctorRepo = require("../../repository/employee.repository");
 const serviceRepo = require("../../repository/service.repository");
 const departmentRepo = require("../../repository/department.repository");
 const medicineRepo = require("../../repository/medicine.repository");
+
+// Đặt lịch khám
+const getMyProfiles = async (req, res) => {
+  try {
+    const UserId = req.user.id;
+
+    // Lấy danh sách ID hồ sơ từ tài khoản
+    const user = await User.findById(UserId);
+    if (!user)
+      return res.status(404).json({ message: "Không tìm thấy tài khoản" });
+
+    const profileIds = user.profiles || [];
+
+    // Lấy thông tin hồ sơ
+    const profiles = await Profile.find({ _id: { $in: profileIds } })
+      .populate("doctorId", "name") // chỉ lấy trường name của bác sĩ
+      .populate("medicine", "name type") // chỉ lấy name và type thuốc
+      .sort({ createdAt: -1 }); // mặc định sort mới nhất trước
+
+    res.json(profiles);
+  } catch (err) {
+    console.error("Lỗi khi lấy hồ sơ:", err);
+    res.status(500).json({ message: "Lỗi server" });
+  }
+};
+
+const sendQA = async (req, res) => {
+  const { userId = null, email, title, message, status = "pending" } = req.body;
+
+  try {
+    if (!email || !title || !message) {
+      return res
+        .status(400)
+        .json({ message: "Thiếu thông tin bắt buộc (email, title, message)." });
+    }
+
+    const question = new Question({
+      userId,
+      email,
+      title,
+      message,
+      status,
+    });
+
+    await question.save();
+
+    res.status(201).json({
+      success: true,
+      message: "Yêu cầu hỗ trợ đã được gửi.",
+      data: question,
+    });
+  } catch (error) {
+    console.error("Lỗi khi gửi yêu cầu:", error);
+    res.status(500).json({ message: "Đã xảy ra lỗi khi gửi yêu cầu." });
+  }
+};
+
+const getAllQAUser = async (req, res) => {
+  const {
+    sort,
+    statusfilter,
+    search,
+    page = 1,
+    limit = 10,
+    idUser,
+  } = req.query;
+
+  try {
+    if (!idUser) {
+      return res
+        .status(401)
+        .json({ success: false, message: "Chưa đăng nhập." });
+    }
+
+    const filter = { userId: idUser };
+    if (statusfilter) filter.status = statusfilter;
+    if (search) filter.title = { $regex: search, $options: "i" };
+
+    const sortOption = {};
+    if (sort) {
+      const [field, order] = sort.split("_");
+      sortOption[field] = order === "asc" ? 1 : -1;
+    } else {
+      sortOption.createdAt = -1;
+    }
+
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+    const total = await Question.countDocuments(filter);
+
+    const QAs = await Question.find(filter)
+      .sort(sortOption)
+      .skip(skip)
+      .limit(parseInt(limit));
+
+    res.status(200).json({
+      success: true,
+      data: QAs,
+      total,
+      page: parseInt(page),
+      totalPages: Math.ceil(total / limit),
+    });
+  } catch (error) {
+    console.error("Lỗi khi lấy danh sách Q&A:", error);
+    res.status(500).json({ success: false, message: "Đã xảy ra lỗi máy chủ." });
+  }
+};
 
 // Đặt lịch khám
 const createAppointment = async (req, res) => {
@@ -18,12 +126,12 @@ const createAppointment = async (req, res) => {
     const existingAppointment = await Appointment.findOne({
       doctorId,
       appointmentDate: new Date(appointmentDate),
-      status: { $ne: 'Canceled' }
+      status: { $ne: "Canceled" },
     });
 
     if (existingAppointment) {
       return res.status(409).json({
-        message: 'This doctor already has an appointment at the selected time.'
+        message: "This doctor already has an appointment at the selected time.",
       });
     }
 
@@ -35,7 +143,7 @@ const createAppointment = async (req, res) => {
       department,
       appointmentDate,
       type,
-      status: 'Booked'
+      status: "Booked",
     });
 
     await newAppointment.save();
@@ -43,7 +151,7 @@ const createAppointment = async (req, res) => {
     const [user, profile, doctor] = await Promise.all([
       User.findById(userId),
       Profile.findById(profileId),
-      Employee.findById(doctorId)
+      Employee.findById(doctorId),
     ]);
 
     await sendAppointmentConfirmation({
@@ -51,21 +159,20 @@ const createAppointment = async (req, res) => {
       patientName: profile.name,
       doctorName: doctor.name,
       date: appointmentDate,
-      type
+      type,
     });
 
     res.status(201).json({
-      message: 'Appointment created successfully.',
-      appointment: newAppointment
+      message: "Appointment created successfully.",
+      appointment: newAppointment,
     });
   } catch (error) {
     res.status(500).json({
-      message: 'Failed to create appointment.',
-      error: error.message
+      message: "Failed to create appointment.",
+      error: error.message,
     });
   }
 };
-
 
 // Hiển thị toàn bộ danh sách đặt lịch của chính người dùng
 const getAppointmentsByUser = async (req, res) => {
@@ -121,16 +228,6 @@ const cancelAppointment = async (req, res) => {
     res.status(500).json({ message: 'Failed to cancel appointment', error: err.message });
   }
 };
-
-//List Doctors
-// const getAllDoctors = async (req, res) => {
-//     try {
-//         const doctors = await doctorRepo.getAllDoctors();
-//         res.status(200).json({ message: "OK", doctors });
-//     } catch (err) {
-//         res.status(500).json({ message: "Error", error: err.message });
-//     }
-// };
 
 const getAllDoctors = async (req, res) => {
   const { page = 1, limit = 10, searchTerm = "", specialization = "" } = req.query;
@@ -314,6 +411,9 @@ const getMedicineById = async (req, res) => {
 };
 
 module.exports = {
+  getMyProfiles,
+  sendQA,
+  getAllQAUser,
   createAppointment,
   getAppointmentsByUser,
   cancelAppointment,

@@ -8,6 +8,7 @@ const {
   getAllUserEmails,
 } = require("../../controller/staff/notificationService");
 const staffService = require('../../controller/staff/staffService');
+const { getAllQA, replyQA } = require('../../controller/staff/staffService');
 const { getAllServices, createService, deleteService, getServiceById, updateService } = require('../../controller/staff/servicesControlelr');
 const staffController = require('../../controller/staff/staffService');
 const { createMedicalRecord, allMedicalRecord, editMedicalRecord, createProfile, getAllProfiles } = require('../../controller/staff/medicalRecordController');
@@ -32,6 +33,7 @@ staffRouter.get("/services", invoiceController.getAllServices);
 staffRouter.get("/profiles/:userId", invoiceController.getProfilesByUserId)
 staffRouter.get('/doctors', doctorServices.getAllDoctors);
 staffRouter.get('/:userId/profiles', doctorServices.getProfilesByUserId);
+
 // Checkup
 staffRouter.post('/checkup', staffController.createCheckup);
 
@@ -45,8 +47,6 @@ staffRouter.post("/createNoti", createNotification);
 staffRouter.put("/urgent/:id", markUrgent);
 staffRouter.delete("/deleteNoti/:id", deleteNotification);
 staffRouter.get("/getAllUserEmails", getAllUserEmails);
-// Medicine
-
 
 // Services routes
 staffRouter.get('/all/services', getAllServices); // GET /api/staff/services - Get all services with pagination, sorting, search
@@ -55,4 +55,6 @@ staffRouter.post('/create/services', createService); // POST /api/staff/services
 staffRouter.put('/update/services/:id', updateService); // PUT /api/staff/services/:id - Update a service
 staffRouter.delete('/delete/services/:id', deleteService); // DELETE /api/staff/services/:id - Delete a service
 // staffRouter.get('/labtestresult/:profileId', LabTestbyProfileId);
+staffRouter.get('/qa',getAllQA);
+staffRouter.put('/qa/:id',replyQA);
 module.exports = staffRouter;

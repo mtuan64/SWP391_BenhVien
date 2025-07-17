@@ -3,13 +3,15 @@ import { useAuth } from "../context/authContext";
 import { useNavigate } from "react-router-dom";
 import "../assets/css/ProfilePage.css";
 
-const ProfilePage = () => {
+const ProfileDoctor = () => {
   const { user, login } = useAuth();
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
     fullname: user?.name || "",
     phone: user?.phone || "",
+    department: user?.department || "",
+    specialization: user?.specialization || "",
   });
   const [profilePicture, setProfilePicture] = useState(user?.profilePicture || null);
   const [file, setFile] = useState(null);
@@ -27,6 +29,8 @@ const ProfilePage = () => {
     setFormData({
       fullname: user?.name || "",
       phone: user?.phone || "",
+      department: user?.department || "",
+      specialization: user?.specialization || "",
     });
     setProfilePicture(user?.profilePicture || null);
   }, [user]);
@@ -75,6 +79,8 @@ const ProfilePage = () => {
           phone: formData.phone,
           status: "active",
           profilePicture: updatedProfilePicture,
+          department: user.role === "Doctor" ? formData.department : undefined,
+          specialization: user.role === "Doctor" ? formData.specialization : undefined,
         }),
       });
 
@@ -86,7 +92,12 @@ const ProfilePage = () => {
         name: formData.fullname,
         phone: formData.phone,
         profilePicture: updatedProfilePicture,
+        ...(user.role === "Doctor" && {
+          department: formData.department,
+          specialization: formData.specialization,
+        }),
       };
+
       localStorage.setItem("user", JSON.stringify(updatedUser));
       login(updatedUser);
       setSuccess("Cập nhật thành công!");
@@ -114,7 +125,6 @@ const ProfilePage = () => {
               className="rounded-circle mb-3"
               style={{ width: "150px", height: "150px", objectFit: "cover" }}
             />
-            <div></div>
           </div>
 
           <form onSubmit={handleSubmit}>
@@ -131,18 +141,7 @@ const ProfilePage = () => {
                   disabled
                 />
               </div>
-              <div className="col-md-6 mb-3">
-                <label htmlFor="email" className="form-label">
-                  User code
-                </label>
-                <input
-                  type="text"
-                  id="Usercode"
-                  value={user?.user_code || ""}
-                  className="form-control"
-                  disabled
-                />
-              </div>
+
               <div className="col-md-6 mb-3">
                 <label htmlFor="role" className="form-label">
                   Vai Trò
@@ -150,7 +149,7 @@ const ProfilePage = () => {
                 <input
                   type="text"
                   id="role"
-                  value={user?.role || "patient"}
+                  value={user?.role || ""}
                   className="form-control"
                   disabled
                 />
@@ -158,7 +157,7 @@ const ProfilePage = () => {
 
               <div className="col-md-6 mb-3">
                 <label htmlFor="status" className="form-label">
-                  Status
+                  Trạng Thái
                 </label>
                 <input
                   type="text"
@@ -197,12 +196,45 @@ const ProfilePage = () => {
                   className="form-control"
                 />
               </div>
+
+              {/* Chỉ hiện nếu là Doctor */}
+              {user?.role === "Doctor" && (
+                <>
+                  <div className="col-md-6 mb-3">
+                    <label htmlFor="department" className="form-label">
+                      Khoa
+                    </label>
+                    <input
+                      type="text"
+                      id="department"
+                      name="department"
+                      value={formData.department}
+                      onChange={handleInputChange}
+                      className="form-control"
+                    />
+                  </div>
+
+                  <div className="col-md-6 mb-3">
+                    <label htmlFor="specialization" className="form-label">
+                      Chuyên Môn
+                    </label>
+                    <input
+                      type="text"
+                      id="specialization"
+                      name="specialization"
+                      value={formData.specialization}
+                      onChange={handleInputChange}
+                      className="form-control"
+                    />
+                  </div>
+                </>
+              )}
             </div>
 
             <button type="submit" className="btn btn-primary mt-3" disabled={loading}>
               {loading ? "Đang Lưu..." : "Lưu Thay Đổi"}
             </button>
-            <br></br>
+             <br></br>
             <button type="button" onClick={() => navigate("/changepass")} className="btn btn-primary mt-3">
               Change password
             </button>
@@ -213,4 +245,4 @@ const ProfilePage = () => {
   );
 };
 
-export default ProfilePage;
+export default ProfileDoctor;

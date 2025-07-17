@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/authContext";
-import { Badge, Button, Avatar, Dropdown } from "antd";
+import { Badge, Button, Dropdown } from "antd";
+import axios from "axios";
 import {
   MenuOutlined,
   HomeOutlined,
@@ -13,19 +14,17 @@ import {
   LoginOutlined,
   UserAddOutlined,
   CalendarOutlined,
-  LogoutOutlined,
-  LockOutlined,
   BellOutlined,
 } from "@ant-design/icons";
-import axios from "axios";
+import "../assets/css/Header.css"; // import file CSS thuần
 
-const Header = ({ onMenuClick }) => {
+const Header = ({ onMenuClick, menuOpen }) => {
   const { user, token, logout } = useAuth();
   const navigate = useNavigate();
   const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
-    if (!token) return;
+    if (!token || !user) return;
 
     const fetchUnreadCount = async () => {
       try {
@@ -39,24 +38,11 @@ const Header = ({ onMenuClick }) => {
     };
 
     fetchUnreadCount();
-  }, [token]);
+  }, [token, user]);
 
   const handleLogout = () => {
     logout();
     navigate("/login");
-  };
-
-  const postMenu = {
-    items: [
-      {
-        key: "blogs",
-        label: <Link to="/blogs">Blogs</Link>,
-      },
-      {
-        key: "news",
-        label: <Link to="/news">News</Link>,
-      },
-    ],
   };
 
   const guestMenuItems = [
@@ -73,112 +59,111 @@ const Header = ({ onMenuClick }) => {
   ];
 
   return (
-    <nav
-      className="navbar navbar-expand-lg bg-white navbar-light shadow-sm px-5 py-3 py-lg-0"
-      style={{
-        position: "fixed",
-        width: "100%",
-        top: 0,
-        left: 0,
-        zIndex: 3000,
-      }}
-    >
-      {user && (
+    <nav className="header-nav">
+      <div className="header-left">
+        {/* <Button
+          type="text"
+          icon={<MenuOutlined style={{ fontSize: 24 }} />}
+          onClick={(e) => {
+            e.stopPropagation();
+            onMenuClick();
+          }}
+          style={{ border: "none", background: "none" }}
+        /> */}
+
+        <Link to="/" className="header-logo">
+          <h1><i className="fa fa-heartbeat"></i> Kiwicare</h1>
+        </Link>
+      </div>
+
+      <div className="header-right">
         <Button
           type="text"
           icon={<MenuOutlined style={{ fontSize: 24 }} />}
-          onClick={onMenuClick}
-          style={{ marginRight: 16 }}
+          onClick={(e) => {
+            e.stopPropagation();
+            onMenuClick();
+          }}
+          style={{ border: "none", background: "none" }}
         />
-      )}
+        <Link to="/" className="header-link"><HomeOutlined /> <span>Home</span></Link>
+        <Link to="/about" className="header-link"><InfoCircleOutlined /> <span>About</span></Link>
 
-      <Link to="/" className="navbar-brand p-0 d-flex align-items-center">
-        <h1 className="m-0 text-primary" style={{ fontWeight: 700, fontSize: 32 }}>
-          <i className="fa fa-heartbeat me-2"></i>Kiwicare
-        </h1>
-      </Link>
+        <Dropdown
+          menu={{
+            items: [
+              { key: "blogs", label: <Link to="/blogs">Blogs</Link> },
+              { key: "news", label: <Link to="/news">News</Link> },
+            ],
+          }}
+          trigger={["click"]}
+        >
+          <div className="header-link dropdown-trigger">
+            <BookOutlined /> <span>Post</span>
+          </div>
+        </Dropdown>
+        <Dropdown
+          menu={{
+            items: [
+              { key: "Foods", label: <Link to="/health/food">Foods</Link> },
+              { key: "BMI", label: <Link to="/health/calculator">BMI</Link> },
+            ],
+          }}
+          trigger={["click"]}
+        >
+          <div className="header-link dropdown-trigger">
+            <BookOutlined /> <span>Health</span>
+          </div>
+        </Dropdown>
 
-      <div className="collapse navbar-collapse" id="navbarCollapse">
-        <div className="navbar-nav ms-auto py-0 align-items-center d-flex">
-          <Link to="/" className="nav-item nav-link">
-            <HomeOutlined style={{ marginRight: 8 }} />
-            Home
-          </Link>
-          <Link to="/about" className="nav-item nav-link">
-            <InfoCircleOutlined style={{ marginRight: 8 }} />
-            About
-          </Link>
+        <Link to="/services" className="header-link"><MedicineBoxOutlined /> <span>Services</span></Link>
+        <Link to="/doctors" className="header-link"><TeamOutlined /> <span>Doctors</span></Link>
+        <Link to="/qa" className="header-link"><span>Q/A</span></Link>
+        {/* <Link to="/health/calculator" className="header-link"><span>BMI</span></Link>
+        <Link to="/health/food" className="header-link"><span>Food</span></Link> */}
+        {user ? (
+          <>
+            <Badge count={unreadCount} size="small" overflowCount={99}>
+              <BellOutlined
+                onClick={() => navigate("/notifications")}
+                className="bell-icon"
+              />
+            </Badge>
 
-          <Dropdown menu={postMenu} trigger={["click"]}>
-            <div className="nav-item nav-link" style={{ cursor: "pointer" }}>
-              <BookOutlined style={{ marginRight: 8 }} />
-              Post
+            <div className="account-menu-wrapper">
+              <button className="account-button">
+                <UserOutlined />
+                <span>Account</span>
+                <svg className="dropdown-arrow" fill="currentColor" viewBox="0 0 20 20">
+                  <path
+                    fillRule="evenodd"
+                    d="M5.23 7.21a.75.75 0 011.06.02L10 11.292l3.71-4.06a.75.75 0 111.08 1.04l-4.25 4.65a.75.75 0 01-1.08 0l-4.25-4.65a.75.75 0 01.02-1.06z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              </button>
+              <ul className="account-dropdown">
+                <li><Link to="/myprofile">Profile</Link></li>
+                <li><Link to="/profilemanage">Profile Manage</Link></li>
+                <li><Link to="/appointmentmanage">Appointment Manage</Link></li>
+                <li><Link to="/qahistory">Q/A History</Link></li>
+                <li><Link to="/invoice">Invoice</Link></li>
+                <li><Link to="/changepass">Change Password</Link></li>
+                <li><hr /></li>
+                <li><button onClick={handleLogout}>Log out</button></li>
+              </ul>
+            </div>
+          </>
+        ) : (
+          <Dropdown menu={{ items: guestMenuItems }} trigger={["click"]}>
+            <div className="header-link dropdown-trigger">
+              <UserOutlined /> <span>Account</span>
             </div>
           </Dropdown>
+        )}
 
-          <Link to="/service" className="nav-item nav-link">Service</Link>
-          <Link to="/doctor-home" className="nav-item nav-link">Doctor</Link>
-          <Link to="/medicines-home" className="nav-item nav-link">Medicine</Link>
-          <Link to="/department" className="nav-item nav-link">Department</Link>
-          <Link to="/services" className="nav-item nav-link">
-            <MedicineBoxOutlined style={{ marginRight: 8 }} />
-            Services
-          </Link>
-          <Link to="/doctors" className="nav-item nav-link">
-            <TeamOutlined style={{ marginRight: 8 }} />
-            Doctors
-          </Link>
-          <Link to="/health/calculator" className="nav-item nav-link">BMI</Link>
-
-          {user ? (
-            <>
-              <Badge count={unreadCount} size="small">
-                <BellOutlined
-                  onClick={() => navigate("/notifications")}
-                  style={{
-                    fontSize: 22,
-                    cursor: "pointer",
-                    marginLeft: 24,
-                    color: "#333",
-                  }}
-                />
-              </Badge>
-
-              <div className="nav-item dropdown">
-                <button
-                  className="nav-link dropdown-toggle btn btn-link"
-                  type="button"
-                  data-bs-toggle="dropdown"
-                  aria-expanded="false"
-                >
-                  Account
-                </button>
-                <ul className="dropdown-menu dropdown-menu-end">
-                  <li><Link to="/myprofile" className="dropdown-item">Profile</Link></li>
-                  <li><Link to="/profilemanage" className="dropdown-item">Profile Manage</Link></li>
-                  <li><Link to="/appointmentmanage" className="dropdown-item">Appointment Manage</Link></li>
-                  <li><Link to="/changepass" className="dropdown-item">Change password</Link></li>
-                  <li><hr className="dropdown-divider" /></li>
-                  <li><button className="dropdown-item" onClick={handleLogout}>Log out</button></li>
-                </ul>
-              </div>
-            </>
-          ) : (
-            <Dropdown menu={{ items: guestMenuItems }} trigger={["click"]}>
-              <div
-                className="nav-item nav-link d-flex align-items-center"
-                style={{ cursor: "pointer" }}
-              >
-                <UserOutlined style={{ marginRight: 8 }} />
-                Account
-              </div>
-            </Dropdown>
-          )}
-        </div>
-
-        <Link to="/appointment" className="btn btn-primary py-2 px-4 ms-3">
-          <CalendarOutlined style={{ marginRight: 8 }} />
-          Appointment
+        <Link to="/appointment" className="appointment-button">
+          <CalendarOutlined /> <span>Appointment</span>
         </Link>
       </div>
     </nav>

@@ -90,6 +90,8 @@ const createEmployees = async (req, res) => {
     res.status(201).json(newEmployee);
   } catch (err) {
     res.status(400).json({ message: err.message });
+    console.log(err);
+    
   }
 };
 
