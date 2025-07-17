@@ -116,8 +116,8 @@ const Header = ({ onMenuClick, menuOpen }) => {
           </div>
         </Dropdown>
 
-        <Link to="/services" className="header-link"><MedicineBoxOutlined /> <span>Services</span></Link>
-        <Link to="/doctors" className="header-link"><TeamOutlined /> <span>Doctors</span></Link>
+        <Link to="/service-home" className="header-link"><MedicineBoxOutlined /> <span>Services</span></Link>
+        <Link to="/doctor-home" className="header-link"><TeamOutlined /> <span>Doctors</span></Link>
         <Link to="/qa" className="header-link"><span>Q/A</span></Link>
         {/* <Link to="/health/calculator" className="header-link"><span>BMI</span></Link>
         <Link to="/health/food" className="header-link"><span>Food</span></Link> */}
@@ -145,7 +145,7 @@ const Header = ({ onMenuClick, menuOpen }) => {
               <ul className="account-dropdown">
                 <li><Link to="/myprofile">Profile</Link></li>
                 <li><Link to="/profilemanage">Profile Manage</Link></li>
-                <li><Link to="/appointmentmanage">Appointment Manage</Link></li>
+                <li><Link to="/myappointments">Appointment Manage</Link></li>
                 <li><Link to="/qahistory">Q/A History</Link></li>
                 <li><Link to="/invoice">Invoice</Link></li>
                 <li><Link to="/changepass">Change Password</Link></li>

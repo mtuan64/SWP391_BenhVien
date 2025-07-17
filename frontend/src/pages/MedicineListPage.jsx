@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
 import "../assets/css/MedicineListPage.css";
-import HeaderComponent from "../components/HeaderComponent";
 import HeroBanner from "../components/HeroBanner";
 import TopBarComponent from "../components/TopBarComponent";
 
@@ -63,9 +62,6 @@ const MedicineListPage = () => {
     <>
       {/* Topbar */}
       <TopBarComponent />
-
-      {/* Header */}
-      <HeaderComponent />
 
       {/* Hero Carousel */}
       <HeroBanner

@@ -7,10 +7,8 @@ const {
   deleteNotification,
   getAllUserEmails,
 } = require("../../controller/staff/notificationService");
-const staffService = require('../../controller/staff/staffService');
-const { getAllQA, replyQA } = require('../../controller/staff/staffService');
+const { getAllQA, replyQA, createCheckup, createSchedule, getSchedules, updateSchedule, deleteSchedule } = require('../../controller/staff/staffService');
 const { getAllServices, createService, deleteService, getServiceById, updateService } = require('../../controller/staff/servicesControlelr');
-const staffController = require('../../controller/staff/staffService');
 const { createMedicalRecord, allMedicalRecord, editMedicalRecord, createProfile, getAllProfiles } = require('../../controller/staff/medicalRecordController');
 const paymentController = require('../../controller/staff/PaymentController');
 const doctorServices = require('../../controller/doctor/doctorService');
@@ -35,13 +33,13 @@ staffRouter.get('/doctors', doctorServices.getAllDoctors);
 staffRouter.get('/:userId/profiles', doctorServices.getProfilesByUserId);
 
 // Checkup
-staffRouter.post('/checkup', staffController.createCheckup);
+staffRouter.post('/checkup', createCheckup);
 
 // Schedule
-staffRouter.post('/schedule', staffController.createSchedule);
-staffRouter.get('/schedule', staffController.getSchedules);
-staffRouter.put('/schedule/:id', staffController.updateSchedule);
-staffRouter.delete('/schedule/:id', staffController.deleteSchedule);
+staffRouter.post('/schedule', createSchedule);
+staffRouter.get('/schedule', getSchedules);
+staffRouter.put('/schedule/:id', updateSchedule);
+staffRouter.delete('/schedule/:id', deleteSchedule);
 staffRouter.get("/getNoti", getNotifications);
 staffRouter.post("/createNoti", createNotification);
 staffRouter.put("/urgent/:id", markUrgent);

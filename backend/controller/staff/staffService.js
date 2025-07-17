@@ -1,9 +1,8 @@
-const Schedule = require('../../models/Schedule');
 const Profile = require("../../models/Profile");
 const Question = require("../../models/Question");
 const User = require("../../models/User");
 const sendEmail = require('../../utils/sendEmail');
-module.exports.createCheckup = async (req, res) => {
+const createCheckup = async (req, res) => {
   try {
     const { patientId, doctorId, date, time, symptoms } = req.body;
     if (!patientId || !doctorId || !date || !time || !symptoms) {
@@ -18,7 +17,7 @@ module.exports.createCheckup = async (req, res) => {
 };
 
 
-exports.replyQA = async (req, res) => {
+const replyQA = async (req, res) => {
   const { id } = req.params;
   const { replyMessage } = req.body;
 
@@ -46,7 +45,7 @@ exports.replyQA = async (req, res) => {
   }
 };
 
-exports.getAllQA = async (req, res) => {
+const getAllQA = async (req, res) => {
   const { sort, searchId, statusfilter, page = 1, limit = 10 } = req.query; //Dùng req.query
 
   try {
@@ -94,7 +93,7 @@ exports.getAllQA = async (req, res) => {
   
 const Schedule = require('../../models/Schedule');
 
-module.exports.createSchedule = async (req, res) => {
+const createSchedule = async (req, res) => {
   try {
     const { employeeId, department, date, timeSlots } = req.body;
 
@@ -112,7 +111,7 @@ module.exports.createSchedule = async (req, res) => {
   }
 };
 
-module.exports.getSchedules = async (req, res) => {
+const getSchedules = async (req, res) => {
   try {
     const query = {};
     if (req.query.employeeId) query.employeeId = req.query.employeeId;
@@ -127,7 +126,7 @@ module.exports.getSchedules = async (req, res) => {
   }
 };
 
-module.exports.updateSchedule = async (req, res) => {
+const updateSchedule = async (req, res) => {
   try {
     const { id } = req.params;
     const { employeeId, department, date, timeSlots } = req.body;
@@ -154,7 +153,7 @@ module.exports.updateSchedule = async (req, res) => {
   }
 };
 
-module.exports.deleteSchedule = async (req, res) => {
+const deleteSchedule = async (req, res) => {
   try {
     const { id } = req.params;
     const deleted = await Schedule.findByIdAndDelete(id);
@@ -168,4 +167,14 @@ module.exports.deleteSchedule = async (req, res) => {
     console.error(error);
     return res.status(500).json({ message: "Internal server error" });
   }
+};
+
+module.exports = {
+  createCheckup,
+  replyQA,
+  getAllQA,
+  createSchedule,
+  getSchedules,
+  updateSchedule,
+  deleteSchedule,
 };
