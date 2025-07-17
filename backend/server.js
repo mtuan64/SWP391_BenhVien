@@ -44,7 +44,7 @@ const staffRouter = require("./routers/Staff/staff.route");
 const userProfileRouter = require("./routers/User/profile.route");
 // 15-7
 const foodrouter = require("./routers/User/api.food");
-
+const scheduleRouter = require('./routers/Staff/schedule.route');
 // Mount routers
 app.use("/api/user", userRouter);
 app.use("/api/user-profile", userMedicalProfile);
@@ -65,7 +65,7 @@ app.use(
   require("./routers/Staff/departmentManagement.route")
 );
 app.use("/api/profile", userProfileRouter);
-
+app.use('/api/staff', scheduleRouter);
 // Start server after DB connected
 const PORT = process.env.PORT || 9999;
 
