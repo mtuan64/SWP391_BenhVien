@@ -42,6 +42,8 @@ const authRouter = require("./routers/auth/auth.route");
 const doctorRouter = require("./routers/Doctor/doctor.route");
 const staffRouter = require("./routers/Staff/staff.route");
 const userProfileRouter = require("./routers/User/profile.route");
+// 15-7
+const foodrouter = require("./routers/User/api.food");
 
 // Mount routers
 app.use("/api/user", userRouter);
@@ -51,7 +53,8 @@ app.use("/api/admin", adminRouter);
 app.use("/api/auth", authRouter);
 app.use("/api/doctor", doctorRouter);
 app.use("/api/staff", staffRouter);
-
+// 15-7
+app.use("/api/food", foodrouter);
 app.use(
   "/api/appointmentScheduleManagement",
   require("./routers/Staff/appointmentScheduleManagement.route")

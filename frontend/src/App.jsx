@@ -78,6 +78,7 @@ import NotFoundPage from "./pages/NotFoundPage";
 import QAHistories from "./pages/QAHistories";
 import ProfileStaff from "./pages/staff/ProfileStaff";
 import ProfileDoctor from "./pages/ProfileDoctor";
+import NutritionAdvice from "./pages/NutritionAdvice.jsx";
 
 const DRAWER_WIDTH = 240;
 
@@ -276,7 +277,7 @@ const AppRoutes = () => {
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/notifications" element={<NotificationCenter />} />
           <Route path="/notifications/:id" element={<NotificationDetail />} />
-
+          <Route path="/health/food" element={<NutritionAdvice />} />
           <Route path="/qahistory" element={<QAHistories />} />
           <Route path="/qa" element={<SendQAForm />} />
 
