@@ -2,7 +2,7 @@ const Profile = require("../../models/Profile");
 const Question = require("../../models/Question");
 const User = require("../../models/User");
 const Appointment = require("../../models/Appointment");
-const Schedule = require("../../models/Schedule");
+const Feedback = require("../../models/Feedback");
 const { sendAppointmentConfirmation } = require("../../utils/mailService");
 
 const Employee = require("../../models/Employee");
@@ -117,20 +117,6 @@ exports.createAppointment = async (req, res) => {
   const userId = req.user.id;
 
   try {
-    // // Kiểm tra xem bác sĩ đã có lịch vào giờ này chưa
-    // const existingAppointment = await Appointment.findOne({
-    //   doctorId,
-    //   appointmentDate: new Date(appointmentDate),
-    //   status: { $ne: "Canceled" },
-    // });
-
-    // if (existingAppointment) {
-    //   return res.status(409).json({
-    //     message: "This doctor already has an appointment at the selected time.",
-    //   });
-    // }
-
-    // Nếu không trùng thì tạo mới lịch khám
     const newAppointment = new Appointment({
       userId,
       profileId,
@@ -215,52 +201,20 @@ exports.cancelAppointment = async (req, res) => {
   }
 };
 
-// // Lấy các time slots available của bác sĩ cho một ngày cụ thể
-// exports.getAvailableTimeSlots = async (req, res) => {
-//   const { doctorId, date } = req.query; // Lấy từ query params
-//   const userId = req.user.id; // Để kiểm tra auth nếu cần
-
-//   try {
-//     if (!doctorId || !date) {
-//       return res.status(400).json({ message: "Missing doctorId or date" });
-//     }
-
-//     // Kiểm tra xem doctorId có hợp lệ (là ObjectId)
-//     if (!mongoose.Types.ObjectId.isValid(doctorId)) {
-//       return res.status(400).json({ message: "Invalid doctorId format" });
-//     }
-
-//     // Kiểm tra employee tồn tại và role là 'Doctor'
-//     const doctor = await Employee.findById(doctorId);
-//     if (!doctor || doctor.role !== 'Doctor') {
-//       return res.status(404).json({ message: "Doctor not found or invalid role" });
-//     }
-
-//     // Format date để query (chỉ lấy phần ngày, bỏ giờ)
-//     const startOfDay = new Date(date);
-//     startOfDay.setHours(0, 0, 0, 0);
-//     const endOfDay = new Date(date);
-//     endOfDay.setHours(23, 59, 59, 999);
-
-//     const schedule = await Schedule.findOne({
-//       employeeId: new mongoose.Types.ObjectId(doctorId), // Chuyển thành ObjectId
-//       date: { $gte: startOfDay, $lte: endOfDay },
-//     });
-
-//     if (!schedule) {
-//       return res.status(404).json({ message: "No schedule found for this doctor on the selected date" });
-//     }
-
-//     // Chỉ lấy các timeSlots available
-//     const availableSlots = schedule.timeSlots
-//       .filter(slot => slot.status === 'Available')
-//       .map(slot => ({
-//         startTime: slot.startTime,
-//         endTime: slot.endTime,
-//       }));
-
-//     res.status(200).json(availableSlots);
-//   } catch (err) {
-//     res.status(500).json({ message: "Failed to get time slots", error: err.message });
-//   }
-// };
+// POST: User gửi feedback
+exports.createFeedback = async (req, res) => {
+  const userId = req.user.id;
+  try {
+    const { content, rating, appointmentId } = req.body;
+    const feedback = new Feedback({
+      userId,
+      appointmentId,
+      content,
+      rating,
+    });
+    await feedback.save();
+    res.status(201).json({ message: 'Feedback sent successfully', feedback });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to send feedback' });
+  }
+};

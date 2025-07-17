@@ -7,7 +7,7 @@ const {
   getAllUserEmails,
 } = require("../../controller/staff/notificationService");
 const staffRouter = express.Router();
-const {getAllQA,replyQA} = require('../../controller/staff/staffService');
+const {getAllQA,replyQA,getFeedbacksForStaff} = require('../../controller/staff/staffService');
 staffRouter.get('/qa',getAllQA);
 staffRouter.put('/qa/:id',replyQA);
 module.exports = staffRouter;
@@ -56,4 +56,8 @@ staffRouter.post('/create/services', createService); // POST /api/staff/services
 staffRouter.put('/update/services/:id', updateService); // PUT /api/staff/services/:id - Update a service
 staffRouter.delete('/delete/services/:id', deleteService); // DELETE /api/staff/services/:id - Delete a service
 // staffRouter.get('/labtestresult/:profileId', LabTestbyProfileId);
+
+// Feedback
+staffRouter.get('/feedback', getFeedbacksForStaff);
+
 module.exports = staffRouter;

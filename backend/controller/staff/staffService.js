@@ -1,5 +1,6 @@
 const Profile = require("../../models/Profile");
 const Question = require("../../models/Question");
+const Feedback = require("../../models/Feedback");
 const User = require("../../models/User");
 const sendEmail = require('../../utils/sendEmail');
 module.exports.createCheckup = async (req, res) => {
@@ -88,8 +89,9 @@ exports.getAllQA = async (req, res) => {
       success: false,
       message: "Đã xảy ra lỗi, vui lòng thử lại sau."
     });
-  }}
-  
+  }
+}
+
 const Schedule = require('../../models/Schedule');
 
 module.exports.createSchedule = async (req, res) => {
@@ -165,5 +167,20 @@ module.exports.deleteSchedule = async (req, res) => {
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+exports.getFeedbacksForStaff = async (req, res) => {
+  try {
+    const feedbacks = await Feedback.find()
+      .populate('userId', 'name')
+      .populate({
+        path: 'appointmentId',
+        populate: { path: 'doctorId', select: 'name' }, // Populate nested để lấy tên bác sĩ
+        select: 'appointmentDate doctorId'
+      });
+    res.json(feedbacks);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch feedbacks' });
   }
 };
