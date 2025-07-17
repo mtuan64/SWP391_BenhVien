@@ -245,7 +245,7 @@ function EmployeeManagement() {
         onCancel={() => setEditingEmployee(null)}
         onOk={handleEditSubmit}
         okText="Save"
-        destroyOnClose
+        destroyOnHidden
       >
         <Form form={form} layout="vertical">
           <Form.Item label="Name" name="name" rules={[{ required: true }]}>
@@ -290,7 +290,7 @@ function EmployeeManagement() {
         onCancel={() => setCreateModalVisible(false)}
         onOk={handleCreate}
         okText="Create"
-        destroyOnClose
+        destroyOnHidden
       >
         <Form form={createForm} layout="vertical">
           <Form.Item label="Name" name="name" rules={[{ required: true }]}>

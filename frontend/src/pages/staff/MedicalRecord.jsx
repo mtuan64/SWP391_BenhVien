@@ -37,8 +37,10 @@ const MedicalRecord = () => {
   const [medicines, setMedicines] = useState([]);
   const [editingRecord, setEditingRecord] = useState(null);
   const [newRecord, setNewRecord] = useState({
+    userId: "",
     user_code: "",
     name: "",
+    identityNumber: "",
     dateOfBirth: "",
     gender: "",
     diagnose: "",
@@ -46,6 +48,7 @@ const MedicalRecord = () => {
     issues: "",
     doctorId: "",
     medicine: "",
+    service: "",
   });
   const [userName, setUserName] = useState("");
   const [openEditRecord, setOpenEditRecord] = useState(false);
@@ -80,9 +83,6 @@ const MedicalRecord = () => {
         axios.get("http://localhost:9999/api/staff/doctors", config),
         axios.get("http://localhost:9999/api/staff/medicines", config),
       ]);
-      console.log("Profiles:", profilesResponse.data.data);
-      console.log("Doctors:", doctorsResponse.data.data);
-      console.log("Medicines:", medicinesResponse.data.data);
       setRecords(profilesResponse.data.data || []);
       setDoctors(doctorsResponse.data.data || []);
       setMedicines(medicinesResponse.data.data || []);
@@ -98,6 +98,7 @@ const MedicalRecord = () => {
     if (!newRecord.user_code.trim()) {
       setErrorMessage("Please enter a user code");
       setUserName("");
+      setNewRecord({ ...newRecord, userId: "" });
       return;
     }
     setLoading(true);
@@ -109,10 +110,12 @@ const MedicalRecord = () => {
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setUserName(response.data.data.name || "");
+      setNewRecord({ ...newRecord, userId: response.data.data.userId || "" });
       setErrorMessage("");
     } catch (error) {
       console.error("Search user error:", error.response?.data || error);
       setUserName("");
+      setNewRecord({ ...newRecord, userId: "" });
       setErrorMessage(error.response?.data?.message || "Failed to search user");
     } finally {
       setLoading(false);
@@ -123,28 +126,41 @@ const MedicalRecord = () => {
     setLoading(true);
     setErrorMessage("");
     if (
-      !newRecord.user_code.trim() ||
       !newRecord.name.trim() ||
+      !newRecord.identityNumber.trim() ||
       !newRecord.dateOfBirth ||
-      !newRecord.gender ||
-      !newRecord.doctorId ||
-      !newRecord.medicine
+      !newRecord.gender
     ) {
-      setErrorMessage("Please fill in all required fields: User Code, Profile Name, Date of Birth, Gender, Doctor, and Medicine.");
+      setErrorMessage("Please fill in all required fields: Profile Name, Identity Number, Date of Birth, Gender.");
       setLoading(false);
       return;
     }
     try {
       const token = localStorage.getItem("token");
+      const payload = {
+        name: newRecord.name,
+        identityNumber: newRecord.identityNumber,
+        dateOfBirth: newRecord.dateOfBirth,
+        gender: newRecord.gender,
+        ...(newRecord.userId && { userId: newRecord.userId }),
+        ...(newRecord.diagnose && { diagnose: newRecord.diagnose }),
+        ...(newRecord.note && { note: newRecord.note }),
+        ...(newRecord.issues && { issues: newRecord.issues }),
+        ...(newRecord.doctorId && { doctorId: newRecord.doctorId }),
+        ...(newRecord.medicine && { medicine: newRecord.medicine }),
+        ...(newRecord.service && { service: newRecord.service }),
+      };
       const response = await axios.post(
         "http://localhost:9999/api/staff/profiles",
-        newRecord,
+        payload,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setRecords([...records, response.data.data]);
       setNewRecord({
+        userId: "",
         user_code: "",
         name: "",
+        identityNumber: "",
         dateOfBirth: "",
         gender: "",
         diagnose: "",
@@ -152,6 +168,7 @@ const MedicalRecord = () => {
         issues: "",
         doctorId: "",
         medicine: "",
+        service: "",
       });
       setUserName("");
       setOpenAddRecord(false);
@@ -177,20 +194,32 @@ const MedicalRecord = () => {
     setErrorMessage("");
     if (
       !editingRecord.name.trim() ||
+      !editingRecord.identityNumber.trim() ||
       !editingRecord.dateOfBirth ||
-      !editingRecord.gender ||
-      !editingRecord.doctorId ||
-      !editingRecord.medicine
+      !editingRecord.gender
     ) {
-      setErrorMessage("Please fill in all required fields: Profile Name, Date of Birth, Gender, Doctor, and Medicine.");
+      setErrorMessage("Please fill in all required fields: Profile Name, Identity Number, Date of Birth, Gender.");
       setLoading(false);
       return;
     }
     try {
       const token = localStorage.getItem("token");
+      const payload = {
+        name: editingRecord.name,
+        identityNumber: editingRecord.identityNumber,
+        dateOfBirth: editingRecord.dateOfBirth,
+        gender: editingRecord.gender,
+        ...(editingRecord.userId && { userId: editingRecord.userId }),
+        ...(editingRecord.diagnose && { diagnose: editingRecord.diagnose }),
+        ...(editingRecord.note && { note: editingRecord.note }),
+        ...(editingRecord.issues && { issues: editingRecord.issues }),
+        ...(editingRecord.doctorId && { doctorId: editingRecord.doctorId }),
+        ...(editingRecord.medicine && { medicine: editingRecord.medicine }),
+        ...(editingRecord.service && { service: editingRecord.service }),
+      };
       const response = await axios.put(
         `http://localhost:9999/api/staff/profiles/${editingRecord._id}`,
-        editingRecord,
+        payload,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setRecords(
@@ -248,12 +277,13 @@ const MedicalRecord = () => {
   };
 
   const handleOpenEditRecord = (record) => {
-    console.log("Editing record:", record);
     setEditingRecord({
       _id: record._id,
+      userId: record.userId || "",
       userCode: record.userCode || "",
       userName: record.userName || "",
       name: record.name || "",
+      identityNumber: record.identityNumber || "",
       dateOfBirth: record.dateOfBirth ? record.dateOfBirth.split("T")[0] : "",
       gender: record.gender || "",
       diagnose: record.diagnose || "",
@@ -261,6 +291,7 @@ const MedicalRecord = () => {
       issues: record.issues || "",
       doctorId: record.doctor?._id || "",
       medicine: record.medicine?._id || "",
+      service: record.service?._id || "",
     });
     setOpenEditRecord(true);
   };
@@ -278,8 +309,10 @@ const MedicalRecord = () => {
   const handleCloseAddRecord = () => {
     setOpenAddRecord(false);
     setNewRecord({
+      userId: "",
       user_code: "",
       name: "",
+      identityNumber: "",
       dateOfBirth: "",
       gender: "",
       diagnose: "",
@@ -287,6 +320,7 @@ const MedicalRecord = () => {
       issues: "",
       doctorId: "",
       medicine: "",
+      service: "",
     });
     setUserName("");
     setErrorMessage("");
@@ -319,7 +353,8 @@ const MedicalRecord = () => {
     (record) =>
       record.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       record.userName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      record.userCode?.toLowerCase().includes(searchQuery.toLowerCase())
+      record.userCode?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      record.identityNumber?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const paginatedRecords = filteredRecords.slice(
@@ -331,7 +366,7 @@ const MedicalRecord = () => {
     <div className="medical-record-management">
       <h1>Patient Record Management</h1>
       <TextField
-        label="Search by Profile Name, User Name, or User Code"
+        label="Search by Profile Name, User Name, User Code, or Identity Number"
         variant="outlined"
         value={searchQuery}
         onChange={(e) => setSearchQuery(e.target.value)}
@@ -342,7 +377,7 @@ const MedicalRecord = () => {
         color="primary"
         startIcon={<AddIcon />}
         onClick={handleOpenAddRecord}
-        disabled={loading || doctors.length === 0 || medicines.length === 0}
+        disabled={loading}
         sx={{ mb: 2 }}
       >
         Add Record
@@ -354,6 +389,7 @@ const MedicalRecord = () => {
               <TableCell>User Code</TableCell>
               <TableCell>User Name</TableCell>
               <TableCell>Profile Name</TableCell>
+              <TableCell>Identity Number</TableCell>
               <TableCell>Date of Birth</TableCell>
               <TableCell>Gender</TableCell>
               <TableCell>Diagnosis</TableCell>
@@ -361,6 +397,7 @@ const MedicalRecord = () => {
               <TableCell>Issues</TableCell>
               <TableCell>Doctor</TableCell>
               <TableCell>Medicine</TableCell>
+              <TableCell>Service</TableCell>
               <TableCell>Actions</TableCell>
             </TableRow>
           </TableHead>
@@ -370,6 +407,7 @@ const MedicalRecord = () => {
                 <TableCell>{record.userCode || "N/A"}</TableCell>
                 <TableCell>{record.userName || "N/A"}</TableCell>
                 <TableCell>{record.name}</TableCell>
+                <TableCell>{record.identityNumber}</TableCell>
                 <TableCell>
                   {new Date(record.dateOfBirth).toLocaleDateString("vi-VN")}
                 </TableCell>
@@ -379,6 +417,7 @@ const MedicalRecord = () => {
                 <TableCell>{record.issues || "N/A"}</TableCell>
                 <TableCell>{record.doctor?.name || "N/A"}</TableCell>
                 <TableCell>{record.medicine?.name || "N/A"}</TableCell>
+                <TableCell>{record.service?.name || "N/A"}</TableCell>
                 <TableCell>
                   <Button
                     color="primary"
@@ -420,11 +459,9 @@ const MedicalRecord = () => {
               label="User Code"
               type="text"
               fullWidth
-              required
               value={newRecord.user_code}
               onChange={(e) => setNewRecord({ ...newRecord, user_code: e.target.value })}
-              error={!!errorMessage}
-              helperText={errorMessage && newRecord.user_code ? errorMessage : "Enter user code to search"}
+              helperText="Enter user code to link a user (optional)"
               style={{ marginRight: "8px" }}
             />
             <Button
@@ -444,7 +481,6 @@ const MedicalRecord = () => {
             fullWidth
             value={userName}
             disabled
-            error={!!errorMessage}
           />
           <TextField
             margin="dense"
@@ -454,6 +490,16 @@ const MedicalRecord = () => {
             required
             value={newRecord.name}
             onChange={(e) => setNewRecord({ ...newRecord, name: e.target.value })}
+            error={!!errorMessage}
+          />
+          <TextField
+            margin="dense"
+            label="Identity Number"
+            type="text"
+            fullWidth
+            required
+            value={newRecord.identityNumber}
+            onChange={(e) => setNewRecord({ ...newRecord, identityNumber: e.target.value })}
             error={!!errorMessage}
           />
           <TextField
@@ -506,13 +552,14 @@ const MedicalRecord = () => {
             value={newRecord.issues}
             onChange={(e) => setNewRecord({ ...newRecord, issues: e.target.value })}
           />
-          <FormControl fullWidth margin="dense" required error={!!errorMessage}>
+          <FormControl fullWidth margin="dense">
             <InputLabel>Doctor</InputLabel>
             <Select
               value={newRecord.doctorId || ""}
               onChange={(e) => setNewRecord({ ...newRecord, doctorId: e.target.value })}
               disabled={doctors.length === 0}
             >
+              <MenuItem value="">None</MenuItem>
               {doctors.length > 0 ? (
                 doctors.map((doctor) => (
                   <MenuItem key={doctor._id} value={doctor._id}>
@@ -524,13 +571,14 @@ const MedicalRecord = () => {
               )}
             </Select>
           </FormControl>
-          <FormControl fullWidth margin="dense" required error={!!errorMessage}>
+          <FormControl fullWidth margin="dense">
             <InputLabel>Medicine</InputLabel>
             <Select
               value={newRecord.medicine || ""}
               onChange={(e) => setNewRecord({ ...newRecord, medicine: e.target.value })}
               disabled={medicines.length === 0}
             >
+              <MenuItem value="">None</MenuItem>
               {medicines.length > 0 ? (
                 medicines.map((medicine) => (
                   <MenuItem key={medicine._id} value={medicine._id}>
@@ -542,12 +590,22 @@ const MedicalRecord = () => {
               )}
             </Select>
           </FormControl>
+          <FormControl fullWidth margin="dense">
+            <InputLabel>Service</InputLabel>
+            <Select
+              value={newRecord.service || ""}
+              onChange={(e) => setNewRecord({ ...newRecord, service: e.target.value })}
+            >
+              <MenuItem value="">None</MenuItem>
+              {/* Add service options if available */}
+            </Select>
+          </FormControl>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseAddRecord} color="primary" disabled={loading}>
             Cancel
           </Button>
-          <Button onClick={handleAddRecord} color="primary" disabled={loading || !userName}>
+          <Button onClick={handleAddRecord} color="primary" disabled={loading}>
             Add
           </Button>
         </DialogActions>
@@ -586,6 +644,16 @@ const MedicalRecord = () => {
             required
             value={editingRecord?.name || ""}
             onChange={(e) => setEditingRecord({ ...editingRecord, name: e.target.value })}
+            error={!!errorMessage}
+          />
+          <TextField
+            margin="dense"
+            label="Identity Number"
+            type="text"
+            fullWidth
+            required
+            value={editingRecord?.identityNumber || ""}
+            onChange={(e) => setEditingRecord({ ...editingRecord, identityNumber: e.target.value })}
             error={!!errorMessage}
           />
           <TextField
@@ -638,13 +706,14 @@ const MedicalRecord = () => {
             value={editingRecord?.issues || ""}
             onChange={(e) => setEditingRecord({ ...editingRecord, issues: e.target.value })}
           />
-          <FormControl fullWidth margin="dense" required error={!!errorMessage}>
+          <FormControl fullWidth margin="dense">
             <InputLabel>Doctor</InputLabel>
             <Select
               value={editingRecord?.doctorId || ""}
               onChange={(e) => setEditingRecord({ ...editingRecord, doctorId: e.target.value })}
               disabled={doctors.length === 0}
             >
+              <MenuItem value="">None</MenuItem>
               {doctors.length > 0 ? (
                 doctors.map((doctor) => (
                   <MenuItem key={doctor._id} value={doctor._id}>
@@ -656,13 +725,14 @@ const MedicalRecord = () => {
               )}
             </Select>
           </FormControl>
-          <FormControl fullWidth margin="dense" required error={!!errorMessage}>
+          <FormControl fullWidth margin="dense">
             <InputLabel>Medicine</InputLabel>
             <Select
               value={editingRecord?.medicine || ""}
               onChange={(e) => setEditingRecord({ ...editingRecord, medicine: e.target.value })}
               disabled={medicines.length === 0}
             >
+              <MenuItem value="">None</MenuItem>
               {medicines.length > 0 ? (
                 medicines.map((medicine) => (
                   <MenuItem key={medicine._id} value={medicine._id}>
@@ -672,6 +742,16 @@ const MedicalRecord = () => {
               ) : (
                 <MenuItem disabled>No medicines available</MenuItem>
               )}
+            </Select>
+          </FormControl>
+          <FormControl fullWidth margin="dense">
+            <InputLabel>Service</InputLabel>
+            <Select
+              value={editingRecord?.service || ""}
+              onChange={(e) => setEditingRecord({ ...editingRecord, service: e.target.value })}
+            >
+              <MenuItem value="">None</MenuItem>
+              {/* Add service options if available */}
             </Select>
           </FormControl>
         </DialogContent>

@@ -14,7 +14,6 @@ exports.getAllAppointments = async (req, res) => {
     const limitNum = parseInt(limit, 10);
     const skip = (pageNum - 1) * limitNum;
 
-    // Xây dựng query để lọc
     let query = {};
     if (status) {
       query.status = status;
@@ -32,13 +31,8 @@ exports.getAllAppointments = async (req, res) => {
       }
     }
 
-    console.log("Query parameters:", { search, page, limit, status, department, startDate, endDate });
-    console.log("Constructed query:", query);
-
     const totalAppointments = await Appointment.countDocuments(query);
     const appointments = await Appointment.find(query).skip(skip).limit(limitNum);
-
-    console.log("Fetched appointments:", appointments);
 
     const doctorIds = [...new Set(appointments.map(a => a.doctorId?.toString()))];
     const userIds = [...new Set(appointments.map(a => a.userId?.toString()))];
@@ -103,6 +97,7 @@ exports.getAllAppointments = async (req, res) => {
   }
 };
 
+
 // Tạo cuộc hẹn mới
 exports.createAppointment = async (req, res) => {
   try {
@@ -110,7 +105,6 @@ exports.createAppointment = async (req, res) => {
     if (!data.profileId || data.profileId === "null" || data.profileId === "") {
       delete data.profileId;
     }
-    console.log("Dữ liệu tạo appointment:", data);
     const newAppointment = new Appointment(data);
     await newAppointment.save();
     res.status(201).json(newAppointment);

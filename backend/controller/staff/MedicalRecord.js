@@ -10,21 +10,23 @@ const isValidDateOfBirth = (dateOfBirth) => {
   return inputDate <= currentDate;
 };
 
-// Get all profiles with user_code
+// Get all profiles with userId
 exports.getAllProfile = async (req, res) => {
   try {
     const profiles = await Profile.find()
-      .populate('user', 'name user_code')
+      .populate('userId', 'name user_code')
       .populate('doctorId', 'name email role')
-      .populate('medicine', 'name type unitPrice');
+      .populate('medicine', 'name type unitPrice')
+      .populate('service', 'name price');
 
     const formattedProfiles = profiles.map(profile => ({
       _id: profile._id,
       name: profile.name,
-      userName: profile.user?.name,
-      userCode: profile.user?.user_code,
+      userName: profile.userId?.name,
+      userCode: profile.userId?.user_code,
       dateOfBirth: profile.dateOfBirth,
       gender: profile.gender,
+      identityNumber: profile.identityNumber,
       diagnose: profile.diagnose,
       note: profile.note,
       issues: profile.issues,
@@ -39,6 +41,11 @@ exports.getAllProfile = async (req, res) => {
         name: profile.medicine.name,
         type: profile.medicine.type,
         unitPrice: profile.medicine.unitPrice
+      } : null,
+      service: profile.service ? {
+        _id: profile.service._id,
+        name: profile.service.name,
+        price: profile.service.price
       } : null,
       createdAt: profile.createdAt,
       updatedAt: profile.updatedAt
@@ -100,7 +107,7 @@ exports.searchUserByCode = async (req, res) => {
 // Create profile (luồng STAFF)
 exports.createProfile = async (req, res) => {
   try {
-    const { name, identityNumber, dateOfBirth, gender } = req.body;
+    const { name, identityNumber, dateOfBirth, gender, userId } = req.body;
 
     // Kiểm tra các trường bắt buộc
     if (!name || !identityNumber || !dateOfBirth || !gender) {
@@ -126,12 +133,24 @@ exports.createProfile = async (req, res) => {
       });
     }
 
+    // Kiểm tra userId nếu được cung cấp
+    if (userId) {
+      const user = await User.findById(userId);
+      if (!user) {
+        return res.status(404).json({
+          success: false,
+          message: 'Không tìm thấy người dùng với ID cung cấp'
+        });
+      }
+    }
+
     // Lưu hồ sơ
     const profile = new Profile({
       name,
       identityNumber,
       dateOfBirth,
       gender,
+      userId: userId || null,
       createdBy: req.user._id // nhân viên đang đăng nhập tạo hồ sơ
     });
 
@@ -145,6 +164,7 @@ exports.createProfile = async (req, res) => {
         identityNumber: savedProfile.identityNumber,
         dateOfBirth: savedProfile.dateOfBirth,
         gender: savedProfile.gender,
+        userId: savedProfile.userId,
         createdAt: savedProfile.createdAt
       }
     });
@@ -158,95 +178,86 @@ exports.createProfile = async (req, res) => {
   }
 };
 
-
-// Update profile
+// Update profile (luồng STAFF)
 exports.updateProfile = async (req, res) => {
   try {
-    const { id } = req.params;
-    const { name, dateOfBirth, gender, diagnose, note, issues, doctorId, medicine } = req.body;
+    const { profileId } = req.params;
+    const {
+      name,
+      identityNumber,
+      dateOfBirth,
+      gender,
+      diagnose,
+      note,
+      issues,
+      medicine,
+      doctorId,
+      service,
+      userId
+    } = req.body;
 
-    // Kiểm tra các trường bắt buộc
-    if (!name || !dateOfBirth || !gender || !doctorId || !medicine) {
-      return res.status(400).json({
-        success: false,
-        message: 'Tên, ngày sinh, giới tính, bác sĩ, và thuốc là bắt buộc'
-      });
-    }
-
-    // Kiểm tra định dạng ngày sinh
-    if (!isValidDateOfBirth(dateOfBirth)) {
-      return res.status(400).json({
-        success: false,
-        message: 'Ngày sinh không được vượt quá ngày hiện tại'
-      });
-    }
-
-    // Kiểm tra giới tính
-    if (!['Male', 'Female', 'Other'].includes(gender)) {
-      return res.status(400).json({
-        success: false,
-        message: 'Giới tính không hợp lệ'
-      });
-    }
-
-    const doctor = await Employee.findById(doctorId);
-    const medicineDoc = await Medicine.findById(medicine);
-    if (!doctor || !medicineDoc) {
-      return res.status(404).json({
-        success: false,
-        message: 'Bác sĩ hoặc thuốc không tìm thấy'
-      });
-    }
-
-    const profile = await Profile.findByIdAndUpdate(
-      id,
-      { name, dateOfBirth, gender, diagnose, note, issues, doctorId, medicine },
-      { new: true }
-    )
-      .populate('user', 'name user_code')
-      .populate('doctorId', 'name email role')
-      .populate('medicine', 'name type unitPrice');
-
+    // Tìm profile theo ID
+    const profile = await Profile.findById(profileId);
     if (!profile) {
       return res.status(404).json({
         success: false,
-        message: 'Hồ sơ không tìm thấy'
+        message: 'Không tìm thấy hồ sơ'
       });
     }
 
-    res.json({
-      success: true,
-      data: {
-        _id: profile._id,
-        name: profile.name,
-        userName: profile.user?.name,
-        userCode: profile.user?.user_code,
-        dateOfBirth: profile.dateOfBirth,
-        gender: profile.gender,
-        diagnose: profile.diagnose,
-        note: profile.note,
-        issues: profile.issues,
-        doctor: profile.doctorId ? {
-          _id: profile.doctorId._id,
-          name: profile.doctorId.name,
-          email: profile.doctorId.email,
-          role: profile.doctorId.role
-        } : null,
-        medicine: profile.medicine ? {
-          _id: profile.medicine._id,
-          name: profile.medicine.name,
-          type: profile.medicine.type,
-          unitPrice: profile.medicine.unitPrice
-        } : null,
-        createdAt: profile.createdAt,
-        updatedAt: profile.updatedAt
+    // Cập nhật thông tin nếu có
+    if (name !== undefined) profile.name = name;
+    if (identityNumber !== undefined) profile.identityNumber = identityNumber;
+    if (dateOfBirth !== undefined) {
+      if (!isValidDateOfBirth(dateOfBirth)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Ngày sinh không được vượt quá ngày hiện tại'
+        });
       }
+      profile.dateOfBirth = dateOfBirth;
+    }
+    if (gender !== undefined) {
+      if (!['Male', 'Female', 'Other'].includes(gender)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Giới tính không hợp lệ'
+        });
+      }
+      profile.gender = gender;
+    }
+    if (diagnose !== undefined) profile.diagnose = diagnose;
+    if (note !== undefined) profile.note = note;
+    if (issues !== undefined) profile.issues = issues;
+    if (medicine !== undefined) profile.medicine = medicine;
+    if (doctorId !== undefined) profile.doctorId = doctorId;
+    if (service !== undefined) profile.service = service;
+    if (userId !== undefined) {
+      if (userId) {
+        const user = await User.findById(userId);
+        if (!user) {
+          return res.status(404).json({
+            success: false,
+            message: 'Không tìm thấy người dùng với ID cung cấp'
+          });
+        }
+      }
+      profile.userId = userId || null;
+    }
+
+    const updatedProfile = await profile.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'Cập nhật hồ sơ thành công',
+      data: updatedProfile
     });
+
   } catch (error) {
-    console.error('Lỗi khi sửa hồ sơ:', error);
+    console.error('Lỗi khi cập nhật hồ sơ:', error);
     res.status(500).json({
       success: false,
-      message: 'Lỗi server khi sửa hồ sơ',
+      message: 'Lỗi server khi cập nhật hồ sơ',
       error: error.message
     });
   }
@@ -264,9 +275,12 @@ exports.deleteProfile = async (req, res) => {
       });
     }
 
-    await User.findByIdAndUpdate(profile.user, {
-      $pull: { profiles: profile._id }
-    });
+    // Chỉ cập nhật User nếu profile có userId
+    if (profile.userId) {
+      await User.findByIdAndUpdate(profile.userId, {
+        $pull: { profiles: profile._id }
+      });
+    }
 
     res.json({
       success: true,
@@ -338,18 +352,20 @@ exports.getProfileByUserId = async (req, res) => {
       });
     }
 
-    const profiles = await Profile.find({ user: user_id })
-      .populate('user', 'name user_code')
+    const profiles = await Profile.find({ userId: user_id })
+      .populate('userId', 'name user_code')
       .populate('doctorId', 'name email role')
-      .populate('medicine', 'name type unitPrice');
+      .populate('medicine', 'name type unitPrice')
+      .populate('service', 'name price');
 
     const formattedProfiles = profiles.map(profile => ({
       _id: profile._id,
       name: profile.name,
-      userName: profile.user?.name,
-      userCode: profile.user?.user_code,
+      userName: profile.userId?.name,
+      userCode: profile.userId?.user_code,
       dateOfBirth: profile.dateOfBirth,
       gender: profile.gender,
+      identityNumber: profile.identityNumber,
       diagnose: profile.diagnose,
       note: profile.note,
       issues: profile.issues,
@@ -364,6 +380,11 @@ exports.getProfileByUserId = async (req, res) => {
         name: profile.medicine.name,
         type: profile.medicine.type,
         unitPrice: profile.medicine.unitPrice
+      } : null,
+      service: profile.service ? {
+        _id: profile.service._id,
+        name: profile.service.name,
+        price: profile.service.price
       } : null,
       createdAt: profile.createdAt,
       updatedAt: profile.updatedAt
