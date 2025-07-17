@@ -200,3 +200,43 @@
 .servicebox-button:hover {
   background-color: #1e40af;
 }
+
+.service-title {
+  font-size: 2.1rem;
+  font-weight: bold;
+  color: #193f6b;
+  margin: 0;
+  white-space: nowrap;
+}
+
+.service-search {
+  width: 897px;              
+  max-width: 100%;
+  padding: 14px 20px;
+  font-size: 1.15rem;
+  border: 1.5px solid #d6e2f2;
+  border-radius: 7px;
+  background: #f8fafb;
+  box-shadow: 0 2px 12px #f0f5fa1c;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.service-search:focus {
+  border: 1.5px solid #009fd9;  
+  background: #fff;
+  box-shadow: 0 4px 18px #cdeafc2a;
+}
+
+.service-search-bar {
+  display: flex;
+  align-items: center;
+  gap: 50px; 
+  margin-bottom: 24px;
+}
+
+.search-row {
+  flex: 1;
+  display: flex;
+  align-items: center;
+}

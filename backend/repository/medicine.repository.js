@@ -8,14 +8,21 @@ async function getAllMedicines() {
     return await Medicine.find().populate('supplier');
 }
 
-const countMedicines = async () => {
-  const result = await Medicine.countDocuments();
-  return result;
+const countMedicines = async (searchTerm) => {
+    const query = searchTerm ? { name: { $regex: searchTerm, $options: 'i' } } : {}; // Tìm kiếm theo tên thuốc
+    const result = await Medicine.countDocuments(query);
+    return result;
 };
 
-const getMedicinesWithPagination = async (skip, limit) => {
-  const medicines = await Medicine.find().skip(skip).limit(limit).exec();
-  return medicines;
+const getMedicinesWithPagination = async (skip, limit, searchTerm) => {
+    const query = searchTerm ? { name: { $regex: searchTerm, $options: 'i' } } : {}; // Tìm kiếm theo tên thuốc
+
+    const medicines = await Medicine.find(query)
+        .populate('supplier')
+        .skip(skip) // Bỏ qua các bản ghi trước đó
+        .limit(limit) // Giới hạn số bản ghi trả về
+        .exec();
+    return medicines;
 };
 
 

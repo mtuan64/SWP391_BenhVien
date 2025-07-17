@@ -27,13 +27,14 @@ const DepartmentBox = ({ name, description, image, buttonUrl }) => (
 const DepartmentPage = () => {
   const [departments, setDepartments] = useState([]);
   const [totalDepartments, setTotalDepartments] = useState(0);
+  const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [departmentsPerPage] = useState(3);  // Mặc định 6 phòng ban mỗi trang
 
   useEffect(() => {
     const fetchDepartments = async () => {
       try {
-        const res = await axios.get(`/api/user/department?page=${currentPage}&limit=${departmentsPerPage}`);
+        const res = await axios.get(`/api/user/department?page=${currentPage}&limit=${departmentsPerPage}&searchTerm=${searchTerm}`);
         console.log("API Response:", res.data);
         if (Array.isArray(res.data.departments)) {
           setDepartments(res.data.departments);
@@ -48,7 +49,12 @@ const DepartmentPage = () => {
     };
 
     fetchDepartments();
-  }, [currentPage]); // Khi currentPage thay đổi, sẽ gọi lại API
+  }, [currentPage, searchTerm]); // Khi currentPage thay đổi, sẽ gọi lại API
+
+  useEffect(() => {
+    // khi searchTerm thay đổi, về lại trang đầu
+    setCurrentPage(1);
+  }, [searchTerm]);
 
   // Tính toán tổng số trang
   const totalPages = Math.ceil(totalDepartments / departmentsPerPage);
@@ -79,6 +85,17 @@ const DepartmentPage = () => {
               <p className="department-header-desc">
                 Danh sách các chuyên khoa, phòng ban hàng đầu tại bệnh viện
               </p>
+            </div>
+            <div className="department-search-bar">
+              <h2 className="department-title">Tra cứu tên phòng ban</h2>
+              <div className="search-row">
+                <input
+                  className="department-search"
+                  placeholder="Nhập tên phòng ban cần tìm..."
+                  value={searchTerm}
+                  onChange={e => setSearchTerm(e.target.value)}
+                />
+              </div>
             </div>
             <div className="department-grid">
               {departments.map((item, index) => (

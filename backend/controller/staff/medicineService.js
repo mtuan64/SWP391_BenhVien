@@ -26,6 +26,11 @@ const createMedicine = async (req, res) => {
 };
 
 const getAllMedicines = async (req, res) => {
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 5;
+  const skip = (page - 1) * limit;
+  const searchTerm = req.query.searchTerm || "";  // Lấy tham số tìm kiếm từ query
+
   try {
     const token = req.header('Authorization')?.replace('Bearer ', '');
     console.log("token", token);
@@ -42,10 +47,23 @@ const getAllMedicines = async (req, res) => {
       return res.status(401).json({ message: "fel1" });
     }
 
-    const medicines = await medicineRepo.getAllMedicines();
-    res.status(200).json({ message: "OK", medicines });
+    // Lấy tổng số thuốc để tính số trang, sử dụng searchTerm để lọc
+    const totalMedicines = await medicineRepo.countMedicines(searchTerm);
+    const totalPages = Math.ceil(totalMedicines / limit);
+
+    // Lấy thuốc với phân trang
+    const medicines = await medicineRepo.getMedicinesWithPagination(skip, limit, searchTerm);
+
+    res.status(200).json({
+      message: "OK",
+      medicines,
+      totalMedicines,
+      totalPages,
+      currentPage: page,
+      perPage: limit,
+    });
   } catch (err) {
-    res.status(400).json({ message: "Error", error: err.message });
+    res.status(500).json({ message: "Error", error: err.message });
   }
 };
 

@@ -59,6 +59,11 @@ const DoctorPage = () => {
     fetchAllDoctors();
   }, []);
 
+  useEffect(() => {
+    // khi searchTerm hoặc selectedSpecialization thay đổi, về lại trang đầu
+    setCurrentPage(1);
+  }, [searchTerm, selectedSpecialization]);
+
   const specialties = [...new Set(allDoctors.map(doctor => doctor.specialization).filter(Boolean))];
 
   // Calculate total pages

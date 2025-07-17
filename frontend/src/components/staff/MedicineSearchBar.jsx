@@ -1,17 +1,17 @@
 import React from "react";
-import { Button } from "react-bootstrap";
 
-const MedicineSearchBar = ({ search, setSearch, onAdd }) => (
-  <div className="d-flex mb-3 align-items-center">
-    <input
-      className="form-control me-2"
-      placeholder="Tìm kiếm tên thuốc..."
-      value={search ?? ""}
-      onChange={e => setSearch(e.target.value)}
-      style={{ maxWidth: 320 }}
-    />
-    <Button onClick={onAdd} variant="success">Thêm thuốc</Button>
-  </div>
-);
+const MedicineSearchBar = ({ search, setSearch, onAdd }) => {
+  return (
+    <div className="medicine-toolbar">
+      <input
+        type="text"
+        placeholder="Tìm kiếm theo tên thuốc"
+        value={search ?? ""}
+        onChange={(e) => setSearch(e.target.value)}
+      />
+      <button className="medicine-add-btn" onClick={onAdd}>+ Thêm thuốc</button>
+    </div>
+  );
+};
 
 export default MedicineSearchBar;

@@ -32,13 +32,14 @@ const ServiceBox = ({ image, title, description, buttonUrl }) => (
 const ServicePage = () => {
   const [services, setServices] = useState([]);
   const [totalServices, setTotalServices] = useState(0);
+  const [searchTerm, setSearchTerm] = useState("");  // Lưu trạng thái tìm kiếm
   const [currentPage, setCurrentPage] = useState(1);
-  const [servicesPerPage] = useState(2);  // Mặc định 6 dịch vụ mỗi trang
+  const [servicesPerPage] = useState(3);  // Mặc định 6 dịch vụ mỗi trang
 
   useEffect(() => {
     const fetchServices = async () => {
       try {
-        const res = await axios.get(`/api/user/service?page=${currentPage}&limit=${servicesPerPage}`);
+        const res = await axios.get(`/api/user/service?page=${currentPage}&limit=${servicesPerPage}&searchTerm=${searchTerm}`);
         console.log("API Response:", res.data);
         if (Array.isArray(res.data.services)) {
           setServices(res.data.services);
@@ -53,7 +54,12 @@ const ServicePage = () => {
     };
 
     fetchServices();
-  }, [currentPage]); // Khi currentPage thay đổi, sẽ gọi lại API
+  }, [currentPage, searchTerm]); // Khi currentPage hoặc searchTerm thay đổi, gọi lại API
+
+  useEffect(() => {
+    // khi searchTerm thay đổi, về lại trang đầu
+    setCurrentPage(1);
+  }, [searchTerm]);
 
   // Tính toán tổng số trang
   const totalPages = Math.ceil(totalServices / servicesPerPage);
@@ -83,6 +89,18 @@ const ServicePage = () => {
               <h2 className="service-header-title">Khám Phá Dịch Vụ Của KiwiCare</h2>
               <p className="service-header-desc">Giải pháp y tế toàn diện, cá nhân hóa cho mọi nhu cầu sức khỏe</p>
             </div>
+            <div className="service-search-bar">
+              <h2 className="service-title">Tra cứu tên dịch vụ</h2>
+              <div className="search-row">
+                <input
+                  className="service-search"
+                  placeholder="Nhập tên dịch vụ cần tìm..."
+                  value={searchTerm}
+                  onChange={e => setSearchTerm(e.target.value)}
+                />
+              </div>
+            </div>
+
             <div className="service-grid">
               {services.map((item, index) => (
                 <div key={item._id || index} className="service-grid-item">

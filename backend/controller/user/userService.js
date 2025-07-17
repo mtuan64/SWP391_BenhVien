@@ -135,25 +135,25 @@ const cancelAppointment = async (req, res) => {
 const getAllDoctors = async (req, res) => {
   const { page = 1, limit = 10, searchTerm = "", specialization = "" } = req.query;
 
-    const skip = (parseInt(page) - 1) * parseInt(limit);
+  const skip = (parseInt(page) - 1) * parseInt(limit);
 
-    try {
-        // Đếm tổng số bác sĩ
-        const totalDoctors = await doctorRepo.countDoctors(searchTerm, specialization);
+  try {
+    // Đếm tổng số bác sĩ
+    const totalDoctors = await doctorRepo.countDoctors(searchTerm, specialization);
 
-        // Lấy các bác sĩ với phân trang
-        const doctors = await doctorRepo.getDoctorsWithPagination(skip, limit, searchTerm, specialization);
+    // Lấy các bác sĩ với phân trang
+    const doctors = await doctorRepo.getDoctorsWithPagination(skip, limit, searchTerm, specialization);
 
-        res.status(200).json({
-            doctors,
-            totalDoctors,
-            totalPages: Math.ceil(totalDoctors / limit),
-            currentPage: parseInt(page),
-            perPage: parseInt(limit),
-        });
-    } catch (err) {
-        res.status(500).json({ message: 'Error fetching doctors', error: err.message });
-    }
+    res.status(200).json({
+      doctors,
+      totalDoctors,
+      totalPages: Math.ceil(totalDoctors / limit),
+      currentPage: parseInt(page),
+      perPage: parseInt(limit),
+    });
+  } catch (err) {
+    res.status(500).json({ message: 'Error fetching doctors', error: err.message });
+  }
 };
 
 
@@ -174,14 +174,15 @@ const getAllServices = async (req, res) => {
   const page = parseInt(req.query.page) || 1;  // Mặc định trang 1
   const limit = parseInt(req.query.limit) || 10;  // Mặc định 10 dịch vụ mỗi trang
   const skip = (page - 1) * limit;  // Tính toán số lượng dịch vụ cần bỏ qua
+  const searchTerm = req.query.searchTerm || "";  // Lấy tham số tìm kiếm từ query
 
   try {
     // Lấy tổng số dịch vụ để tính số trang
-    const totalServices = await serviceRepo.countServices();
+    const totalServices = await serviceRepo.countServices(searchTerm);
     const totalPages = Math.ceil(totalServices / limit);
 
-    // Lấy dịch vụ với phân trang
-    const services = await serviceRepo.getServicesWithPagination(skip, limit);
+    // Lấy dịch vụ với phân trang và tìm kiếm
+    const services = await serviceRepo.getServicesWithPagination(skip, limit, searchTerm);
 
     res.status(200).json({
       message: "OK",
@@ -195,6 +196,7 @@ const getAllServices = async (req, res) => {
     res.status(500).json({ message: "Error", error: err.message });
   }
 };
+
 
 
 const getServiceById = async (req, res) => {
@@ -214,6 +216,7 @@ const getAllDepartment = async (req, res) => {
   const page = parseInt(req.query.page) || 1;
   const limit = parseInt(req.query.limit) || 10;
   const skip = (page - 1) * limit;
+  const searchTerm = req.query.searchTerm || "";  // Lấy tham số tìm kiếm từ query
 
   try {
     // Lấy tổng số phòng ban để tính số trang
@@ -221,7 +224,7 @@ const getAllDepartment = async (req, res) => {
     const totalPages = Math.ceil(totalDepartments / limit);
 
     // Lấy phòng ban với phân trang
-    const departments = await departmentRepo.getDepartmentsWithPagination(skip, limit);
+    const departments = await departmentRepo.getDepartmentsWithPagination(skip, limit, searchTerm);
 
     res.status(200).json({
       message: "OK",
@@ -254,14 +257,15 @@ const getAllMedicines = async (req, res) => {
   const page = parseInt(req.query.page) || 1;
   const limit = parseInt(req.query.limit) || 10;
   const skip = (page - 1) * limit;
+  const searchTerm = req.query.searchTerm || "";  // Lấy tham số tìm kiếm từ query
 
   try {
     // Lấy tổng số thuốc để tính số trang
-    const totalMedicines = await medicineRepo.countMedicines();
+    const totalMedicines = await medicineRepo.countMedicines(searchTerm);
     const totalPages = Math.ceil(totalMedicines / limit);
 
-    // Lấy thuốc với phân trang
-    const medicines = await medicineRepo.getMedicinesWithPagination(skip, limit);
+    // Lấy thuốc với phân trang và tìm kiếm
+    const medicines = await medicineRepo.getMedicinesWithPagination(skip, limit, searchTerm);
 
     const filtered = medicines.map(medicine => ({
       _id: medicine._id,
