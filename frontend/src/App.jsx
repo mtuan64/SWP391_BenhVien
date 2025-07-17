@@ -98,7 +98,7 @@ const RoleRedirect = () => {
       if (role === "Admin") navigate("/admin", { replace: true });
       else if (role === "Staff") navigate("/staff", { replace: true });
       else if (role === "Doctor") navigate("/doctor", { replace: true });
-      else navigate("/home", { replace: true });
+      else navigate("/", { replace: true });
       return;
     }
 
@@ -114,7 +114,7 @@ const RoleRedirect = () => {
       role === "patient" &&
       (path.startsWith("/admin") || path.startsWith("/staff"))
     ) {
-      navigate("/home", { replace: true });
+      navigate("/", { replace: true });
     }
   }, [navigate, location]);
 
@@ -233,7 +233,7 @@ const AppRoutes = () => {
             <Route path="profile" element={<ProfileDoctor />} />
           </Route>
           {/* Public routes */}
-          <Route path="/home" element={<HomePage />} />
+          <Route path="/" element={<HomePage />} />
           <Route path="/service" element={<ServicePage />} />
           <Route path="/doctor-home" element={<DoctorPage />} />
 

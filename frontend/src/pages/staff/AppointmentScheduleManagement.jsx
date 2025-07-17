@@ -983,8 +983,6 @@ const AppointmentScheduleManagement = () => {
           </Button>
         </Modal.Footer>
       </Modal>
-
-      <FooterComponent />
     </>
   );
 };
