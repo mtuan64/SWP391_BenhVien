@@ -7,7 +7,7 @@ const profileSchema = new mongoose.Schema(
     gender: { type: String, enum: ["Male", "Female", "Other"], required: true },
 
     // BỎ unique để cho phép trùng CCCD
-    identityNumber: { type: String, required: true },
+    identityNumber: { type: String, required: true},
 
     userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: false },
 
