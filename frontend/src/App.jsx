@@ -79,6 +79,7 @@ import QAHistories from "./pages/QAHistories";
 import ProfileStaff from "./pages/staff/ProfileStaff";
 import ProfileDoctor from "./pages/ProfileDoctor";
 import NutritionAdvice from "./pages/NutritionAdvice.jsx";
+import CreateInvoice2 from "./components/staff/CreateInvoiceTest.jsx";
 
 const DRAWER_WIDTH = 240;
 
@@ -193,6 +194,7 @@ const AppRoutes = () => {
             <Route path="departments" element={<DepartmentManagement />} />
             <Route path="specialties" element={<SpecialtyManagement />} />
             <Route path="invoices" element={<InvoiceList />} />
+            <Route path="invoices/create2" element={<CreateInvoice2 />} />
             <Route path="payments" element={<PaymentView />} />
             <Route path="news" element={<NewsManagement />} />
             <Route path="add/medicalrecords" element={<AddMedicalRecord />} />

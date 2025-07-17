@@ -198,7 +198,7 @@ const HomePage = () => {
         console.error("Lỗi khi tải dữ liệu:", err);
         setError(
           err.response?.data?.message ||
-            "Không thể tải bài viết hoặc tin tức. Vui lòng kiểm tra API."
+          "Không thể tải bài viết hoặc tin tức. Vui lòng kiểm tra API."
         );
         setLoading(false);
       }
@@ -313,7 +313,7 @@ const HomePage = () => {
             />
           </Col>
           <Col md={6}>
-            <h2 className="text-primary fw-bold mb-3">Phòng Khám Đa Khoa KiwiCare</h2>
+            <h2 className="text-primary fw-bold mb-3 ">Phòng Khám Đa Khoa KiwiCare</h2>
             <p className="text-muted mb-4 fs-5">
               Phòng Khám Đa Khoa KiwiCare tự hào là đơn vị cung cấp dịch vụ y tế toàn diện, với đội ngũ bác sĩ được đào tạo tại các trường đại học y khoa hàng đầu trong và ngoài nước. Chúng tôi chuyên cung cấp các dịch vụ đa chuyên khoa như nội khoa, nhi khoa, phụ sản, và phẫu thuật ngoại khoa, đáp ứng tiêu chuẩn y tế quốc tế. Với sứ mệnh mang đến sức khỏe và sự an tâm, KiwiCare cam kết đồng hành cùng bạn trong mọi nhu cầu chăm sóc sức khỏe.
             </p>
@@ -324,7 +324,7 @@ const HomePage = () => {
       {/* Tiêu chí phòng khám */}
       <MilestoneSection />
 
-{/* Cơ sở vật chất */}
+      {/* Cơ sở vật chất */}
       <section className="mb-5">
         <h3 className="text-primary mb-4 fw-bold text-center">Cơ Sở Vật Chất</h3>
         <div id="facilityCarousel" className="carousel slide carousel-fade" data-bs-ride="carousel" data-bs-interval="3000">
@@ -472,7 +472,7 @@ const HomePage = () => {
         </Container>
       </Container>
 
-            {/* Priority News Section */}
+      {/* Priority News Section */}
       <Container fluid className="bg-light py-5">
         <Container>
           <h2 className="text-center text-primary fw-bold mb-5">Tin Tức Phòng Khám</h2>
