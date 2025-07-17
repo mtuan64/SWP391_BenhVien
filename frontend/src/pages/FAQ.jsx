@@ -18,8 +18,8 @@ const FAQList = () => {
     try {
       const res = await axios.get('http://localhost:9999/api/user/faqs', {
         params: {
-          title: titleFilter,
-          message: messageFilter,
+          // title: titleFilter,
+          // message: messageFilter,
           sort,
           page,
           limit,
@@ -45,6 +45,10 @@ const FAQList = () => {
       [faqId]: !prev[faqId]
     }));
   };
+  const filteredData = faqs.filter(item =>
+  item.title.toLowerCase().includes(titleFilter.toLowerCase()) &&
+  item.message.toLowerCase().includes(messageFilter.toLowerCase())
+);
 
   const handlePrev = () => {
     if (page > 1) {
@@ -118,12 +122,12 @@ const FAQList = () => {
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             <div className="group">
-              <label className="block text-sm font-semibold text-gray-700 mb-3">Tìm kiếm theo tiêu đề</label>
+              <label className="block text-sm font-semibold text-gray-700 mb-3">Tìm kiếm theo chủ đề</label>
               <div className="relative">
                 <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-blue-500 transition-colors duration-200" />
                 <input
                   type="text"
-                  placeholder="Nhập từ khóa tiêu đề..."
+                  placeholder="Nhập từ khóa chủ đề..."
                   value={titleFilter}
                   onChange={(e) => setTitleFilter(e.target.value)}
                   className="w-full pl-12 pr-4 py-4 border-2 border-gray-200 rounded-2xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-300 bg-gray-50/50 focus:bg-white text-gray-800 placeholder-gray-500"
@@ -132,12 +136,12 @@ const FAQList = () => {
             </div>
 
             <div className="group">
-              <label className="block text-sm font-semibold text-gray-700 mb-3">Tìm kiếm theo nội dung</label>
+              <label className="block text-sm font-semibold text-gray-700 mb-3">Tìm kiếm theo câu hỏi</label>
               <div className="relative">
                 <MessageCircle className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-blue-500 transition-colors duration-200" />
                 <input
                   type="text"
-                  placeholder="Tìm trong câu trả lời..."
+                  placeholder="Tìm trong câu hỏi..."
                   value={messageFilter}
                   onChange={(e) => setMessageFilter(e.target.value)}
                   className="w-full pl-12 pr-4 py-4 border-2 border-gray-200 rounded-2xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-300 bg-gray-50/50 focus:bg-white text-gray-800 placeholder-gray-500"
@@ -197,13 +201,13 @@ const FAQList = () => {
                         <th className="px-8 py-6 text-left text-sm font-bold text-white uppercase tracking-wider">
                           <div className="flex items-center gap-3">
                             <HelpCircle className="w-5 h-5" />
-                            Câu hỏi
+                            Chủ đề
                           </div>
                         </th>
                         <th className="px-8 py-6 text-left text-sm font-bold text-white uppercase tracking-wider">
                           <div className="flex items-center gap-3">
                             <MessageCircle className="w-5 h-5" />
-                            Nội dung
+                            Câu hỏi
                           </div>
                         </th>
                         <th className="px-8 py-6 text-left text-sm font-bold text-white uppercase tracking-wider">
@@ -224,7 +228,7 @@ const FAQList = () => {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-200">
-                      {faqs.map((faq, index) => (
+                      {filteredData.map((faq, index) => (
                         <React.Fragment key={faq._id}>
                           <tr 
                             className="hover:bg-blue-50/50 transition-all duration-300 group"

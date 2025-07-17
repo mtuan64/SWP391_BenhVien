@@ -115,6 +115,7 @@ const LoginPage = () => {
                 </span>
               </div>
             </div>
+
             <div className="forgotPasswordLink">
               <a href="/forgot-password">Bạn quên mật khẩu ?</a>
             </div>
