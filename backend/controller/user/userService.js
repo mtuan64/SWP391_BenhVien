@@ -117,18 +117,18 @@ exports.createAppointment = async (req, res) => {
   const userId = req.user.id;
 
   try {
-    // Kiểm tra xem bác sĩ đã có lịch vào giờ này chưa
-    const existingAppointment = await Appointment.findOne({
-      doctorId,
-      appointmentDate: new Date(appointmentDate),
-      status: { $ne: "Canceled" },
-    });
+    // // Kiểm tra xem bác sĩ đã có lịch vào giờ này chưa
+    // const existingAppointment = await Appointment.findOne({
+    //   doctorId,
+    //   appointmentDate: new Date(appointmentDate),
+    //   status: { $ne: "Canceled" },
+    // });
 
-    if (existingAppointment) {
-      return res.status(409).json({
-        message: "This doctor already has an appointment at the selected time.",
-      });
-    }
+    // if (existingAppointment) {
+    //   return res.status(409).json({
+    //     message: "This doctor already has an appointment at the selected time.",
+    //   });
+    // }
 
     // Nếu không trùng thì tạo mới lịch khám
     const newAppointment = new Appointment({
