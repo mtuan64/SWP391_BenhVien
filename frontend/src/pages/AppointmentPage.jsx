@@ -137,10 +137,12 @@ const AppointmentPage = () => {
       setSuccess(true);
       setStep("confirm");
     } catch (err) {
-      console.error("Error creating appointment:", err.response?.data);
-      setError("Đặt lịch thất bại.");
-    } finally {
-      setLoading(false);
+      console.error("Error:", err.response?.data);
+      if (err.response?.status === 409 || err.response?.data?.message?.includes("already has an appointment")) {
+        setError("Lịch này đã được đặt. Vui lòng chọn thời gian khác.");
+      } else {
+        setError("Đặt lịch thất bại. Thử lại sau.");
+      }
     }
   };
 
@@ -436,6 +438,7 @@ const AppointmentPage = () => {
                 )}
               </Col>
             </Row>
+            {error && <div className="alert alert-danger mt-3">{error}</div>}
             <div className="d-flex justify-content-between mt-4">
               <button
                 className="btn btn-outline-secondary"
