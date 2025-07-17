@@ -66,6 +66,7 @@ const {
   createAppointment,
   getAppointmentsByUser,
   cancelAppointment,
+  getAvailableTimeSlots,
 } = require("../../controller/user/userService");
 
 userRouter.get(
@@ -95,5 +96,6 @@ userRouter.get("/", (req, res) => {
 userRouter.post("/create", authMiddleware, createAppointment);
 userRouter.get("/user", authMiddleware, getAppointmentsByUser);
 userRouter.post("/cancel/:id", authMiddleware, cancelAppointment);
+// userRouter.get('/available-timeslots', authMiddleware, getAvailableTimeSlots);  // <--- Route này đã thêm đúng
 
 module.exports = userRouter;

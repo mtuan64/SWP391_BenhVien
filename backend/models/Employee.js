@@ -8,16 +8,16 @@ const employeeSchema = new mongoose.Schema({
   role: { type: String, enum: ['Doctor', 'Staff', 'Admin'], required: true },
   degree: { type: String, required: true },
   expYear: { type: String },
-  department: { type: String },
+  department: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Department' }],
   specialization: { type: String },
   phone: { type: String },
   createdAt: { type: Date },
   updatedAt: { type: Date },
   status: { type: String, enum: ['active', 'inactive'], default: 'active' },
-  schedule: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Schedule' }], 
+  schedule: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Schedule' }],
   services: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Services' }],
   emailVerificationCode: { type: String },
-verificationExpires: { type: Date },
+  verificationExpires: { type: Date },
 
 }, { timestamps: true });
 
