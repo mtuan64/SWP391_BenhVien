@@ -56,7 +56,7 @@ userRouter.put('/update', async (req, res) => {
   }
 });
 const {
-  createPaymentLinkEmbedded,
+  createPaymentLinkEmbedded, createPaymentLinkEmbeddedForBookAppointment
 } = require("../../controller/staff/PaymentController");
 const {
   getAllInvoices4User,
@@ -82,6 +82,8 @@ userRouter.put(
 
 userRouter.get("/invoices", verifyToken1, getAllInvoices4User);
 userRouter.post("/create-link", createPaymentLinkEmbedded);
+userRouter.post("/create-link-appointment", createPaymentLinkEmbeddedForBookAppointment);
+
 userRouter.put("/pay/success", CompletedInvoices);
 
 userRouter.get('/profile/my-records', verifyToken1, getMyProfiles);

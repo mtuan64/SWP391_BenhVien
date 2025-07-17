@@ -1,5 +1,4 @@
-import React, { useState } from "react";
-import { useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Row, Col } from "react-bootstrap";
 import Flatpickr from "react-flatpickr";
@@ -66,7 +65,7 @@ const AppointmentPage = () => {
           },
         });
 
-        const departments = res.data.departments.map(dep => ({
+        const departments = res.data.departments.map((dep) => ({
           id: dep._id,
           name: dep.name,
           description: dep.description,
@@ -86,16 +85,20 @@ const AppointmentPage = () => {
     setError(null);
 
     try {
-      const res = await axios.post("http://localhost:9999/api/profile/create", {
-        name: profileName,
-        gender: profileGender,
-        identityNumber: profileIdentityNumber,
-        dateOfBirth: profileDateOfBirth,
-      }, {
-        headers: {
-          Authorization: `Bearer ${token}`,
+      const res = await axios.post(
+        "http://localhost:9999/api/profile/create",
+        {
+          name: profileName,
+          gender: profileGender,
+          identityNumber: profileIdentityNumber,
+          dateOfBirth: profileDateOfBirth,
         },
-      });
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
       console.log("Profile created:", res.data);
       const newProfile = res.data.profile;
       setSelectedProfile(newProfile._id);
@@ -112,30 +115,66 @@ const AppointmentPage = () => {
   };
 
   const handleCreateAppointment = async () => {
+    const user = JSON.parse(localStorage.getItem("user"));
+    const token = localStorage.getItem("token");
+    const userId = user._id;
+
     setLoading(true);
     setError(null);
+
     try {
-      const appointmentDate = buildAppointmentDate(selectedDate, selectedTime);
-      if (!appointmentDate) {
-        setError("Ngày giờ không hợp lệ.");
+      if (!token) {
+        setError("Vui lòng đăng nhập để tiếp tục.");
         return;
       }
-      console.log("Sending appointmentDate:", appointmentDate);  // Debug format sent
 
-      const res = await axios.post("http://localhost:9999/api/user/create", {
+      const appointmentDate = buildAppointmentDate(selectedDate, selectedTime);
+      const defaultDate = new Date().toISOString();
+      const usedDate = appointmentDate || defaultDate;
+
+      if (!selectedProfile || !selectedDoctor || !selectedDepartment || !appointmentDate) {
+        setError("Vui lòng chọn đầy đủ thông tin (hồ sơ, bác sĩ, khoa, ngày giờ).");
+        return;
+      }
+
+      console.log("Token:", token);
+      console.log("Data sent:", {
+        userId,
         profileId: selectedProfile,
         doctorId: selectedDoctor,
         department: selectedDepartment,
-        appointmentDate,
+        appointmentDate: usedDate,
         type: "Offline",
-      }, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
       });
-      console.log("Appointment created:", res.data);
-      setSuccess(true);
-      setStep("confirm");
+
+      const res = await axios.post(
+        "http://localhost:9999/api/user/create-link-appointment",
+        {
+          userId,
+          profileId: selectedProfile,
+          doctorId: selectedDoctor,
+          department: selectedDepartment,
+          appointmentDate: usedDate,
+          type: "Offline",
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      console.log("API Response:", res.data);
+      const checkoutUrl = res.data.checkoutUrl;
+      const returnUrl = res.data.returnUrl;
+      if (!checkoutUrl) throw new Error("Không nhận được link thanh toán");
+
+      console.log("Checkout URL:", checkoutUrl);
+      console.log("Return URL:", returnUrl);
+
+      // Chuyển hướng trực tiếp đến checkoutUrl thay vì nhúng
+      window.location.href = checkoutUrl;
+      setStep("confirm"); // Cập nhật step để hiển thị thông báo
     } catch (err) {
       console.error("Error:", err.response?.data);
       if (err.response?.status === 409 || err.response?.data?.message?.includes("already has an appointment")) {
@@ -151,25 +190,30 @@ const AppointmentPage = () => {
       if (!selectedDoctor || !selectedDate || !token) return;
 
       try {
-        // FIXED: Use local date string to avoid timezone shift
         const year = selectedDate.getFullYear();
-        const month = (selectedDate.getMonth() + 1).toString().padStart(2, '0');
-        const day = selectedDate.getDate().toString().padStart(2, '0');
+        const month = (selectedDate.getMonth() + 1).toString().padStart(2, "0");
+        const day = selectedDate.getDate().toString().padStart(2, "0");
         const formattedDate = `${year}-${month}-${day}`;
 
-        const res = await axios.get(`http://localhost:9999/api/appointmentScheduleManagement/schedules/${selectedDoctor}`, {
-          params: {
-            date: formattedDate,
-          },
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        const res = await axios.get(
+          `http://localhost:9999/api/appointmentScheduleManagement/schedules/${selectedDoctor}`,
+          {
+            params: {
+              date: formattedDate,
+            },
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
 
-        const availableSlots = res.data.flatMap(schedule =>
+        const availableSlots = res.data.flatMap((schedule) =>
           schedule.timeSlots
-            .filter(slot => slot.status === 'Available')
-            .map(slot => ({ startTime: new Date(slot.startTime), endTime: new Date(slot.endTime) }))
+            .filter((slot) => slot.status === "Available")
+            .map((slot) => ({
+              startTime: new Date(slot.startTime),
+              endTime: new Date(slot.endTime),
+            }))
         );
         setAvailableTimeSlots(availableSlots);
       } catch (err) {
@@ -180,14 +224,13 @@ const AppointmentPage = () => {
     fetchAvailableTimeSlots();
   }, [selectedDoctor, selectedDate, token]);
 
-  // Hàm format time từ Date thành "HH:MM Sáng/Chiều"
   const formatTimeSlot = (startTime) => {
     const date = new Date(startTime);
-    if (isNaN(date.getTime())) return "Invalid time";  // Fallback if invalid
+    if (isNaN(date.getTime())) return "Invalid time";
     const hours = date.getHours();
-    const minutes = date.getMinutes().toString().padStart(2, '0');
-    const period = hours < 12 ? 'Sáng' : 'Chiều';
-    const formattedHours = (hours % 12 || 12).toString().padStart(2, '0');
+    const minutes = date.getMinutes().toString().padStart(2, "0");
+    const period = hours < 12 ? "Sáng" : "Chiều";
+    const formattedHours = (hours % 12 || 12).toString().padStart(2, "0");
     return `${formattedHours}:${minutes} ${period}`;
   };
 
@@ -204,15 +247,7 @@ const AppointmentPage = () => {
 
     if (isNaN(date.getTime())) return null;
 
-    const year = date.getFullYear();
-    const month = (date.getMonth() + 1).toString().padStart(2, '0');
-    const day = date.getDate().toString().padStart(2, '0');
-    const hours = date.getHours().toString().padStart(2, '0');
-    const minutes = date.getMinutes().toString().padStart(2, '0');
-    const seconds = '00';
-    const milliseconds = '000';
-
-    return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}.${milliseconds}`;
+    return date.toISOString().split(".")[0]; // Loại bỏ phần mili giây
   };
 
   const renderStepContent = () => {
@@ -293,7 +328,6 @@ const AppointmentPage = () => {
             </div>
           </div>
         );
-
 
       case "department":
         return (
@@ -419,7 +453,9 @@ const AppointmentPage = () => {
                 {!Array.isArray(availableTimeSlots) ? (
                   <p className="text-muted">Đang tải hoặc lỗi dữ liệu slot.</p>
                 ) : availableTimeSlots.length === 0 ? (
-                  <p className="text-muted">Không có slot available cho ngày này.</p>
+                  <p className="text-muted">
+                    Không có slot available cho ngày này.
+                  </p>
                 ) : (
                   <div className="d-flex flex-wrap gap-2">
                     {availableTimeSlots.map((slot, index) => {
@@ -427,7 +463,11 @@ const AppointmentPage = () => {
                       return (
                         <button
                           key={index}
-                          className={`btn btn-outline-primary btn-sm ${new Date(selectedTime).toISOString() === new Date(slot.startTime).toISOString() ? "btn-primary text-white" : ""}`}
+                          className={`btn btn-outline-primary btn-sm ${new Date(selectedTime).toISOString() ===
+                            new Date(slot.startTime).toISOString()
+                            ? "btn-primary text-white"
+                            : ""
+                            }`}
                           onClick={() => setSelectedTime(new Date(slot.startTime))}
                         >
                           {formatted}
@@ -453,7 +493,11 @@ const AppointmentPage = () => {
               >
                 {loading ? (
                   <>
-                    <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                    <span
+                      className="spinner-border spinner-border-sm me-2"
+                      role="status"
+                      aria-hidden="true"
+                    ></span>
                     Đang đặt lịch...
                   </>
                 ) : (
@@ -467,28 +511,9 @@ const AppointmentPage = () => {
       case "confirm":
         return (
           <div className="p-4 bg-white rounded shadow-sm text-center">
-            <svg
-              className="checkmark-animated mx-auto mb-4"
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 52 52"
-            >
-              <circle
-                className="checkmark__circle"
-                cx="26"
-                cy="26"
-                r="25"
-                fill="none"
-              />
-              <path
-                className="checkmark__check"
-                fill="none"
-                d="M14.1 27.2l7.1 7.2 16.7-16.8"
-              />
-            </svg>
-            <h3 className="text-primary fw-bold mb-3">
-              Đặt Lịch Hẹn Thành Công!
-            </h3>
-            <p className="text-muted small">Cảm ơn bạn đã sử dụng dịch vụ.</p>
+            <h3 className="text-primary fw-bold mb-3">Thanh Toán Lịch Hẹn</h3>
+            {error && <div className="alert alert-danger">{error}</div>}
+            <p>Đang chuyển hướng đến trang thanh toán...</p>
             <div className="mt-4 d-flex justify-content-center gap-3">
               <button
                 className="btn btn-primary"
@@ -619,7 +644,12 @@ const AppointmentPage = () => {
           </Row>
         </section>
       </div>
+      <div
+        id="embedded-payment-container"
+        style={{ width: "100%", height: "400px", backgroundColor: "#f5f5f5", display: "none" }} // Không cần hiển thị
+      ></div>
     </>
   );
 };
+
 export default AppointmentPage;

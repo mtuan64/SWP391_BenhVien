@@ -79,6 +79,7 @@ import QAHistories from "./pages/QAHistories";
 import ProfileStaff from "./pages/staff/ProfileStaff";
 import ProfileDoctor from "./pages/ProfileDoctor";
 import NutritionAdvice from "./pages/NutritionAdvice.jsx";
+import AppointmentSuccess from "./components/AppointmentSuccess.jsx";
 
 const DRAWER_WIDTH = 240;
 
@@ -287,6 +288,14 @@ const AppRoutes = () => {
             element={
               <PrivateRoute>
                 <AppointmentPage />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/appointment/success"
+            element={
+              <PrivateRoute>
+                <AppointmentSuccess />
               </PrivateRoute>
             }
           />
