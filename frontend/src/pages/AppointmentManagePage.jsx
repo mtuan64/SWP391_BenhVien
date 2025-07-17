@@ -12,6 +12,7 @@ const AppointmentManagePage = () => {
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
   const [selectedAppointmentId, setSelectedAppointmentId] = useState(null);
   const [feedbackData, setFeedbackData] = useState({ content: '', rating: 5 });
+
   const fetchAppointments = async () => {
     try {
       const res = await axios.get("http://localhost:9999/api/user/user", {
@@ -117,7 +118,7 @@ const AppointmentManagePage = () => {
               {filteredAppointments.map((appt) => (
                 <tr key={appt._id}>
                   <td>{appt.doctorId?.name || "(Không rõ)"}</td>
-                  <td>{appt.department}</td>
+                  <td>{appt.department?.name || "(Không rõ)"}</td>
                   <td>{new Date(appt.appointmentDate).toLocaleString()}</td>
                   <td>{appt.type}</td>
                   <td>{appt.status}</td>

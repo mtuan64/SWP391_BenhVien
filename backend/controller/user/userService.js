@@ -3,6 +3,7 @@ const Question = require("../../models/Question");
 const User = require("../../models/User");
 const Appointment = require("../../models/Appointment");
 const Feedback = require("../../models/Feedback");
+const Schedule = require("../../models/Schedule");
 const { sendAppointmentConfirmation } = require("../../utils/mailService");
 
 const Employee = require("../../models/Employee");
@@ -111,12 +112,25 @@ module.exports.getAllQAUser = async (req, res) => {
   }
 };
 
-// Đặt lịch khám
 exports.createAppointment = async (req, res) => {
   const { profileId, doctorId, department, appointmentDate, type } = req.body;
   const userId = req.user.id;
 
   try {
+    // Kiểm tra xem bác sĩ đã có lịch vào giờ này chưa
+    const existingAppointment = await Appointment.findOne({
+      doctorId,
+      appointmentDate: new Date(appointmentDate),
+      status: { $ne: "Canceled" },
+    });
+
+    if (existingAppointment) {
+      return res.status(409).json({
+        message: "This doctor already has an appointment at the selected time.",
+      });
+    }
+
+    // Nếu không trùng thì tạo mới lịch khám
     const newAppointment = new Appointment({
       userId,
       profileId,
@@ -129,6 +143,33 @@ exports.createAppointment = async (req, res) => {
 
     await newAppointment.save();
 
+    // MỚI: Cập nhật trạng thái time slot trong lịch của bác sĩ
+    const appointmentDateObj = new Date(appointmentDate);
+    const schedule = await Schedule.findOne({
+      employeeId: doctorId,  // Sử dụng employeeId thay vì doctorId nếu khác, nhưng giả sử doctorId là employeeId
+      date: {
+        $gte: new Date(appointmentDateObj.getFullYear(), appointmentDateObj.getMonth(), appointmentDateObj.getDate()),
+        $lt: new Date(appointmentDateObj.getFullYear(), appointmentDateObj.getMonth(), appointmentDateObj.getDate() + 1),
+      },
+    });
+
+    if (schedule) {
+      const updatedTimeSlots = schedule.timeSlots.map(slot => {
+        // Kiểm tra nếu appointmentDate nằm trong slot (dựa trên startTime và endTime)
+        if (new Date(slot.startTime) <= appointmentDateObj && new Date(slot.endTime) > appointmentDateObj) {
+          return { ...slot, status: 'Booked' }; // Cập nhật status thành 'Booked'
+        }
+        return slot;
+      });
+
+      schedule.timeSlots = updatedTimeSlots;
+      await schedule.save();
+    } else {
+      // Nếu không tìm thấy schedule, ghi log hoặc xử lý (ví dụ: tạo mới nếu cần)
+      console.warn(`No schedule found for doctor ${doctorId} on date ${appointmentDate}`);
+    }
+
+    // Tiếp tục gửi email xác nhận
     const [user, profile, doctor] = await Promise.all([
       User.findById(userId),
       Profile.findById(profileId),
@@ -162,6 +203,7 @@ exports.getAppointmentsByUser = async (req, res) => {
   try {
     const appointments = await Appointment.find({ userId })
       .populate("profileId doctorId")
+      .populate("department", "name") // NEW: Populate department để lấy name
       .sort({ appointmentDate: -1 });
 
     res.status(200).json(appointments);
