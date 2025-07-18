@@ -2,7 +2,6 @@ const Profile = require("../../models/Profile");
 const Employee = require('../../models/Employee');
 const Medicine = require("../../models/Medicine");
 const User = require("../../models/User");
-const Service = require("../../models/Service");
 
 // Hàm kiểm tra ngày sinh hợp lệ
 const isValidDateOfBirth = (dateOfBirth) => {
@@ -11,22 +10,21 @@ const isValidDateOfBirth = (dateOfBirth) => {
   return inputDate <= currentDate;
 };
 
-// Get all profiles with userId
+// Get all profiles with user_code
 exports.getAllProfile = async (req, res) => {
   try {
     const profiles = await Profile.find()
-      .populate('userId', 'name')
+      .populate('user', 'name user_code')
       .populate('doctorId', 'name email role')
-      .populate('medicine', 'name type unitPrice')
-      .populate('service', 'name price');
+      .populate('medicine', 'name type unitPrice');
 
     const formattedProfiles = profiles.map(profile => ({
       _id: profile._id,
       name: profile.name,
-      userName: profile.userId?.name || "N/A",
+      userName: profile.user?.name,
+      userCode: profile.user?.user_code,
       dateOfBirth: profile.dateOfBirth,
       gender: profile.gender,
-      identityNumber: profile.identityNumber,
       diagnose: profile.diagnose,
       note: profile.note,
       issues: profile.issues,
@@ -41,11 +39,6 @@ exports.getAllProfile = async (req, res) => {
         name: profile.medicine.name,
         type: profile.medicine.type,
         unitPrice: profile.medicine.unitPrice
-      } : null,
-      service: profile.service ? {
-        _id: profile.service._id,
-        name: profile.service.name,
-        price: profile.service.price
       } : null,
       createdAt: profile.createdAt,
       updatedAt: profile.updatedAt
@@ -65,20 +58,55 @@ exports.getAllProfile = async (req, res) => {
   }
 };
 
-
-
-// Create profile (luồng STAFF)
-exports.createProfile = async (req, res) => {
+// Search user by user_code
+exports.searchUserByCode = async (req, res) => {
   try {
+    const { user_code } = req.params;
 
-    // Chỉ lấy các trường cần thiết từ req.body
-    const { name, identityNumber, dateOfBirth, gender } = req.body;
-
-    // Kiểm tra các trường bắt buộc
-    if (!name?.trim() || !identityNumber?.trim() || !dateOfBirth || !gender) {
+    if (!user_code) {
       return res.status(400).json({
         success: false,
-        message: 'Tên, CCCD, ngày sinh, và giới tính là bắt buộc'
+        message: 'Mã người dùng là bắt buộc'
+      });
+    }
+
+    const user = await User.findOne({ user_code }).select('name user_code');
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'Không tìm thấy người dùng'
+      });
+    }
+
+    res.json({
+      success: true,
+      data: {
+        userId: user._id,
+        name: user.name,
+        user_code: user.user_code
+      }
+    });
+  } catch (error) {
+    console.error('Lỗi khi tìm kiếm người dùng:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Lỗi server khi tìm kiếm người dùng',
+      error: error.message
+    });
+  }
+};
+
+// Create new profile
+exports.createProfile = async (req, res) => {
+  try {
+    const { user_code, name, dateOfBirth, gender, diagnose, note, issues, doctorId, medicine } = req.body;
+
+    // Kiểm tra các trường bắt buộc
+    if (!user_code || !name || !dateOfBirth || !gender || !doctorId || !medicine) {
+      return res.status(400).json({
+        success: false,
+        message: 'Mã người dùng, tên, ngày sinh, giới tính, bác sĩ, và thuốc là bắt buộc'
       });
     }
 
@@ -86,7 +114,7 @@ exports.createProfile = async (req, res) => {
     if (!isValidDateOfBirth(dateOfBirth)) {
       return res.status(400).json({
         success: false,
-        message: 'Ngày sinh không hợp lệ hoặc vượt quá ngày hiện tại'
+        message: 'Ngày sinh không được vượt quá ngày hiện tại'
       });
     }
 
@@ -98,39 +126,72 @@ exports.createProfile = async (req, res) => {
       });
     }
 
-    // Tạo hồ sơ với các trường khác là null
+    const user = await User.findOne({ user_code });
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'Không tìm thấy người dùng với mã được cung cấp'
+      });
+    }
+
+    const doctor = await Employee.findById(doctorId);
+    const medicineDoc = await Medicine.findById(medicine);
+    if (!doctor || !medicineDoc) {
+      return res.status(404).json({
+        success: false,
+        message: 'Bác sĩ hoặc thuốc không tìm thấy'
+      });
+    }
+
     const profile = new Profile({
       name,
-      identityNumber,
+      user: user._id,
       dateOfBirth,
       gender,
-      userId: null,
-      diagnose: null,
-      note: null,
-      issues: null,
-      doctorId: null,
-      medicine: null,
-      service: null
+      diagnose,
+      note,
+      issues,
+      doctorId,
+      medicine
     });
 
     const savedProfile = await profile.save();
 
+    await User.findByIdAndUpdate(user._id, {
+      $push: { profiles: savedProfile._id }
+    });
+
+    const populatedProfile = await Profile.findById(savedProfile._id)
+      .populate('user', 'name user_code')
+      .populate('doctorId', 'name email role')
+      .populate('medicine', 'name type unitPrice');
+
     res.status(201).json({
       success: true,
       data: {
-        _id: savedProfile._id,
-        name: savedProfile.name,
-        identityNumber: savedProfile.identityNumber,
-        dateOfBirth: savedProfile.dateOfBirth,
-        gender: savedProfile.gender,
-        userId: savedProfile.userId,
-        diagnose: savedProfile.diagnose,
-        note: savedProfile.note,
-        issues: savedProfile.issues,
-        doctorId: savedProfile.doctorId,
-        medicine: savedProfile.medicine,
-        service: savedProfile.service,
-        createdAt: savedProfile.createdAt
+        _id: populatedProfile._id,
+        name: populatedProfile.name,
+        userName: populatedProfile.user?.name,
+        userCode: populatedProfile.user?.user_code,
+        dateOfBirth: populatedProfile.dateOfBirth,
+        gender: populatedProfile.gender,
+        diagnose: populatedProfile.diagnose,
+        note: populatedProfile.note,
+        issues: populatedProfile.issues,
+        doctor: populatedProfile.doctorId ? {
+          _id: populatedProfile.doctorId._id,
+          name: populatedProfile.doctorId.name,
+          email: populatedProfile.doctorId.email,
+          role: populatedProfile.doctorId.role
+        } : null,
+        medicine: populatedProfile.medicine ? {
+          _id: populatedProfile.medicine._id,
+          name: populatedProfile.medicine.name,
+          type: populatedProfile.medicine.type,
+          unitPrice: populatedProfile.medicine.unitPrice
+        } : null,
+        createdAt: populatedProfile.createdAt,
+        updatedAt: populatedProfile.updatedAt
       }
     });
   } catch (error) {
@@ -143,87 +204,94 @@ exports.createProfile = async (req, res) => {
   }
 };
 
-// Update profile (luồng STAFF)
+// Update profile
 exports.updateProfile = async (req, res) => {
   try {
-    const { profileId } = req.params;
-    const { name, identityNumber, dateOfBirth, gender } = req.body;
+    const { id } = req.params;
+    const { name, dateOfBirth, gender, diagnose, note, issues, doctorId, medicine } = req.body;
 
-    // Tìm profile theo ID
-    const profile = await Profile.findById(profileId);
+    // Kiểm tra các trường bắt buộc
+    if (!name || !dateOfBirth || !gender || !doctorId || !medicine) {
+      return res.status(400).json({
+        success: false,
+        message: 'Tên, ngày sinh, giới tính, bác sĩ, và thuốc là bắt buộc'
+      });
+    }
+
+    // Kiểm tra định dạng ngày sinh
+    if (!isValidDateOfBirth(dateOfBirth)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Ngày sinh không được vượt quá ngày hiện tại'
+      });
+    }
+
+    // Kiểm tra giới tính
+    if (!['Male', 'Female', 'Other'].includes(gender)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Giới tính không hợp lệ'
+      });
+    }
+
+    const doctor = await Employee.findById(doctorId);
+    const medicineDoc = await Medicine.findById(medicine);
+    if (!doctor || !medicineDoc) {
+      return res.status(404).json({
+        success: false,
+        message: 'Bác sĩ hoặc thuốc không tìm thấy'
+      });
+    }
+
+    const profile = await Profile.findByIdAndUpdate(
+      id,
+      { name, dateOfBirth, gender, diagnose, note, issues, doctorId, medicine },
+      { new: true }
+    )
+      .populate('user', 'name user_code')
+      .populate('doctorId', 'name email role')
+      .populate('medicine', 'name type unitPrice');
+
     if (!profile) {
       return res.status(404).json({
         success: false,
-        message: 'Không tìm thấy hồ sơ'
+        message: 'Hồ sơ không tìm thấy'
       });
     }
 
-    // Chuẩn bị dữ liệu cập nhật
-    const updateData = {};
-
-    // Chỉ cho phép cập nhật các trường được phép
-    if (name !== undefined) {
-      if (!name.trim()) {
-        return res.status(400).json({
-          success: false,
-          message: 'Tên không được để trống'
-        });
-      }
-      updateData.name = name;
-    }
-    if (identityNumber !== undefined) {
-      if (!identityNumber.trim()) {
-        return res.status(400).json({
-          success: false,
-          message: 'CCCD không được để trống'
-        });
-      }
-      updateData.identityNumber = identityNumber;
-    }
-    if (dateOfBirth !== undefined) {
-      if (!isValidDateOfBirth(dateOfBirth)) {
-        return res.status(400).json({
-          success: false,
-          message: 'Ngày sinh không hợp lệ hoặc vượt quá ngày hiện tại'
-        });
-      }
-      updateData.dateOfBirth = dateOfBirth;
-    }
-    if (gender !== undefined) {
-      if (!['Male', 'Female', 'Other'].includes(gender)) {
-        return res.status(400).json({
-          success: false,
-          message: 'Giới tính không hợp lệ'
-        });
-      }
-      updateData.gender = gender;
-    }
-
-    // Kiểm tra xem có dữ liệu nào để cập nhật không
-    if (Object.keys(updateData).length === 0) {
-      return res.status(400).json({
-        success: false,
-        message: 'Không có trường hợp lệ nào được cung cấp để cập nhật'
-      });
-    }
-
-    // Cập nhật hồ sơ
-    const updatedProfile = await Profile.findByIdAndUpdate(
-      profileId,
-      { $set: updateData },
-      { new: true }
-    );
-
-    res.status(200).json({
+    res.json({
       success: true,
-      message: 'Cập nhật hồ sơ thành công',
-      data: updatedProfile
+      data: {
+        _id: profile._id,
+        name: profile.name,
+        userName: profile.user?.name,
+        userCode: profile.user?.user_code,
+        dateOfBirth: profile.dateOfBirth,
+        gender: profile.gender,
+        diagnose: profile.diagnose,
+        note: profile.note,
+        issues: profile.issues,
+        doctor: profile.doctorId ? {
+          _id: profile.doctorId._id,
+          name: profile.doctorId.name,
+          email: profile.doctorId.email,
+          role: profile.doctorId.role
+        } : null,
+        medicine: profile.medicine ? {
+          _id: profile.medicine._id,
+          name: profile.medicine.name,
+          type: profile.medicine.type,
+          unitPrice: profile.medicine.unitPrice
+        } : null,
+        createdAt: profile.createdAt,
+        updatedAt: profile.updatedAt
+      }
     });
   } catch (error) {
-    console.error('Lỗi khi cập nhật hồ sơ:', error);
+    console.error('Lỗi khi sửa hồ sơ:', error);
     res.status(500).json({
       success: false,
-      message: 'Lỗi server khi cập nhật hồ sơ',
+      message: 'Lỗi server khi sửa hồ sơ',
       error: error.message
     });
   }
@@ -241,12 +309,9 @@ exports.deleteProfile = async (req, res) => {
       });
     }
 
-    // Chỉ cập nhật User nếu profile có userId
-    if (profile.userId) {
-      await User.findByIdAndUpdate(profile.userId, {
-        $pull: { profiles: profile._id }
-      });
-    }
+    await User.findByIdAndUpdate(profile.user, {
+      $pull: { profiles: profile._id }
+    });
 
     res.json({
       success: true,
@@ -298,24 +363,6 @@ exports.getAllMedicines = async (req, res) => {
   }
 };
 
-// Get all services
-exports.getAllServices = async (req, res) => {
-  try {
-    const services = await Service.find().select('name price');
-    res.json({
-      success: true,
-      data: services
-    });
-  } catch (error) {
-    console.error('Lỗi khi lấy danh sách dịch vụ:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Lỗi server khi lấy danh sách dịch vụ',
-      error: error.message
-    });
-  }
-};
-
 // Get profiles by user_id
 exports.getProfileByUserId = async (req, res) => {
   try {
@@ -328,7 +375,7 @@ exports.getProfileByUserId = async (req, res) => {
       });
     }
 
-    const user = await User.findById(user_id).select('name');
+    const user = await User.findById(user_id).select('name user_code');
     if (!user) {
       return res.status(404).json({
         success: false,
@@ -336,19 +383,18 @@ exports.getProfileByUserId = async (req, res) => {
       });
     }
 
-    const profiles = await Profile.find({ userId: user_id })
-      .populate('userId', 'name')
+    const profiles = await Profile.find({ user: user_id })
+      .populate('user', 'name user_code')
       .populate('doctorId', 'name email role')
-      .populate('medicine', 'name type unitPrice')
-      .populate('service', 'name price');
+      .populate('medicine', 'name type unitPrice');
 
     const formattedProfiles = profiles.map(profile => ({
       _id: profile._id,
       name: profile.name,
-      userName: profile.userId?.name || "N/A",
+      userName: profile.user?.name,
+      userCode: profile.user?.user_code,
       dateOfBirth: profile.dateOfBirth,
       gender: profile.gender,
-      identityNumber: profile.identityNumber,
       diagnose: profile.diagnose,
       note: profile.note,
       issues: profile.issues,
@@ -363,11 +409,6 @@ exports.getProfileByUserId = async (req, res) => {
         name: profile.medicine.name,
         type: profile.medicine.type,
         unitPrice: profile.medicine.unitPrice
-      } : null,
-      service: profile.service ? {
-        _id: profile.service._id,
-        name: profile.service.name,
-        price: profile.service.price
       } : null,
       createdAt: profile.createdAt,
       updatedAt: profile.updatedAt

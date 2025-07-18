@@ -3,7 +3,7 @@ const Employee = require("../../models/Employee");
 const Appointment = require("../../models/Appointment");
 const Payment = require("../../models/Payment");
 
-const getUserRegistrationTrend = async (req, res) => {
+exports.getUserRegistrationTrend = async (req, res) => {
   try {
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
@@ -26,7 +26,7 @@ const getUserRegistrationTrend = async (req, res) => {
 };
 
 // Get daily appointment count (last 30 days)
-const getAppointmentTrend = async (req, res) => {
+exports.getAppointmentTrend = async (req, res) => {
   try {
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
@@ -51,7 +51,7 @@ const getAppointmentTrend = async (req, res) => {
 };
 
 // Get daily revenue (last 30 days)
-const getRevenueTrend = async (req, res) => {
+exports.getRevenueTrend = async (req, res) => {
   try {
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
@@ -78,7 +78,7 @@ const getRevenueTrend = async (req, res) => {
   }
 };
 // Appointment type distribution (last 30 days)
-const getAppointmentTypeStats = async (req, res) => {
+exports.getAppointmentTypeStats = async (req, res) => {
   try {
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
@@ -100,7 +100,7 @@ const getAppointmentTypeStats = async (req, res) => {
 };
 
 // Revenue breakdown by payment method (last 30 days)
-const getRevenueByMethod = async (req, res) => {
+exports.getRevenueByMethod = async (req, res) => {
   try {
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
@@ -127,7 +127,7 @@ const getRevenueByMethod = async (req, res) => {
 };
 
 // Summary counts for KPIs
-const getDashboardSummaries = async (req, res) => {
+exports.getDashboardSummaries = async (req, res) => {
   try {
     const userCount = await User.countDocuments();
     const appointmentCount = await Appointment.countDocuments();
@@ -146,7 +146,7 @@ const getDashboardSummaries = async (req, res) => {
   }
 };
 
-const getUserGrowthStats = async (req, res) => {
+exports.getUserGrowthStats = async (req, res) => {
   try {
     const days = 30;
     const startDate = new Date();
@@ -195,7 +195,7 @@ const getUserGrowthStats = async (req, res) => {
   }
 };
 
-const getEmployeeStats = async (req, res) => {
+exports.getEmployeeStats = async (req, res) => {
   try {
     const totalEmployees = await Employee.countDocuments();
     const roles = await Employee.aggregate([
@@ -212,14 +212,3 @@ const getEmployeeStats = async (req, res) => {
     res.status(500).json({ message: "Failed to get employee stats", error: err });
   }
 };
-
-module.exports = {
-  getUserRegistrationTrend,
-  getAppointmentTrend,
-  getRevenueTrend,
-  getAppointmentTypeStats,
-  getRevenueByMethod,
-  getDashboardSummaries,
-  getUserGrowthStats,
-  getEmployeeStats,
-}

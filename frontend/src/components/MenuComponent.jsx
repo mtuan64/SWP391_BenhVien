@@ -1,3 +1,4 @@
+// src/components/MenuComponent.jsx
 import React, { useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Drawer } from "antd";
@@ -9,21 +10,40 @@ import {
   TeamOutlined,
   FileTextOutlined,
   SettingOutlined,
-  CalendarOutlined,
-  QuestionCircleOutlined,
-  FileOutlined,
 } from "@ant-design/icons";
 
 const DRAWER_WIDTH = 240;
 
 const menuByRole = {
+  admin: [
+    { title: "Home", path: "/", icon: <HomeOutlined /> },
+    { title: "Manage Users", path: "/users-management", icon: <TeamOutlined /> },
+    { title: "Manage Recruitment", path: "/manage-recruitment", icon: <FileTextOutlined /> },
+    { title: "Manage BlogList", path: "/bloglist", icon: <FileTextOutlined /> },
+    { title: "Manage Doctor Account", path: "/doctoraccount", icon: <FileTextOutlined /> },
+    { title: "Settings", path: "/settings", icon: <SettingOutlined /> },
+  ],
+  doctor: [
+    { title: "Home", path: "/", icon: <HomeOutlined /> },
+    { title: "My Project", path: "/my-project", icon: <TeamOutlined /> },
+    { title: "Report Management", path: "/report", icon: <LockOutlined /> },
+    { title: "Message Management", path: "/message-management", icon: <LockOutlined /> },
+    { title: "Attendance Management", path: "/attendance-management", icon: <LockOutlined /> },
+    { title: "Recruitment Management", path: "/recruitment-management-mentor", icon: <LockOutlined /> },
+  ],
+  staff: [
+    { title: "Home", path: "/", icon: <HomeOutlined /> },
+    { title: "Addresses", path: "/addresses", icon: <UserOutlined /> },
+    { title: "Change Password", path: "/change-password", icon: <LockOutlined /> },
+  ],
   patient: [
     { title: "Home", path: "/", icon: <HomeOutlined /> },
-
-    { title: "Profile Manage", path: "/profilemanage", icon: <UserOutlined /> },
-    { title: "Appointment Manage", path: "/appointmentmanage", icon: <CalendarOutlined /> },
-    { title: "Q/A History", path: "/qahistory", icon: <QuestionCircleOutlined /> },
-    { title: "Invoice", path: "/invoice", icon: <FileOutlined /> },
+    { title: "My Project", path: "/my-project-intern", icon: <HomeOutlined /> },
+    { title: "Medical Record", path: "/view_medicalrecord", icon: <FileTextOutlined /> },
+    { title: "Report Management", path: "/report-management", icon: <FileTextOutlined /> },
+    { title: "Schedule", path: "/schedule", icon: <FileTextOutlined /> },
+    { title: "Attendance", path: "/attendance", icon: <FileTextOutlined /> },
+    { title: "Mark Report", path: "/attendance", icon: <FileTextOutlined /> },
   ],
 };
 

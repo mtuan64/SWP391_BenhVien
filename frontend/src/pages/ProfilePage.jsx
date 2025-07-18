@@ -8,8 +8,7 @@ const ProfilePage = () => {
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
-    name: user?.fullname || "",
-    email: user?.email || "",
+    fullname: user?.name || "",
     phone: user?.phone || "",
   });
   const [profilePicture, setProfilePicture] = useState(user?.profilePicture || null);
@@ -26,8 +25,7 @@ const ProfilePage = () => {
 
   useEffect(() => {
     setFormData({
-      fullname: user?.fullname || "",
-      email: user?.email || "",
+      fullname: user?.name || "",
       phone: user?.phone || "",
     });
     setProfilePicture(user?.profilePicture || null);
@@ -38,16 +36,6 @@ const ProfilePage = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Handle file selection for profile picture
-  const handleFileChange = (e) => {
-    const selectedFile = e.target.files[0];
-    if (selectedFile) {
-      setFile(selectedFile);
-      setProfilePicture(URL.createObjectURL(selectedFile)); // Local preview
-    }
-  };
-
-  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -55,68 +43,54 @@ const ProfilePage = () => {
     setSuccess("");
 
     try {
-      // Log the token to debug
-      console.log("Token being sent:", user?.token);
-      if (!user?.token) {
-        throw new Error("No token found. Please log in again.");
-      }
-
-      // Update profile picture if a file is selected
       let updatedProfilePicture = profilePicture;
 
       if (file) {
         const uploadFormData = new FormData();
         uploadFormData.append("profilePicture", file);
 
-        const response = await fetch("http://localhost:9999/api/user/upload-profile-picture", {
-          method: "POST", // Reverted to POST
+        const uploadRes = await fetch("http://localhost:9999/api/user/upload-profile-picture", {
+          method: "POST",
           headers: {
             Authorization: `Bearer ${user.token}`,
           },
           body: uploadFormData,
         });
 
-        const data = await response.json();
-        if (!response.ok) {
-          console.log("Profile picture upload error:", data); // Debug log
-          throw new Error(data.msg || "Failed to upload profile picture");
-        }
-        updatedProfilePicture = data.profilePictureUrl; // Backend returns URL
+        const uploadData = await uploadRes.json();
+        if (!uploadRes.ok) throw new Error(uploadData.msg || "Upload ảnh thất bại");
+
+        updatedProfilePicture = uploadData.profilePictureUrl;
       }
 
-      // Update user details
-      const response = await fetch("http://localhost:9999/api/user/update", {
-        method: "POST", // Reverted to POST
+      const res = await fetch("http://localhost:9999/api/user/update", {
+        method: "PUT",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${user.token}`,
         },
         body: JSON.stringify({
+          email: user.email,
           name: formData.fullname,
-          email: formData.email,
           phone: formData.phone,
           status: "active",
           profilePicture: updatedProfilePicture,
         }),
       });
 
-      const data = await response.json();
-      if (response.ok) {
-        // Update localStorage and auth context
-        const updatedUser = {
-          ...user,
-          ...formData,
-          dateOfBirth: formData.dateOfBirth ? new Date(formData.dateOfBirth) : null,
-          profilePicture: updatedProfilePicture,
-        };
-        localStorage.setItem("user", JSON.stringify(updatedUser));
-        login(updatedUser);
-        setSuccess("Hồ sơ đã được cập nhật thành công!");
-        setFile(null); // Clear file input
-      } else {
-        console.log("User update error:", data); // Debug log
-        throw new Error(data.msg || "Không thể cập nhật hồ sơ");
-      }
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Cập nhật thất bại");
+
+      const updatedUser = {
+        ...user,
+        name: formData.fullname,
+        phone: formData.phone,
+        profilePicture: updatedProfilePicture,
+      };
+      localStorage.setItem("user", JSON.stringify(updatedUser));
+      login(updatedUser);
+      setSuccess("Cập nhật thành công!");
+      setFile(null);
     } catch (err) {
       setError(err.message || "Đã xảy ra lỗi.");
     } finally {
@@ -146,12 +120,12 @@ const ProfilePage = () => {
           <form onSubmit={handleSubmit}>
             <div className="row">
               <div className="col-md-6 mb-3">
-                <label htmlFor="username" className="form-label">
-                  Tên Người Dùng
+                <label htmlFor="email" className="form-label">
+                  Email
                 </label>
                 <input
-                  type="text"
-                  id="username"
+                  type="email"
+                  id="email"
                   value={user?.email || ""}
                   className="form-control"
                   disabled
@@ -170,13 +144,13 @@ const ProfilePage = () => {
                 />
               </div>
               <div className="col-md-6 mb-3">
-                <label htmlFor="user_name" className="form-label">
-                  Tên Người Dùng
+                <label htmlFor="role" className="form-label">
+                  Vai Trò
                 </label>
                 <input
                   type="text"
-                  id="user_name"
-                  value={formData.user_name}
+                  id="role"
+                  value={user?.role || "patient"}
                   className="form-control"
                   disabled
                 />
@@ -196,14 +170,14 @@ const ProfilePage = () => {
               </div>
 
               <div className="col-md-6 mb-3">
-                <label htmlFor="name" className="form-label">
+                <label htmlFor="fullname" className="form-label">
                   Họ và Tên
                 </label>
                 <input
                   type="text"
                   id="fullname"
                   name="fullname"
-                  value={user?.name}
+                  value={formData.fullname}
                   onChange={handleInputChange}
                   className="form-control"
                   required

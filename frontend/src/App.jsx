@@ -65,7 +65,7 @@ import {
 } from "./components/PrivateRoute";
 import "antd/dist/reset.css";
 import AddMedicalRecord from "./components/AddMedicalRecord";
-// import ViewMedicalRecords from "./components/ViewMedicalRecord";
+import ViewMedicalRecords from "./components/ViewMedicalRecord";
 import CreateServicePage from "./components/staff/CreateServicePage";
 import EditServicePage from "./components/staff/EditService";
 import HealthCalculatorPage from "./pages/HealthCalculatorPage";
@@ -73,7 +73,7 @@ import BlogListPage from "./pages/BlogListPage";
 import NewsListPage from "./pages/NewsListPage";
 import NewsDetail from "./pages/NewsDetail";
 import BlogDetail from "./pages/BlogDetail";
-// import ViewMedicalRecord from "./pages/ViewMedicalRecord";
+import ViewMedicalRecord from "./pages/ViewMedicalRecord";
 import NotFoundPage from "./pages/NotFoundPage";
 import QAHistories from "./pages/QAHistories";
 import ProfileStaff from "./pages/staff/ProfileStaff";
@@ -98,7 +98,7 @@ const RoleRedirect = () => {
       if (role === "Admin") navigate("/admin", { replace: true });
       else if (role === "Staff") navigate("/staff", { replace: true });
       else if (role === "Doctor") navigate("/doctor", { replace: true });
-      else navigate("/", { replace: true });
+      else navigate("/home", { replace: true });
       return;
     }
 
@@ -114,7 +114,7 @@ const RoleRedirect = () => {
       role === "patient" &&
       (path.startsWith("/admin") || path.startsWith("/staff"))
     ) {
-      navigate("/", { replace: true });
+      navigate("/home", { replace: true });
     }
   }, [navigate, location]);
 
@@ -196,10 +196,10 @@ const AppRoutes = () => {
             <Route path="payments" element={<PaymentView />} />
             <Route path="news" element={<NewsManagement />} />
             <Route path="add/medicalrecords" element={<AddMedicalRecord />} />
-            {/* <Route
+            <Route
               path="view/medicalrecords"
               element={<ViewMedicalRecords />}
-            /> */}
+            />
 
             <Route path="feedback" element={<FeedbackManagement />} />
             <Route path="qna" element={<QnAView />} />
@@ -233,7 +233,7 @@ const AppRoutes = () => {
             <Route path="profile" element={<ProfileDoctor />} />
           </Route>
           {/* Public routes */}
-          <Route path="/" element={<HomePage />} />
+          <Route path="/home" element={<HomePage />} />
           <Route path="/service" element={<ServicePage />} />
           <Route path="/doctor-home" element={<DoctorPage />} />
 
@@ -241,14 +241,14 @@ const AppRoutes = () => {
           <Route path="/news" element={<NewsListPage />} />
           <Route path="/blog/:slug" element={<BlogDetail />} />
           <Route path="/news/:slug" element={<NewsDetail />} />
-          {/* <Route
+          <Route
             path="/view_medicalrecord"
             element={
               <PrivateRouteByRole allowedRoles={["patient"]}>
                 <ViewMedicalRecord />
               </PrivateRouteByRole>
             }
-          /> */}
+          />
           <Route path="/doctors" element={<DoctorPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />

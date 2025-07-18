@@ -14,6 +14,7 @@ import {
   Pagination,
 } from "react-bootstrap";
 import { FaEdit, FaTrash } from "react-icons/fa";
+import FooterComponent from "../../components/FooterComponent";
 import "../../assets/css/Homepage.css";
 
 const DepartmentManagement = () => {
@@ -303,6 +304,7 @@ const DepartmentManagement = () => {
         </Modal.Footer>
       </Modal>
 
+      
     </>
   );
 };

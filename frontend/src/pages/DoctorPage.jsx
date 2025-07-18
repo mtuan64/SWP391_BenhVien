@@ -1,87 +1,115 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Container, Row, Col, Form, InputGroup } from "react-bootstrap";
 import { Link } from "react-router-dom";
-import axios from "axios";
+import HeaderComponent from "../components/HeaderComponent";
+import FooterComponent from "../components/FooterComponent";
 import "../assets/css/DoctorPage.css";
-import HeroBanner from "../components/HeroBanner";
-import TopBarComponent from "../components/TopBarComponent";
 
-const DEPT_BANNER = "https://images.unsplash.com/photo-1579684453423-f84349ef60b0";
+// Hardcoded doctor data
+const doctors = [
+  {
+    _id: "1",
+    userId: { fullname: "Nguyễn Văn An" },
+    ProfileImage: "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d",
+    Specialty: "Nội Tổng Quát",
+  },
+  {
+    _id: "2",
+    userId: { fullname: "Trần Thị Bình" },
+    ProfileImage: "https://images.unsplash.com/photo-1594824476967-48c8b964273f",
+    Specialty: "Nhi Khoa",
+  },
+  {
+    _id: "3",
+    userId: { fullname: "Lê Minh Châu" },
+    ProfileImage: "https://images.unsplash.com/photo-1598257006626-48b0c252070d",
+    Specialty: "Phụ Sản",
+  },
+  {
+    _id: "4",
+    userId: { fullname: "Phạm Quốc Đạt" },
+    ProfileImage: "https://images.unsplash.com/photo-1622253692010-333f2b7c2f96",
+    Specialty: "Ngoại Khoa",
+  },
+  {
+    _id: "5",
+    userId: { fullname: "Hoàng Thị Mai" },
+    ProfileImage: "https://images.unsplash.com/photo-1594824476967-48c8b964273f",
+    Specialty: "Chẩn Đoán Hình Ảnh",
+  },
+];
 
 const DoctorPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedSpecialization, setSelectedSpecialization] = useState("");
-  const [doctors, setDoctors] = useState([]);
-  const [allDoctors, setAllDoctors] = useState([]);
-  const [totalDoctors, setTotalDoctors] = useState(0);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [doctorsPerPage] = useState(10); // Số bác sĩ mỗi trang
+  const [selectedSpecialty, setSelectedSpecialty] = useState("");
 
-  useEffect(() => {
-    const fetchDoctors = async () => {
-      try {
-        const params = {
-          page: currentPage,
-          limit: doctorsPerPage,
-          searchTerm: searchTerm,
-          specialization: selectedSpecialization,
-        };
-        const res = await axios.get("/api/user/doctor", { params });
-        if (res.data.doctors) {
-          setDoctors(res.data.doctors);
-          setTotalDoctors(res.data.totalDoctors); // Tổng số bác sĩ
-        } else {
-          throw new Error("Invalid response format");
-        }
-      } catch (error) {
-        console.error("Error fetching doctor details:", error);
-      }
-    };
+  // Extract unique specialties from hardcoded data
+  const specialties = [...new Set(doctors.map(doctor => doctor.Specialty).filter(Boolean))];
 
-    fetchDoctors();
-  }, [currentPage, searchTerm, selectedSpecialization]);
-
-  useEffect(() => {
-    const fetchAllDoctors = async () => {
-      try {
-        const res = await axios.get("/api/user/doctor");
-        if (res.data.doctors) {
-          setAllDoctors(res.data.doctors);
-        } else {
-          throw new Error("Invalid response format");
-        }
-      } catch (error) {
-        console.error("Error fetching doctor details:", error);
-      }
-    };
-
-    fetchAllDoctors();
-  }, []);
-
-  const specialties = [...new Set(allDoctors.map(doctor => doctor.specialization).filter(Boolean))];
-
-  // Calculate total pages
-  const totalPages = Math.ceil(totalDoctors / doctorsPerPage);
-
-  // Handle page change
-  const handlePageChange = (page) => {
-    if (page >= 1 && page <= totalPages) {
-      setCurrentPage(page);
-    }
-  };
+  // Filter doctors based on search term and selected specialty
+  const filteredDoctors = doctors.filter(doctor => {
+    const fullName = doctor.userId ? doctor.userId.fullname.toLowerCase() : "";
+    return (
+      fullName.includes(searchTerm.toLowerCase()) &&
+      (selectedSpecialty === "" || doctor.Specialty === selectedSpecialty)
+    );
+  });
 
   return (
     <>
       {/* Topbar */}
-      <TopBarComponent />
+      <div className="bg-light py-2 px-5 d-none d-lg-block">
+        <Row className="align-items-center justify-content-between">
+          <Col md={6} className="text-start">
+            <small>
+              <i className="far fa-clock text-primary me-2"></i>
+              Opening Hours: Mon - Sat : 7.00 am - 8.00 pm, Sunday 9.00 am - 5.00 pm
+            </small>
+          </Col>
+          <Col md={6} className="text-end">
+            <small className="me-4">
+              <i className="fa fa-envelope-open text-primary me-2"></i>
+              contact@kiwicare.com
+            </small>
+            <small>
+              <i className="fa fa-phone-alt text-primary me-2"></i>
+              +987 654 3210
+            </small>
+          </Col>
+        </Row>
+      </div>
 
+      <HeaderComponent />
 
       {/* Hero Carousel */}
-      <HeroBanner
-        image={DEPT_BANNER}
-        title="Đội Ngũ Bác Sĩ KiwiCare"
-        subtitle="Những chuyên gia tận tâm vì sức khỏe của bạn"
-      />
+      <div id="heroCarousel" className="carousel slide carousel-fade" data-bs-ride="carousel">
+        <div className="carousel-inner">
+          <div className="carousel-item active">
+            <img
+              src="https://images.unsplash.com/photo-1579684453423-f84349ef60b0"
+              className="d-block w-100"
+              alt="KiwiCare Doctors Banner"
+              style={{ objectFit: 'cover', height: '80vh' }}
+            />
+            <div
+              className="carousel-caption d-flex flex-column justify-content-center align-items-center"
+              style={{
+                backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                top: 0,
+                bottom: 0,
+                left: 0,
+                right: 0,
+                position: 'absolute'
+              }}
+            >
+              <div className="text-center text-white">
+                <h1 className="display-3 fw-bold">Đội Ngũ Bác Sĩ KiwiCare</h1>
+                <p className="lead mt-3">Những chuyên gia tận tâm vì sức khỏe của bạn</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
 
       {/* Search and Filter Section */}
       <div className="container-fluid py-4">
@@ -102,8 +130,8 @@ const DoctorPage = () => {
             </Col>
             <Col md={6}>
               <Form.Select
-                value={selectedSpecialization}
-                onChange={(e) => setSelectedSpecialization(e.target.value)}
+                value={selectedSpecialty}
+                onChange={(e) => setSelectedSpecialty(e.target.value)}
               >
                 <option value="">Tất Cả Chuyên Khoa</option>
                 {specialties.map((specialty, index) => (
@@ -138,7 +166,7 @@ const DoctorPage = () => {
               </div>
             </Col>
 
-            {doctors.map((doctor, index) => (
+            {filteredDoctors.map((doctor, index) => (
               <Col
                 lg={4}
                 key={doctor._id}
@@ -149,16 +177,16 @@ const DoctorPage = () => {
                   <div className="position-relative rounded-top">
                     <img
                       className="img-fluid rounded-top w-100"
-                      src={doctor.avatar}
-                      alt={doctor.name ? doctor.name : 'Doctor'}
+                      src={doctor.ProfileImage}
+                      alt={doctor.userId ? doctor.userId.fullname : 'Doctor'}
                     />
                   </div>
                   <div className="team-text position-relative bg-light text-center rounded-bottom p-4 pt-5">
                     <h4 className="mb-2">
-                      {doctor.name ? `Bác sĩ ${doctor.name}` : 'Bác sĩ không rõ tên'}
+                      {doctor.userId ? `Bác sĩ ${doctor.userId.fullname}` : 'Bác sĩ không rõ tên'}
                     </h4>
                     <p className="mb-2">
-                      <strong>Chuyên ngành:</strong> {doctor.specialization || 'Không rõ'}
+                      <strong>Chuyên ngành:</strong> {doctor.Specialty || 'Không rõ'}
                     </p>
                     <Link to={`/doctor/${doctor._id}`} className="btn btn-primary mt-2">
                       Xem chi tiết
@@ -171,28 +199,7 @@ const DoctorPage = () => {
         </Container>
       </div>
 
-      {/* Pagination Section */}
-      <div className="d-flex justify-content-center py-4">
-        <h5 className="text-muted">Tổng số bác sĩ: {totalDoctors}</h5>
-      </div>
-
-      <div className="d-flex justify-content-center py-4 align-items-center">
-        <button
-          className="btn btn-secondary me-2"
-          onClick={() => handlePageChange(currentPage - 1)}
-          disabled={currentPage === 1}
-        >
-          Trước
-        </button>
-        <span>{`Trang ${currentPage} / ${totalPages}`}</span>
-        <button
-          className="btn btn-secondary ms-2"
-          onClick={() => handlePageChange(currentPage + 1)}
-          disabled={currentPage === totalPages}
-        >
-          Sau
-        </button>
-      </div>
+      <FooterComponent />
     </>
   );
 };

@@ -147,7 +147,7 @@ const authStaffMiddleware = async (req, res, next) => {
     const staff = await Employee.findById(decoded.id);
     if (!staff) return res.status(404).json({ message: "Staff not found" });
 
-    req.user = { userId: staff._id }; 
+    req.user = { userId: staff._id }; // 👈 Quan trọng để thống nhất sử dụng req.user.userId
     next();
   } catch (err) {
     res.status(401).json({ message: "Invalid token" });

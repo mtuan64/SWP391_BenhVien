@@ -13,6 +13,7 @@ import {
   Pagination,
 } from "react-bootstrap";
 import { FaEdit, FaTrash, FaSearch } from "react-icons/fa";
+import FooterComponent from "../../components/FooterComponent";
 import axios from "axios";
 import "../../assets/css/UserManagement.css";
 
@@ -426,6 +427,7 @@ const UserManagement = () => {
         </Modal.Footer>
       </Modal>
 
+     
     </>
   );
 };
