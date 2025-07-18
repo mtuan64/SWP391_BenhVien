@@ -81,6 +81,7 @@ import ProfileDoctor from "./pages/ProfileDoctor";
 // them FAQ
 import FAQList from "./pages/FAQ.jsx";
 import NutritionAdvice from "./pages/NutritionAdvice.jsx";
+import AppointmentSuccess from "./components/AppointmentSuccess.jsx";
 
 const DRAWER_WIDTH = 240;
 
@@ -290,6 +291,14 @@ const AppRoutes = () => {
             element={
               <PrivateRoute>
                 <AppointmentPage />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/appointment/success"
+            element={
+              <PrivateRoute>
+                <AppointmentSuccess />
               </PrivateRoute>
             }
           />

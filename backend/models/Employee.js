@@ -14,10 +14,10 @@ const employeeSchema = new mongoose.Schema({
   createdAt: { type: Date },
   updatedAt: { type: Date },
   status: { type: String, enum: ['active', 'inactive'], default: 'active' },
-  schedule: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Schedule' }], 
+  schedule: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Schedule' }],
   services: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Services' }],
   emailVerificationCode: { type: String },
-verificationExpires: { type: Date },
+  verificationExpires: { type: Date },
 
 }, { timestamps: true });
 
