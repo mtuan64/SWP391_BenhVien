@@ -9,7 +9,7 @@ const profileSchema = new mongoose.Schema(
     // BỎ unique để cho phép trùng CCCD
     identityNumber: { type: String, required: true },
 
-    userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: false },
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
 
     diagnose: { type: String },
     note: { type: String },
@@ -22,7 +22,7 @@ const profileSchema = new mongoose.Schema(
 
     service: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Service",
+      ref: "Services",
     },
 
     createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "Employee" },

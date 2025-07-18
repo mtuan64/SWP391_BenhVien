@@ -1,17 +1,13 @@
 const { authMiddleware } = require("../../middleware/auth.middleware");
 const express = require("express");
 const verifyToken = require("../../middleware/verifyToken");
+const userService = require("../../controller/user/userService");
 const userRouter = express.Router();
 const User = require("../../models/User"); // đường dẫn đúng đến file User.js
 const Department = require("../../models/Department");
 
 const { verifyToken1 } = require("../../middleware/tokencheck");
 const Employee = require("../../models/Employee");
-const {
-  getMyProfiles,
-  sendQA,
-  getAllQAUser,
-} = require("../../controller/user/userService");
 // Update user by ID
 userRouter.put("/update", async (req, res) => {
   try {
@@ -101,9 +97,9 @@ userRouter.get("/invoices", verifyToken1, getAllInvoices4User);
 userRouter.post("/create-link", createPaymentLinkEmbedded);
 userRouter.put("/pay/success", CompletedInvoices);
 
-userRouter.get("/profile/my-records", verifyToken1, getMyProfiles);
-userRouter.post("/qa", sendQA);
-userRouter.get("/qahistory", getAllQAUser);
+userRouter.get("/profile/my-records", verifyToken1, userService.getMyProfiles);
+userRouter.post("/qa", userService.sendQA);
+userRouter.get("/qahistory", userService.getAllQAUser);
 
 module.exports = userRouter;
 userRouter.get("/", (req, res) => {
@@ -113,5 +109,14 @@ userRouter.get("/", (req, res) => {
 userRouter.post("/create", authMiddleware, createAppointment);
 userRouter.get("/user", authMiddleware, getAppointmentsByUser);
 userRouter.post("/cancel/:id", authMiddleware, cancelAppointment);
+
+userRouter.get('/doctor', userService.getAllDoctors);
+userRouter.get('/doctor/:doctorId', userService.getDoctorById);
+userRouter.get('/service', userService.getAllServices);
+userRouter.get('/service/:serviceId', userService.getServiceById);
+userRouter.get('/department', userService.getAllDepartment);
+userRouter.get('/department/:departmentId', userService.getDepartmentById);
+userRouter.get('/medicines', userService.getAllMedicines);
+userRouter.get('/medicines/:medicineId', userService.getMedicineById);
 
 module.exports = userRouter;

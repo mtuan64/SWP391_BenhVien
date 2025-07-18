@@ -1,4 +1,5 @@
 const express = require("express");
+const staffRouter = express.Router();
 const {
   getNotifications,
   createNotification,
