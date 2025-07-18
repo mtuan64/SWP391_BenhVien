@@ -51,7 +51,7 @@ exports.getAllQA = async (req, res) => {
     let filter = {};
 
     if (searchId) {
-      filter.userId = searchId;
+      filter.title = searchId;
     }
 
     if (statusfilter) {
@@ -89,6 +89,86 @@ exports.getAllQA = async (req, res) => {
       message: "Đã xảy ra lỗi, vui lòng thử lại sau."
     });
   }}
+
+// them ham xu li moi cho FAQ
+exports.getAllFAQ = async (req, res) => {
+  const { sort, title, message, page = 1, limit = 10, searchId } = req.query;
+
+  try {
+    let filter = {};
+
+    if (searchId) {
+      filter.userId = searchId;
+    }
+    if (title) {
+      filter.title = title;
+    }
+    if (message) {
+      filter.message = message;
+    }
+
+    // Chỉ lấy các câu đã được đánh dấu là FAQ
+    filter.isFaq = true;
+
+    // Xử lý sắp xếp
+    let sortOption = {};
+    if (sort) {
+      const [field, order] = sort.split('_');
+      sortOption[field] = order === 'asc' ? 1 : -1;
+    } else {
+      sortOption = { createdAt: -1 };
+    }
+
+    const skip = (page - 1) * limit;
+    const total = await Question.countDocuments(filter);
+
+    const QAs = await Question.find(filter)
+      .sort(sortOption)
+      .skip(skip)
+      .limit(Number(limit)); // Chuyển limit thành số
+
+    res.status(200).json({
+      success: true,
+      page: Number(page),
+      limit: Number(limit),
+      total,
+      totalPages: Math.ceil(total / limit),
+      isFaq: QAs.isFaq,
+      data: QAs
+    });
+  } catch (error) {
+    console.error("Lỗi khi lấy danh sách Q&A:", error);
+    res.status(500).json({
+      success: false,
+      message: "Đã xảy ra lỗi, vui lòng thử lại sau.",
+      error: error.message
+    });
+  }
+};
+
+
+////// ham mark as FAQ
+exports.markAsFAQ = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const question = await Question.findById(id);
+
+    if (!question) {
+      return res.status(404).json({ success: false, message: "Câu hỏi không tồn tại." });
+    }
+
+    question.isFaq = true;
+    await question.save();
+
+    return res.status(200).json({ success: true, message: "Đã đánh dấu câu hỏi là FAQ." });
+  } catch (error) {
+    console.error("Lỗi khi đánh dấu FAQ:", error);
+    return res.status(500).json({ success: false, message: "Lỗi server." });
+  }
+};
+//
+
   
 const Schedule = require('../../models/Schedule');
 
