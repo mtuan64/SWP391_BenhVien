@@ -13,7 +13,6 @@ import {
   Col,
 } from "react-bootstrap";
 import { FaEdit, FaTrash, FaSearch, FaRedo } from "react-icons/fa";
-import FooterComponent from "../../components/FooterComponent";
 import axios from "axios";
 import "../../assets/css/AppointmentScheduleManagement.css";
 
