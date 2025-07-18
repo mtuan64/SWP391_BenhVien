@@ -101,7 +101,6 @@ userRouter.get("/profile/my-records", verifyToken1, userService.getMyProfiles);
 userRouter.post("/qa", userService.sendQA);
 userRouter.get("/qahistory", userService.getAllQAUser);
 
-module.exports = userRouter;
 userRouter.get("/", (req, res) => {
   res.send("User route is working!");
 });
