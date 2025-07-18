@@ -288,7 +288,7 @@ exports.CreateInvoices2 = async (req, res) => {
       userId: newInvoice.userId?._id,
       profileId: newInvoice.profileId?._id,
       amount: newInvoice.totalAmount || 0, // đảm bảo Invoice có trường này
-      method,
+      method: "Mobile App",
       status: "Completed",
       paymentDate: new Date()
     });
@@ -301,4 +301,3 @@ exports.CreateInvoices2 = async (req, res) => {
     res.status(500).json({ message: "Lỗi server khi tạo hóa đơn" });
   }
 };
-

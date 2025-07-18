@@ -1,5 +1,17 @@
 import React, { useEffect, useState } from "react";
-import { Table, Button, Container, Spinner, Modal, Form, InputGroup, FormControl, Pagination, Row, Col, } from "react-bootstrap";
+import {
+  Table,
+  Button,
+  Container,
+  Spinner,
+  Modal,
+  Form,
+  InputGroup,
+  FormControl,
+  Pagination,
+  Row,
+  Col,
+} from "react-bootstrap";
 import { FaEdit, FaTrash, FaSearch, FaRedo } from "react-icons/fa";
 import FooterComponent from "../../components/FooterComponent";
 import axios from "axios";
@@ -32,16 +44,16 @@ const AppointmentScheduleManagement = () => {
 
   const [showModal, setShowModal] = useState(false);
   const [form, setForm] = useState({
-    appointmentDate: "",
-    department: "",
-    doctorId: "",
-    timeSlot: "",
-    type: "Offline",
-    status: "Booked",
-    reminderSent: false,
-    userId: "",
-    profileId: "",
-  });
+  appointmentDate: "",
+  department: "",
+  doctorId: "",
+  timeSlot: "",
+  type: "Offline",
+  status: "Booked",
+  reminderSent: false,
+  identityNumber: "",
+});
+
   const [currentAppointment, setCurrentAppointment] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteAppointmentId, setDeleteAppointmentId] = useState(null);
@@ -59,13 +71,6 @@ const AppointmentScheduleManagement = () => {
     endDate,
   ]);
 
-  useEffect(() => {
-    if (form.userId) {
-      fetchProfilesByUser(form.userId);
-    } else {
-      setProfiles([]);
-    }
-  }, [form.userId]);
 
   useEffect(() => {
     if (form.appointmentDate && form.department) {
@@ -85,6 +90,60 @@ const AppointmentScheduleManagement = () => {
       setForm((prev) => ({ ...prev, timeSlot: "" }));
     }
   }, [form.doctorId, form.appointmentDate]);
+  const [resolvedProfile, setResolvedProfile] = useState(null);
+
+  useEffect(() => {
+    if (
+      form.identityNumber &&
+      form.appointmentDate &&
+      form.department &&
+      form.doctorId
+    ) {
+      fetchProfilesByIdentity(form.identityNumber);
+    }
+  }, [form.identityNumber, form.appointmentDate, form.department, form.doctorId]);
+
+
+const [resolvedProfiles, setResolvedProfiles] = useState([]);
+const [selectedProfileId, setSelectedProfileId] = useState("");
+
+const fetchProfilesByIdentity = async (identityNumber) => {
+  if (!identityNumber || identityNumber.trim() === "") return;
+
+  try {
+    const res = await axios.get(`http://localhost:9999/api/appointmentScheduleManagement/profileByIdentity`, {
+      params: { identityNumber }
+    });
+
+    if (Array.isArray(res.data)) {
+      if (res.data.length === 0) {
+        // Chỉ hiển thị thông báo khi tìm xong mà không có profile
+        alert("No profiles found with this identity number.");
+        setResolvedProfiles([]);
+        setSelectedProfileId("");
+      } else {
+        setResolvedProfiles(res.data);
+        setSelectedProfileId(res.data[0]._id); // hoặc để người dùng chọn nếu có nhiều
+      }
+    } else {
+      console.error("Unexpected response format:", res.data);
+      alert("Unexpected response from server.");
+    }
+  } catch (err) {
+    console.error("Error fetching profiles by identity:", err);
+    // ❌ Không alert ở đây nữa
+    setResolvedProfiles([]);
+    setSelectedProfileId("");
+  }
+};
+
+
+
+useEffect(() => {
+  if (selectedProfileId) {
+    setForm((prev) => ({ ...prev, profileId: selectedProfileId }));
+  }
+}, [selectedProfileId]);
 
   const fetchAppointments = async () => {
     try {
@@ -116,15 +175,16 @@ const AppointmentScheduleManagement = () => {
     }
   };
 
-  const fetchDepartments = async () => {
-    try {
-      const res = await axios.get("http://localhost:9999/api/departments");
-      setDepartments(res.data.departments || []);
-    } catch (error) {
-      console.error("Failed to fetch departments: ", error);
-      setError("Failed to load departments.");
-    }
-  };
+const fetchDepartments = async () => {
+  try {
+    const res = await axios.get("http://localhost:9999/api/appointmentScheduleManagement/departments");
+    setDepartments(Array.isArray(res.data) ? res.data : []);
+  } catch (error) {
+    console.error("Failed to fetch departments: ", error);
+    setError("Failed to load departments.");
+  }
+};
+
 
   const fetchUsers = async () => {
     try {
@@ -138,24 +198,16 @@ const AppointmentScheduleManagement = () => {
     }
   };
 
-  const fetchAvailableDoctors = async (date, departmentId) => {
+    const fetchAvailableDoctors = async (date, departmentId) => {
     try {
       setIsFormLoading(true);
 
-      const selectedDept = departments.find((d) => d._id === departmentId);
-      if (!selectedDept) {
-        console.warn("Department not found for ID:", departmentId);
-        setAvailableDoctors([]);
-        return;
-      }
-
-      const departmentName = selectedDept.name;
       const formattedDate = new Date(date).toISOString().split("T")[0];
 
       const res = await axios.get(
         "http://localhost:9999/api/appointmentScheduleManagement/doctors",
         {
-          params: { department: departmentName, date: formattedDate },
+          params: { department: departmentId, date: formattedDate },
         }
       );
 
@@ -168,6 +220,7 @@ const AppointmentScheduleManagement = () => {
       setIsFormLoading(false);
     }
   };
+
 
   const fetchSchedules = async (doctorId, date) => {
     try {
@@ -217,62 +270,64 @@ const AppointmentScheduleManagement = () => {
     });
   };
 
+const validateForm = () => {
+  const errors = {};
+  if (!form.appointmentDate)
+    errors.appointmentDate = "Please select an appointment date.";
+  if (!form.department) errors.department = "Please select a department.";
+  if (availableDoctors.length > 0 && !form.doctorId)
+    errors.doctorId = "Please select a doctor.";
+  if (form.doctorId && schedules.length > 0 && !form.timeSlot)
+    errors.timeSlot = "Please select a time slot.";
+  if (!form.identityNumber)
+    errors.identityNumber = "Please enter identity number.";
+  
+  setFormErrors(errors);
+  return Object.keys(errors).length === 0;
+};
 
-  const validateForm = () => {
-    const errors = {};
-    if (!form.appointmentDate)
-      errors.appointmentDate = "Please select an appointment date.";
-    if (!form.department) errors.department = "Please select a department.";
-    if (availableDoctors.length > 0 && !form.doctorId)
-      errors.doctorId = "Please select a doctor.";
-    if (form.doctorId && schedules.length > 0 && !form.timeSlot)
-      errors.timeSlot = "Please select a time slot.";
-    if (!form.userId) errors.userId = "Please select a user.";
-    setFormErrors(errors);
-    return Object.keys(errors).length === 0;
-  };
 
   function handleAddNew() {
-    setCurrentAppointment(null);
-    setForm({
-      appointmentDate: "",
-      department: "",
-      doctorId: "",
-      timeSlot: "",
-      type: "Offline",
-      status: "Booked",
-      reminderSent: false,
-      userId: "",
-      profileId: "",
-    });
-    setAvailableDoctors([]);
-    setSchedules([]);
-    setFormErrors({});
-    setDoctorSearchTerm("");
-    setUserSearchTerm("");
-    setShowModal(true);
-  }
+  setCurrentAppointment(null);
+  setForm({
+    appointmentDate: "",
+    department: "",
+    doctorId: "",
+    timeSlot: "",
+    type: "Offline",
+    status: "Booked",
+    reminderSent: false,
+    identityNumber: "",
+  });
+  setAvailableDoctors([]);
+  setSchedules([]);
+  setFormErrors({});
+  setDoctorSearchTerm("");
+  setUserSearchTerm("");
+  setShowModal(true);
+}
 
-  function handleEdit(appointment) {
-    setCurrentAppointment(appointment);
-    setForm({
-      appointmentDate: appointment.appointmentDate
-        ? appointment.appointmentDate.slice(0, 10)
-        : "",
-      department: appointment.department || "",
-      doctorId: appointment.doctorId || "",
-      timeSlot: appointment.appointmentDate || "",
-      type: appointment.type || "Offline",
-      status: appointment.status || "Booked",
-      reminderSent: appointment.reminderSent || false,
-      userId: appointment.userId || "",
-      profileId: appointment.profileId || "",
-    });
-    setFormErrors({});
-    setDoctorSearchTerm("");
-    setUserSearchTerm("");
-    setShowModal(true);
-  }
+
+function handleEdit(appointment) {
+  setCurrentAppointment(appointment);
+  setForm({
+    appointmentDate: appointment.appointmentDate
+      ? appointment.appointmentDate.slice(0, 10)
+      : "",
+    department: appointment.department || "",
+    doctorId: appointment.doctorId || "",
+    timeSlot: appointment.appointmentDate || "",
+    type: appointment.type || "Offline",
+    status: appointment.status || "Booked",
+    reminderSent: appointment.reminderSent || false,
+    identityNumber: "",
+  });
+  setFormErrors({});
+  setDoctorSearchTerm("");
+  setUserSearchTerm("");
+  setShowModal(true);
+}
+
 
   function handleChange(e) {
     const { name, value, type, checked } = e.target;
@@ -283,24 +338,24 @@ const AppointmentScheduleManagement = () => {
     setFormErrors((prev) => ({ ...prev, [name]: "" }));
   }
 
-  function handleResetForm() {
-    setForm({
-      appointmentDate: "",
-      department: "",
-      doctorId: "",
-      timeSlot: "",
-      type: "Offline",
-      status: "Booked",
-      reminderSent: false,
-      userId: "",
-      profileId: "",
-    });
-    setAvailableDoctors([]);
-    setSchedules([]);
-    setFormErrors({});
-    setDoctorSearchTerm("");
-    setUserSearchTerm("");
-  }
+function handleResetForm() {
+  setForm({
+    appointmentDate: "",
+    department: "",
+    doctorId: "",
+    timeSlot: "",
+    type: "Offline",
+    status: "Booked",
+    reminderSent: false,
+    identityNumber: "",
+  });
+  setAvailableDoctors([]);
+  setSchedules([]);
+  setFormErrors({});
+  setDoctorSearchTerm("");
+  setUserSearchTerm("");
+}
+
 
   function handleClearFilters() {
     setSearchTerm("");
@@ -312,85 +367,58 @@ const AppointmentScheduleManagement = () => {
   }
 
   async function handleSubmit() {
-    if (!validateForm()) {
-      return;
-    }
-    try {
-      setIsFormLoading(true);
-      let payload = {
-        ...form,
-        appointmentDate: new Date(form.timeSlot).toISOString(),
-      };
-      if (!form.profileId || form.profileId === "") {
-        console.warn("No profile selected, creating new");
-        const selectedUser = users.find((u) => u._id === form.userId);
-        const newProfile = await axios.post(
-          "http://localhost:9999/api/appointmentScheduleManagement/profiles",
-          {
-            userId: form.userId,
-            name: selectedUser?.name,
-            gender: "Other",
-            dateOfBirth: "2000-01-01",
-            diagnose: "",
-            note: "",
-            issues: "",
-            doctorId: form.doctorId || null,
-            medicine: null,
-          }
-        );
-        payload.profileId = newProfile.data._id;
-      }
-      if (!payload.profileId) {
-        alert("Cannot create appointment without a profileId.");
-        return;
-      }
-      if (currentAppointment) {
-        await axios.put(
-          `http://localhost:9999/api/appointmentScheduleManagement/${currentAppointment._id}`,
-          payload
-        );
-        alert("Appointment updated successfully!");
-      } else {
-        await axios.post(
-          "http://localhost:9999/api/appointmentScheduleManagement",
-          payload
-        );
-        alert("Appointment created successfully!");
-      }
-      setShowModal(false);
-      fetchAppointments();
-    } catch (error) {
-      console.error("Error submitting data:", error);
-      alert(
-        "Error creating/updating appointment: " +
-        (error?.response?.data?.message || error.message)
+  if (!validateForm()) return;
+
+  const selectedProfile = resolvedProfiles.find(p => p._id === form.profileId);
+if (!selectedProfile) {
+  alert("Profile not resolved. Please check the identity number.");
+  return;
+}
+
+
+  try {
+    setIsFormLoading(true);
+
+    const payload = {
+      appointmentDate: new Date(form.timeSlot).toISOString(),
+      department: form.department,
+      doctorId: form.doctorId,
+      type: form.type,
+      status: form.status,
+      reminderSent: form.reminderSent,
+      profileId: selectedProfile._id,
+      userId: selectedProfile.userId,
+    };
+
+    if (currentAppointment) {
+      await axios.put(
+        `http://localhost:9999/api/appointmentScheduleManagement/${currentAppointment._id}`,
+        payload
       );
-    } finally {
-      setIsFormLoading(false);
+      alert("Appointment updated successfully!");
+    } else {
+      await axios.post(
+        "http://localhost:9999/api/appointmentScheduleManagement",
+        payload
+      );
+      alert("Appointment created successfully!");
     }
+
+    setShowModal(false);
+    fetchAppointments();
+  } catch (error) {
+    console.error("Error submitting appointment:", error);
+    alert("Error: " + (error.response?.data?.message || error.message));
+  } finally {
+    setIsFormLoading(false);
   }
+}
+
 
   function handleDeleteClick(appointmentId) {
     setDeleteAppointmentId(appointmentId);
     setShowDeleteModal(true);
   }
-
-  // Thêm handler mới
-  const handleSendReminder = async (appointmentId) => {
-    if (!window.confirm('Bạn có chắc muốn gửi reminder cho lịch hẹn này?')) return;
-    try {
-      const res = await axios.post(`http://localhost:9999/api/appointmentScheduleManagement/send-reminder/${appointmentId}`);
-      // Update local state
-      setFilteredAppointments(prev =>
-        prev.map(appt =>
-          appt._id === appointmentId ? { ...appt, reminderSent: true } : appt
-        )
-      );
-      alert('Reminder sent successfully!');
-    } catch (err) {
-      alert('Failed to send reminder: ' + (err.response?.data?.error || err.message));
-    }
-  };
 
   async function confirmDelete() {
     try {
@@ -475,22 +503,25 @@ const AppointmentScheduleManagement = () => {
           </Col>
           <Col md={2} sm={6} className="mb-3">
             <Form.Group>
-              <Form.Label>Department</Form.Label>
-              <Form.Select
-                value={departmentFilter}
-                onChange={(e) => {
-                  setDepartmentFilter(e.target.value);
-                  setCurrentPage(1);
-                }}
-              >
-                <option value="all">All Departments</option>
-                {departments.map((dept) => (
-                  <option key={dept._id} value={dept._id}>
-                    {dept.name}
-                  </option>
-                ))}
-              </Form.Select>
-            </Form.Group>
+  <Form.Label>Department</Form.Label>
+  <Form.Select
+    value={departmentFilter}
+    onChange={(e) => {
+      setDepartmentFilter(e.target.value);
+      setCurrentPage(1);
+    }}
+    aria-label="Filter by department"
+  >
+    <option value="all">Tất cả các khoa</option>
+    {Array.isArray(departments) &&
+      departments.map((dept) => (
+        <option key={dept._id} value={dept._id}>
+          {dept.name}
+        </option>
+      ))}
+  </Form.Select>
+</Form.Group>
+
           </Col>
           <Col md={2} sm={6} className="mb-3">
             <Form.Group>
@@ -562,108 +593,68 @@ const AppointmentScheduleManagement = () => {
         ) : (
           <>
             <div className="table-responsive">
-              <Table striped hover>
-                <thead className="table-dark">
-                  <tr>
-                    <th>No</th>
-                    <th>Appointment Date</th>
-                    <th>Doctor</th>
-                    <th>Department</th>
-                    <th>Type</th>
-                    <th>User</th>
-                    <th className="user-code">User Code</th>
-                    <th>Phone</th>
-                    <th>Patient Profile</th>
-                    <th>Status</th>
-                    <th>Reminder</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredAppointments.map((appointment, index) => (
-                    <tr key={appointment._id}>
-                      <td>{(currentPage - 1) * itemsPerPage + index + 1}</td>
-                      <td>{formatDateTime(appointment.appointmentDate)}</td>
-                      <td>{appointment.doctorName || "N/A"}</td>
-                      <td>
-                        {departments.find(
-                          (d) => d._id === appointment.department
-                        )?.name || appointment.department}
-                      </td>
-                      <td>{appointment.type}</td>
-                      <td>{appointment.userName || "N/A"}</td>
-                      <td className="user-code">
-                        {appointment.userCode || "N/A"}
-                      </td>
-                      <td>{appointment.userPhone || "N/A"}</td>
-                      <td>
-                        {!appointment.profileId ||
-                          appointment.profileId === "null"
-                          ? "N/A"
-                          : appointment.profileId}
-                      </td>
-                      <td>{appointment.status}</td>
-                      <td>{appointment.reminderSent ? "Yes" : "No"}</td>
-                      <td>
-                        <div className="d-flex gap-2">
-                          <Button
-                            variant="primary"
-                            size="sm"
-                            onClick={() => handleEdit(appointment)}
-                            title="Edit Appointment"
-                            aria-label="Edit appointment"
-                          >
-                            <FaEdit />
-                          </Button>
-                          <Button
-                            variant="danger"
-                            size="sm"
-                            onClick={() => handleDeleteClick(appointment._id)}
-                            title="Delete Appointment"
-                            aria-label="Delete appointment"
-                          >
-                            <FaTrash />
-                          </Button>
-                          {!appointment.reminderSent && appointment.status === "Booked" && (
-                            <Button
-                              variant="warning"
-                              size="sm"
-                              onClick={() => handleSendReminder(appointment._id)}
-                              title="Send Reminder"
-                              aria-label="Send reminder"
-                            >
-                              Send Reminder
-                            </Button>
-                          )}
-                        </div>
-                      </td>
-                      <td>
-                        <div className="d-flex gap-2">
-                          <Button
-                            variant="primary"
-                            size="sm"
-                            onClick={() => handleEdit(appointment)}
-                            title="Edit Appointment"
-                            aria-label="Edit appointment"
-                          >
-                            <FaEdit />
-                          </Button>
-                          <Button
-                            variant="danger"
-                            size="sm"
-                            onClick={() => handleDeleteClick(appointment._id)}
-                            title="Delete Appointment"
-                            aria-label="Delete appointment"
-                          >
-                            <FaTrash />
-                          </Button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </Table>
+  <Table striped hover>
+    <thead className="table-dark">
+      <tr>
+        <th>No</th>
+        <th>Appointment Date</th>
+        <th>Doctor</th>
+        <th>Department</th>
+        <th>Type</th>
+        <th>User</th>
+        <th>Phone</th>
+        <th>Profile Name</th>
+        <th>Status</th>
+        <th>Reminder</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {filteredAppointments.map((appointment, index) => (
+        <tr key={appointment._id}>
+          <td>{(currentPage - 1) * itemsPerPage + index + 1}</td>
+          <td>{formatDateTime(appointment.appointmentDate)}</td>
+          <td>{appointment.doctorName || "N/A"}</td>
+          <td>
+            {
+              departments.find((d) => d._id.toString() === appointment.department?.toString())?.name ||
+              "Unknown"
+            }
+          </td>
+          <td>{appointment.type}</td>
+          <td>{appointment.userName || "N/A"}</td>
+          <td>{appointment.userPhone || "N/A"}</td>
+          <td>{appointment.profileName || "N/A"}</td>
+          <td>{appointment.status}</td>
+          <td>{appointment.reminderSent ? "Yes" : "No"}</td>
+          <td>
+            <div className="d-flex gap-2">
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={() => handleEdit(appointment)}
+                title="Edit Appointment"
+                aria-label="Edit appointment"
+              >
+                <FaEdit />
+              </Button>
+              <Button
+                variant="danger"
+                size="sm"
+                onClick={() => handleDeleteClick(appointment._id)}
+                title="Delete Appointment"
+                aria-label="Delete appointment"
+              >
+                <FaTrash />
+              </Button>
             </div>
+          </td>
+        </tr>
+      ))}
+    </tbody>
+  </Table>
+</div>
+
 
             <div className="d-flex justify-content-between align-items-center mt-4">
               <div className="text-muted">
@@ -866,74 +857,58 @@ const AppointmentScheduleManagement = () => {
             <hr />
 
             <div className="mb-4">
-              <h5 className="fw-bold text-primary mb-3">User Details</h5>
-              <Form.Group className="mb-3" controlId="userSearch">
-                <Form.Label className="fw-medium">Search User</Form.Label>
-                <InputGroup>
-                  <InputGroup.Text>
-                    <FaSearch />
-                  </InputGroup.Text>
-                  <FormControl
-                    placeholder="Search by user name, phone, or user code..."
-                    value={userSearchTerm}
-                    onChange={(e) => setUserSearchTerm(e.target.value)}
-                    aria-label="Search users"
-                  />
-                </InputGroup>
-              </Form.Group>
+  <h5 className="fw-bold text-primary mb-3">Patient Identity</h5>
 
-              <Form.Group className="mb-3" controlId="userId">
-                <Form.Label className="fw-medium">
-                  User <span className="text-danger">*</span>
-                </Form.Label>
-                <Form.Select
-                  name="userId"
-                  value={form.userId}
-                  onChange={handleChange}
-                  required
-                  className={formErrors.userId ? "border-danger" : ""}
-                  aria-label="Select user"
-                >
-                  <option value="">Select user</option>
-                  {filteredUsers.map((user) => (
-                    <option key={user._id} value={user._id}>
-                      {user.name} ({user.phone || "N/A"}) -{" "}
-                      {user.user_code || "N/A"}
-                    </option>
-                  ))}
-                </Form.Select>
-                {formErrors.userId && (
-                  <div className="text-danger small mt-1">
-                    {formErrors.userId}
-                  </div>
-                )}
-                {userSearchTerm && filteredUsers.length === 0 && (
-                  <div className="text-muted small mt-1">
-                    No users found matching your search.
-                  </div>
-                )}
-              </Form.Group>
+<Form.Group className="mb-3" controlId="identityNumber">
+  <Form.Label className="fw-medium">
+    Identity Number <span className="text-danger">*</span>
+  </Form.Label>
+  <InputGroup>
+    <Form.Control
+      type="text"
+      name="identityNumber"
+      value={form.identityNumber}
+      onChange={(e) => {
+        handleChange(e); // cập nhật form state
+        setResolvedProfiles([]); // xóa danh sách trước
+        setSelectedProfileId(""); // reset profile chọn
+      }}
+      placeholder="Enter identity number..."
+      required
+    />
+    <Button
+      variant="outline-primary"
+      onClick={() => fetchProfilesByIdentity(form.identityNumber)}
+      aria-label="Search Identity Number"
+    >
+      Search
+    </Button>
+  </InputGroup>
+  <div className="text-muted small mt-1">
+    Enter and search Identity Number to load patient profile(s).
+  </div>
+</Form.Group>
 
-              <Form.Group className="mb-3" controlId="profileId">
-                <Form.Label className="fw-medium">Patient Profile</Form.Label>
-                <Form.Select
-                  name="profileId"
-                  value={form.profileId}
-                  onChange={handleChange}
-                  aria-label="Select patient profile"
-                >
-                  <option value="">-- No profile (create new) --</option>
-                  {profiles.map((profile) => (
-                    <option key={profile._id} value={profile._id}>
-                      {profile.fullName || profile._id}
-                    </option>
-                  ))}
-                </Form.Select>
-                <div className="text-muted small mt-1">
-                  Leave blank to create a new profile for the user.
-                </div>
-              </Form.Group>
-            </div>
+{resolvedProfiles.length > 0 && (
+  <Form.Group className="mb-3" controlId="selectedProfile">
+    <Form.Label className="fw-medium">Select Profile</Form.Label>
+    <Form.Select
+      value={selectedProfileId}
+      onChange={(e) => setSelectedProfileId(e.target.value)}
+      required
+    >
+      <option value="">Select a profile</option>
+      {resolvedProfiles.map((profile) => (
+        <option key={profile._id} value={profile._id}>
+          {profile.name} - {new Date(profile.dateOfBirth).toLocaleDateString()} ({profile.gender})
+        </option>
+      ))}
+    </Form.Select>
+  </Form.Group>
+)}
+
+</div>
+
 
             <hr />
 
