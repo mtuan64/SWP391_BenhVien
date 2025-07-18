@@ -104,11 +104,23 @@ const Header = ({ onMenuClick, menuOpen }) => {
             <BookOutlined /> <span>Health</span>
           </div>
         </Dropdown>
-
+<Dropdown
+          menu={{
+            items: [
+              { key: "qa", label: <Link to="/qa">Q/A</Link> },
+              { key: "faq", label: <Link to="/faq">FAQ</Link> },
+            ],
+          }}
+          trigger={["click"]}
+        >
+          <div className="header-link dropdown-trigger">
+            <BookOutlined /> <span>Q/A</span>
+          </div>
+        </Dropdown>
         <Link to="/services" className="header-link"><MedicineBoxOutlined /> <span>Services</span></Link>
         <Link to="/doctors" className="header-link"><TeamOutlined /> <span>Doctors</span></Link>
-        <Link to="/qa" className="header-link"><span>Q/A</span></Link>
-                <Link to="/fqa" className="header-link"><span>Q/A</span></Link>
+        
+        
 
         {/* <Link to="/health/calculator" className="header-link"><span>BMI</span></Link>
         <Link to="/health/food" className="header-link"><span>Food</span></Link> */}
