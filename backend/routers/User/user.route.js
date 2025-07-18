@@ -70,7 +70,7 @@ userRouter.put("/update", async (req, res) => {
   }
 });
 const {
-  createPaymentLinkEmbedded,
+  createPaymentLinkEmbedded, createPaymentLinkEmbeddedForBookAppointment
 } = require("../../controller/staff/PaymentController");
 const {
   getAllInvoices4User,
@@ -80,7 +80,9 @@ const {
   createAppointment,
   getAppointmentsByUser,
   cancelAppointment,
+  createFeedback,
 } = require("../../controller/user/userService");
+const { getAllFAQ, markAsFAQ } = require("../../controller/staff/staffService");
 
 userRouter.get(
   "/getNoti",
@@ -95,11 +97,18 @@ userRouter.put(
 
 userRouter.get("/invoices", verifyToken1, getAllInvoices4User);
 userRouter.post("/create-link", createPaymentLinkEmbedded);
+userRouter.post("/create-link-appointment", createPaymentLinkEmbeddedForBookAppointment);
+
 userRouter.put("/pay/success", CompletedInvoices);
 
 userRouter.get("/profile/my-records", verifyToken1, userService.getMyProfiles);
 userRouter.post("/qa", userService.sendQA);
 userRouter.get("/qahistory", userService.getAllQAUser);
+
+// them router FAQ
+userRouter.get('/faqs',getAllFAQ);
+
+////
 
 userRouter.get("/", (req, res) => {
   res.send("User route is working!");
@@ -108,6 +117,7 @@ userRouter.get("/", (req, res) => {
 userRouter.post("/create", authMiddleware, createAppointment);
 userRouter.get("/user", authMiddleware, getAppointmentsByUser);
 userRouter.post("/cancel/:id", authMiddleware, cancelAppointment);
+userRouter.post('/createFeedback', authMiddleware, createFeedback);
 
 userRouter.get('/doctor', userService.getAllDoctors);
 userRouter.get('/doctor/:doctorId', userService.getDoctorById);

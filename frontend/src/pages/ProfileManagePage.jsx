@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useAuth } from "../context/authContext";
-import { Button, Modal, Form, Row, Col } from "react-bootstrap";
+import { Button, Modal, Form, Row, Col, Collapse } from "react-bootstrap"; // NEW: Import Collapse
 
 const ProfileManagerPage = () => {
     const [profiles, setProfiles] = useState([]);
@@ -10,10 +10,12 @@ const ProfileManagerPage = () => {
     const [formData, setFormData] = useState({
         name: "",
         dateOfBirth: "",
-        gender: "Male"
+        gender: "Male",
+        identityNumber: ""
     });
-    const {token } = useAuth();
-    
+    const { token } = useAuth();
+    const [showMedicalDetails, setShowMedicalDetails] = useState({}); // NEW: State to toggle medical details per profile
+
     // Load profiles
     const fetchProfiles = async () => {
         try {
@@ -56,7 +58,7 @@ const ProfileManagerPage = () => {
             }
             setShowModal(false);
             setEditingProfile(null);
-            setFormData({ name: "", dateOfBirth: "", gender: "Male" });
+            setFormData({ name: "", dateOfBirth: "", gender: "Male", identityNumber: "" });
             fetchProfiles();
         } catch (err) {
             console.error("Error submitting form", err);
@@ -86,9 +88,18 @@ const ProfileManagerPage = () => {
         setFormData({
             name: profile.name,
             dateOfBirth: profile.dateOfBirth.split("T")[0],
-            gender: profile.gender
+            gender: profile.gender,
+            identityNumber: profile.identityNumber
         });
         setShowModal(true);
+    };
+
+    // NEW: Toggle medical details
+    const toggleMedicalDetails = (profileId) => {
+        setShowMedicalDetails(prev => ({
+            ...prev,
+            [profileId]: !prev[profileId]
+        }));
     };
 
     return (
@@ -109,7 +120,25 @@ const ProfileManagerPage = () => {
                                     <h5>{profile.name}</h5>
                                     <p>Giới tính: {profile.gender}</p>
                                     <p>Ngày sinh: {new Date(profile.dateOfBirth).toLocaleDateString()}</p>
-                                    <div className="d-flex gap-2">
+                                    <p>CMND/CCCD: {profile.identityNumber}</p>
+                                    {showMedicalDetails[profile._id] && (
+                                        <div id={`medical-details-${profile._id}`}>
+                                            <p>Chẩn đoán: {profile.diagnose || "Chưa có"}</p>
+                                            <p>Ghi chú: {profile.note || "Chưa có"}</p>
+                                            <p>Vấn đề: {profile.issues || "Chưa có"}</p>
+                                            <p>Thuốc: {profile.medicine?.name || "Chưa có"}</p>
+                                            <p>Bác sĩ: {profile.doctorId?.name || "Chưa có"}</p>
+                                            <p>Dịch vụ: {profile.service?.name || "Chưa có"}</p>
+                                        </div>
+                                    )}
+                                    <div className="d-flex gap-2 mt-2">
+                                        <Button
+                                            variant="outline-primary"
+                                            size="sm"
+                                            onClick={() => toggleMedicalDetails(profile._id)}
+                                        >
+                                            {showMedicalDetails[profile._id] ? "Ẩn Chi Tiết Y Tế" : "Xem Chi Tiết Y Tế"}
+                                        </Button>
                                         <Button
                                             variant="outline-secondary"
                                             size="sm"
@@ -171,6 +200,17 @@ const ProfileManagerPage = () => {
                                 <option value="Female">Nữ</option>
                                 <option value="Other">Khác</option>
                             </Form.Select>
+                        </Form.Group>
+
+                        <Form.Group className="mb-3">
+                            <Form.Label>CMND/CCCD</Form.Label>
+                            <Form.Control
+                                type="text"
+                                name="identityNumber"
+                                value={formData.identityNumber}
+                                onChange={handleChange}
+                                placeholder="Nhập số CMND hoặc CCCD"
+                            />
                         </Form.Group>
                     </Form>
                 </Modal.Body>

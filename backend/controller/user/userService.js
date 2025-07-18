@@ -2,6 +2,7 @@ const Profile = require("../../models/Profile");
 const Question = require("../../models/Question");
 const User = require("../../models/User");
 const Appointment = require("../../models/Appointment");
+const Feedback = require("../../models/Feedback");
 const { sendAppointmentConfirmation } = require("../../utils/mailService");
 const Employee = require("../../models/Employee");
 
@@ -122,6 +123,7 @@ const createAppointment = async (req, res) => {
   const userId = req.user.id;
 
   try {
+
     // Kiểm tra xem bác sĩ đã có lịch vào giờ này chưa
     const existingAppointment = await Appointment.findOne({
       doctorId,
@@ -185,10 +187,10 @@ const getAppointmentsByUser = async (req, res) => {
     // Lấy tổng số cuộc hẹn để tính toán tổng số trang
     const totalAppointments = await Appointment.countDocuments({ userId });
     const totalPages = Math.ceil(totalAppointments / limit);
-
     // Lấy các cuộc hẹn theo phân trang
     const appointments = await Appointment.find({ userId })
       .populate('profileId doctorId')
+      .populate("department", "name") // NEW: Populate department để lấy name
       .sort({ appointmentDate: -1 })
       .skip(skip) // Bỏ qua số lượng bản ghi trước đó
       .limit(limit); // Giới hạn số bản ghi trả về
@@ -409,6 +411,24 @@ const getMedicineById = async (req, res) => {
   }
 };
 
+// POST: User gửi feedback
+const createFeedback = async (req, res) => {
+  const userId = req.user.id;
+  try {
+    const { content, rating, appointmentId } = req.body;
+    const feedback = new Feedback({
+      userId,
+      appointmentId,
+      content,
+      rating,
+    });
+    await feedback.save();
+    res.status(201).json({ message: 'Feedback sent successfully', feedback });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to send feedback' });
+  }
+};
+
 module.exports = {
   getMyProfiles,
   sendQA,
@@ -424,4 +444,6 @@ module.exports = {
   getDepartmentById,
   getAllMedicines,
   getMedicineById,
+  createFeedback,
 };
+

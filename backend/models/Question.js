@@ -26,6 +26,10 @@ const questionSchema = new mongoose.Schema({
   },
   repliedAt: { 
     type: Date 
+  },
+  isFaq: { // danh dau la cau hoi thuong gap
+    type: Boolean,
+    default: false
   }
 }, { timestamps: true }); // createdAt, updatedAt
 
