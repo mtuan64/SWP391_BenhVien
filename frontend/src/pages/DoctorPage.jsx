@@ -1,8 +1,6 @@
 import React, { useState } from "react";
 import { Container, Row, Col, Form, InputGroup } from "react-bootstrap";
 import { Link } from "react-router-dom";
-import HeaderComponent from "../components/HeaderComponent";
-import FooterComponent from "../components/FooterComponent";
 import "../assets/css/DoctorPage.css";
 
 // Hardcoded doctor data
@@ -79,7 +77,7 @@ const DoctorPage = () => {
         </Row>
       </div>
 
-      <HeaderComponent />
+      
 
       {/* Hero Carousel */}
       <div id="heroCarousel" className="carousel slide carousel-fade" data-bs-ride="carousel">
@@ -199,7 +197,7 @@ const DoctorPage = () => {
         </Container>
       </div>
 
-      <FooterComponent />
+      
     </>
   );
 };
