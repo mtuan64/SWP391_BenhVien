@@ -9,6 +9,7 @@ import {
   InfoCircleOutlined,
   BookOutlined,
   MedicineBoxOutlined,
+  HeartOutlined,
   TeamOutlined,
   UserOutlined,
   LoginOutlined,
@@ -114,7 +115,7 @@ const Header = ({ onMenuClick, menuOpen }) => {
           trigger={["click"]}
         >
           <div className="header-link dropdown-trigger">
-            <BookOutlined /> <span>Health</span>
+            <HeartOutlined /> <span>Health</span>
           </div>
         </Dropdown>
 
