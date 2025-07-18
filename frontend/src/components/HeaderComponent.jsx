@@ -15,6 +15,8 @@ import {
   UserAddOutlined,
   CalendarOutlined,
   BellOutlined,
+  ApartmentOutlined,
+  CustomerServiceOutlined,
 } from "@ant-design/icons";
 import "../assets/css/Header.css"; // import file CSS thuần
 
@@ -116,9 +118,11 @@ const Header = ({ onMenuClick, menuOpen }) => {
           </div>
         </Dropdown>
 
-        <Link to="/service-home" className="header-link"><MedicineBoxOutlined /> <span>Services</span></Link>
+        <Link to="/department-home" className="header-link"><ApartmentOutlined /> <span>Department</span></Link>
+        <Link to="/service-home" className="header-link"><CustomerServiceOutlined /> <span>Services</span></Link>
         <Link to="/doctor-home" className="header-link"><TeamOutlined /> <span>Doctors</span></Link>
         <Link to="/qa" className="header-link"><span>Q/A</span></Link>
+        <Link to="/medicines-home" className="header-link"><MedicineBoxOutlined /> <span>Medicines</span></Link>
         {/* <Link to="/health/calculator" className="header-link"><span>BMI</span></Link>
         <Link to="/health/food" className="header-link"><span>Food</span></Link> */}
         {user ? (
@@ -145,7 +149,7 @@ const Header = ({ onMenuClick, menuOpen }) => {
               <ul className="account-dropdown">
                 <li><Link to="/myprofile">Profile</Link></li>
                 <li><Link to="/profilemanage">Profile Manage</Link></li>
-                <li><Link to="/myappointments">Appointment Manage</Link></li>
+                <li><Link to="/myappointments">My Appointments</Link></li>
                 <li><Link to="/qahistory">Q/A History</Link></li>
                 <li><Link to="/invoice">Invoice</Link></li>
                 <li><Link to="/changepass">Change Password</Link></li>
