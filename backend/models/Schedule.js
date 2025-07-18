@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 const scheduleSchema = new mongoose.Schema({
   employeeId: { type: mongoose.Schema.Types.ObjectId, ref: 'Employee', required: true, index: true },
-  department: { type: String, required: true },
+  department: { type: mongoose.Schema.Types.ObjectId, ref: 'Department', required: true },
   date: { type: Date, required: true, index: true },
   timeSlots: [{
     startTime: { type: Date, required: true },

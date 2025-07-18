@@ -1,5 +1,22 @@
 const bcrypt = require('bcrypt');
 const User = require('../../models/User');
+const Profile = require('../../models/Profile'); // Đường dẫn đúng model của bạn
+
+exports.getUserByIdentityNumber = async (req, res) => {
+  try {
+    const { identityNumber } = req.params;
+    const profile = await Profile.findOne({ identityNumber }).populate('userId'); // nếu cần user info
+
+    if (!profile) {
+      return res.status(404).json({ message: "Không tìm thấy hồ sơ với số CMND/CCCD này" });
+    }
+
+    res.status(200).json(profile);
+  } catch (error) {
+    res.status(500).json({ message: "Lỗi server", error: error.message });
+  }
+};
+
 
 // Controller getAllUsers hỗ trợ tìm kiếm và phân trang
 exports.getAllUsers = async (req, res) => {
@@ -19,7 +36,7 @@ exports.getAllUsers = async (req, res) => {
     }
 
     const totalUsers = await User.countDocuments(query);
-    const users = await User.find(query, { _id: 1, name: 1, email: 1, phone: 1, status: 1, user_code: 1 }) // Include user_code
+    const users = await User.find(query, { _id: 1, name: 1, email: 1, phone: 1, status: 1, user_code: 1, department: 1,}) // Include user_code
       .skip((page - 1) * limit)
       .limit(parseInt(limit))
       .exec();
@@ -133,3 +150,6 @@ exports.deleteUser = async (req, res) => {
     res.status(500).json({ message: 'Lỗi server', error: error.message });
   }
 };
+
+// Tìm người dùng theo CMND/CCCD (identityNumber)
+

@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Table, Button, Input, DatePicker, Select, TimePicker, Space, Form, message, Typography, Divider } from 'antd';
+import {
+    Table, Button, Input, DatePicker, Select, TimePicker, Space,
+    Form, message, Typography, Divider, Modal, Popconfirm
+} from 'antd';
 import dayjs from 'dayjs';
 import { PlusOutlined } from '@ant-design/icons';
-import { Modal } from 'antd';
-import { Popconfirm } from 'antd';
 
 const { Title } = Typography;
 const { Option } = Select;
@@ -13,21 +14,43 @@ function StaffScheduleManager() {
     const [schedules, setSchedules] = useState([]);
     const [form] = Form.useForm();
     const [editingId, setEditingId] = useState(null);
-    const [editingRecord, setEditingRecord] = useState(null);
     const [isModalVisible, setIsModalVisible] = useState(false);
+    const [departments, setDepartments] = useState([]);
+    const [doctors, setDoctors] = useState([]);
+    const [filteredDoctors, setFilteredDoctors] = useState([]);
+
     useEffect(() => {
-        fetchSchedules();
+        axios.get("/api/departments")
+            .then((res) => {
+                setDepartments(Array.isArray(res.data.departments) ? res.data.departments : res.data);
+            })
+            .catch((err) => {
+                console.error("Lỗi khi tải danh sách khoa:", err);
+            });
+
+        fetchDoctors(); // ✅ Thêm dòng này để lấy danh sách bác sĩ
+        fetchSchedules(); // Nếu bạn muốn load luôn lịch làm
     }, []);
-    const handleDelete = async (id) => {
+
+
+
+    const fetchDepartments = async () => {
         try {
-            await axios.delete(`/api/staff/schedule/${id}`);
-            message.success('Schedule deleted');
-            fetchSchedules(); // cập nhật lại danh sách
+            const res = await axios.get('/api/departments');
+            setDepartments(res.data);
         } catch (err) {
-            message.error('Failed to delete schedule');
+            message.error('Failed to fetch departments');
         }
     };
 
+    const fetchDoctors = async () => {
+        try {
+            const res = await axios.get('/api/users?role=Doctor'); // 🔧 Sửa đúng API
+            setDoctors(res.data);
+        } catch (err) {
+            message.error('Failed to fetch doctors');
+        }
+    };
 
     const fetchSchedules = async () => {
         try {
@@ -38,6 +61,20 @@ function StaffScheduleManager() {
         }
     };
 
+    const handleDepartmentChange = (value) => {
+        form.setFieldValue('employeeId', null);
+        setFilteredDoctors(doctors.filter(doc => doc.department === value));
+    };
+
+    const handleDelete = async (id) => {
+        try {
+            await axios.delete(`/api/staff/schedule/${id}`);
+            message.success('Schedule deleted');
+            fetchSchedules();
+        } catch (err) {
+            message.error('Failed to delete schedule');
+        }
+    };
 
     const onFinish = async (values) => {
         const payload = {
@@ -50,6 +87,7 @@ function StaffScheduleManager() {
                 status: slot.status
             }))
         };
+
         try {
             if (editingId) {
                 await axios.put(`/api/staff/schedule/${editingId}`, payload);
@@ -61,6 +99,7 @@ function StaffScheduleManager() {
             fetchSchedules();
             form.resetFields();
             setEditingId(null);
+            setIsModalVisible(false);
         } catch (err) {
             message.error('Error saving schedule');
         }
@@ -68,9 +107,14 @@ function StaffScheduleManager() {
 
     const columns = [
         {
-            title: 'Employee ID',
+            title: 'Doctor',
             dataIndex: 'employeeId',
             key: 'employeeId',
+            sorter: (a, b) => {
+                const nameA = typeof a.employeeId === 'object' ? a.employeeId.name : '';
+                const nameB = typeof b.employeeId === 'object' ? b.employeeId.name : '';
+                return nameA.localeCompare(nameB);
+            },
             render: (employee) => {
                 if (typeof employee === 'object') {
                     return employee.name || employee._id || '[N/A]';
@@ -78,16 +122,28 @@ function StaffScheduleManager() {
                 return employee;
             }
         },
-
-        { title: 'Department', dataIndex: 'department', key: 'department' },
-        { title: 'Date', dataIndex: 'date', key: 'date', render: date => dayjs(date).format('DD/MM/YYYY') },
+        {
+            title: 'Department',
+            dataIndex: 'department',
+            key: 'department',
+            sorter: (a, b) => a.department.localeCompare(b.department)
+        },
+        {
+            title: 'Date',
+            dataIndex: 'date',
+            key: 'date',
+            sorter: (a, b) => new Date(a.date) - new Date(b.date),
+            render: date => dayjs(date).format('DD/MM/YYYY')
+        },
         {
             title: 'Time Slots',
             dataIndex: 'timeSlots',
             render: slots => (
                 <ul>
                     {slots.map((s, i) => (
-                        <li key={i}>{dayjs(s.startTime).format('HH:mm')} - {dayjs(s.endTime).format('HH:mm')} ({s.status})</li>
+                        <li key={i}>
+                            {dayjs(s.startTime).format('HH:mm')} - {dayjs(s.endTime).format('HH:mm')} ({s.status})
+                        </li>
                     ))}
                 </ul>
             )
@@ -109,10 +165,10 @@ function StaffScheduleManager() {
                         });
                         setEditingId(record._id);
                         setIsModalVisible(true);
+                        setFilteredDoctors(doctors.filter(doc => doc.department === record.department));
                     }}>
                         Edit
                     </Button>
-
                     <Popconfirm
                         title="Are you sure to delete this schedule?"
                         onConfirm={() => handleDelete(record._id)}
@@ -121,11 +177,9 @@ function StaffScheduleManager() {
                     >
                         <Button type="link" danger>Delete</Button>
                     </Popconfirm>
-
                 </Space>
             )
         }
-
     ];
 
     return (
@@ -142,23 +196,37 @@ function StaffScheduleManager() {
                     timeSlots: [{ timeRange: [], status: 'Available' }],
                 }}
             >
-
-
                 <Space direction="vertical" size="middle" style={{ display: 'flex' }}>
-                    <Form.Item
-                        label="Employee ID"
-                        name="employeeId"
-                        rules={[{ required: true, message: 'Please input employee ID' }]}
-                    >
-                        <Input />
-                    </Form.Item>
-
                     <Form.Item
                         label="Department"
                         name="department"
-                        rules={[{ required: true, message: 'Please input department' }]}
+                        rules={[{ required: true, message: 'Please select department' }]}
                     >
-                        <Input />
+                        <Select
+                            placeholder="Chọn khoa"
+                            onChange={handleDepartmentChange}
+                            allowClear
+                        >
+                            {Array.isArray(departments) && departments.map(dep => (
+                                <Option key={dep._id} value={dep.name}>{dep.name}</Option>
+                            ))}
+                        </Select>
+                    </Form.Item>
+
+                    <Form.Item
+                        label="Doctor"
+                        name="employeeId"
+                        rules={[{ required: true, message: 'Please select a doctor' }]}
+                    >
+                        <Select
+                            placeholder="Chọn bác sĩ"
+                            disabled={filteredDoctors.length === 0}
+                            allowClear
+                        >
+                            {filteredDoctors.map(doc => (
+                                <Option key={doc._id} value={doc._id}>{doc.name}</Option>
+                            ))}
+                        </Select>
                     </Form.Item>
 
                     <Form.Item
@@ -168,7 +236,6 @@ function StaffScheduleManager() {
                     >
                         <DatePicker style={{ width: '100%' }} />
                     </Form.Item>
-
 
                     <Form.List name="timeSlots">
                         {(fields, { add, remove }) => (
@@ -192,6 +259,7 @@ function StaffScheduleManager() {
                             </>
                         )}
                     </Form.List>
+
                     <Button type="primary" htmlType="submit">
                         {editingId ? 'Update Schedule' : 'Create Schedule'}
                     </Button>
@@ -199,12 +267,12 @@ function StaffScheduleManager() {
             </Form>
 
             <Divider />
-
             <Title level={4}>Existing Schedules</Title>
             <Table rowKey="_id" dataSource={schedules} columns={columns} />
+
             <Modal
                 title="Edit Schedule"
-                visible={isModalVisible}
+                open={isModalVisible} // ✅ dùng open thay vì visible
                 onCancel={() => {
                     setIsModalVisible(false);
                     form.resetFields();
@@ -216,30 +284,15 @@ function StaffScheduleManager() {
                 okText="Update"
             >
                 <Form layout="vertical" form={form} onFinish={onFinish}>
-                    <Form.Item
-                        label="Employee ID"
-                        name="employeeId"
-                        rules={[{ required: true, message: 'Please input employee ID' }]}
-                    >
-                        <Input />
+                    <Form.Item label="Department" name="department">
+                        <Input disabled />
                     </Form.Item>
-
-                    <Form.Item
-                        label="Department"
-                        name="department"
-                        rules={[{ required: true, message: 'Please input department' }]}
-                    >
-                        <Input />
+                    <Form.Item label="Doctor" name="employeeId">
+                        <Input disabled />
                     </Form.Item>
-
-                    <Form.Item
-                        label="Date"
-                        name="date"
-                        rules={[{ required: true, message: 'Please select a date' }]}
-                    >
+                    <Form.Item label="Date" name="date">
                         <DatePicker style={{ width: '100%' }} />
                     </Form.Item>
-
                     <Form.List name="timeSlots">
                         {(fields, { add, remove }) => (
                             <>
@@ -266,10 +319,7 @@ function StaffScheduleManager() {
                     </Form.List>
                 </Form>
             </Modal>
-
-
         </div>
-
     );
 }
 

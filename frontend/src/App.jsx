@@ -8,6 +8,7 @@ import {
 } from "react-router-dom";
 
 import DoctorLayout from "./layouts/DoctorLayout";
+import MedicinePage from "./pages/MedicinePage"
 import UserMedicalProfile from "./pages/UserMedicalProfile";
 import ServicePage from "./pages/ServicePage";
 import DoctorPage from "./pages/DoctorPage";
@@ -153,10 +154,10 @@ const App = () => {
         <Routes>
           <Route path="/doctor" element={<DoctorLayout />}>
             <Route path="medical-profile" element={<UserMedicalProfile />} />
-            <Route path="medicine" element={<div>View Medicine Page</div>} />
+            <Route path="medicine" element={<MedicinePage />} />
             <Route
               path="appointments"
-              element={<div>Appointment List Page</div>}
+              element={<AppointmentPage/>}
             />
             <Route
               path="notifications"
@@ -216,7 +217,7 @@ const App = () => {
             <Route path="users" element={<UserManagement />} />
             <Route path="medicalrecord" element={<MedicalRecord />} />
             <Route path="medicines" element={<MedicineManagement />} />
-            <Route path="schedule" element={<StaffScheduleManager  />} />
+            <Route path="schedule" element={<StaffScheduleManager />} />
           </Route>
 
           {/* Public routes */}

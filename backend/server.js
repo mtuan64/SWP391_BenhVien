@@ -25,44 +25,36 @@ app.use(cors(corsOptions));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
+// Route imports
 app.use("/api/user", require("./routers/User/user.route"));
+app.use("/api/user-profile", require("./routers/User/userMedicalProfile.route"));
 app.use("/api/admin", require("./routers/Admin/admin.route"));
 app.use("/api/auth", require("./routers/auth/auth.route"));
 app.use("/api/doctor", require("./routers/Doctor/doctor.route"));
-app.use("/api/staff", require("./routers/Staff/blog.route"));
-app.use("/api/staff", require("./routers/Staff/news.route"));
-app.use("/api/staff", require("./routers/Staff/medicalrecord.route"));
+app.use("/api/work-schedule", require("./routers/Doctor/workschedule.route"));
+app.use("/api/staff", require("./routers/Staff/staff.route"));
+app.use("/api/staff/blog", require("./routers/Staff/blog.route"));
+app.use("/api/staff/news", require("./routers/Staff/news.route"));
+app.use("/api/staff/medical-record", require("./routers/Staff/medicalrecord.route"));
 
-// Routers import
-const userRouter = require("./routers/User/user.route");
-const userMedicalProfile = require("./routers/User/userMedicalProfile.route");
-const workschedule = require("./routers/Doctor/workschedule.route");
-const adminRouter = require("./routers/Admin/admin.route");
-const authRouter = require("./routers/auth/auth.route");
-const doctorRouter = require("./routers/Doctor/doctor.route");
-const staffRouter = require("./routers/Staff/staff.route");
-
-// Mount routers
-app.use("/api/user", userRouter);
-app.use("/api/user-profile",userMedicalProfile);
-app.use("/api/work-schedule",workschedule )
-app.use("/api/admin", adminRouter);
-app.use("/api/auth", authRouter);
-app.use("/api/doctor", doctorRouter);
-app.use("/api/staff", staffRouter);
 
 app.use("/api/appointmentScheduleManagement", require("./routers/Staff/appointmentScheduleManagement.route"));
 app.use("/api/users", require("./routers/Staff/userManagement.route"));
 app.use("/api/departments", require("./routers/Staff/departmentManagement.route"));
 
-// Start server after DB connected
+app.use("/api", require("./routers/medicine/medicine.route")); 
+app.use("/api", require("./routers/appointment/appointment.routes"));
+app.use("/api/services", require("./routers/Doctor/service.route"));
+
+
 const PORT = process.env.PORT || 9999;
 
-connectDb().then(() => {
-  app.listen(PORT, () => {
-    console.log(`✅ Server is running on port ${PORT}`);
+connectDb()
+  .then(() => {
+    app.listen(PORT, () => {
+      console.log(`✅ Server is running on port ${PORT}`);
+    });
+  })
+  .catch((err) => {
+    console.error("❌ MongoDB connection failed:", err);
   });
-}).catch((err) => {
-  console.error("❌ MongoDB connection failed:", err);
-})
-

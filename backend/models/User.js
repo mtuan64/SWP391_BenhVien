@@ -12,6 +12,7 @@ const userSchema = new mongoose.Schema({
   emailVerificationCode: { type: String, default: null },
   verificationExpires: { type: Date, default: null },
   user_code: { type: String, unique: true, index: true }, // Tự động sinh
+  department: { type: String, default: null },
 }, { timestamps: true });
 
 // Middleware để tạo user_code tự động và an toàn

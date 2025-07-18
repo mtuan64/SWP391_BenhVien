@@ -8,7 +8,7 @@ const {
 } = require("../../controller/staff/notificationService");
 const staffRouter = express.Router();
 const { getAllServices, createService, deleteService, getServiceById, updateService } = require('../../controller/staff/servicesControlelr');
-const staffController = require('../../controller/staff/staffService');
+const staffController = require('../../controller/staff/ScheduleController');
 const { createMedicalRecord, allMedicalRecord, editMedicalRecord, createProfile, getAllProfiles } = require('../../controller/staff/medicalRecordController');
 const paymentController = require('../../controller/staff/PaymentController');
 const doctorServices = require('../../controller/doctor/doctorService');
