@@ -60,21 +60,7 @@ const Header = ({ onMenuClick, menuOpen }) => {
 
   return (
     <nav className="header-nav">
-      <div className="header-left">
-        {/* <Button
-          type="text"
-          icon={<MenuOutlined style={{ fontSize: 24 }} />}
-          onClick={(e) => {
-            e.stopPropagation();
-            onMenuClick();
-          }}
-          style={{ border: "none", background: "none" }}
-        /> */}
 
-        <Link to="/" className="header-logo">
-          <h1><i className="fa fa-heartbeat"></i> Kiwicare</h1>
-        </Link>
-      </div>
 
       <div className="header-right">
         <Button
@@ -86,6 +72,9 @@ const Header = ({ onMenuClick, menuOpen }) => {
           }}
           style={{ border: "none", background: "none" }}
         />
+        <Link to="/" className="header-logo">
+          <h1><i className="fa fa-heartbeat"></i> Kiwicare</h1>
+        </Link>
         <Link to="/" className="header-link"><HomeOutlined /> <span>Home</span></Link>
         <Link to="/about" className="header-link"><InfoCircleOutlined /> <span>About</span></Link>
 
