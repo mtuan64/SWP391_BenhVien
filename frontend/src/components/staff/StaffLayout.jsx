@@ -59,9 +59,6 @@ const StaffLayout = () => {
           <Menu.Item key="4" icon={<AppstoreOutlined />}>
             <Link to="/staff/view/medicalrecords">Manage Records</Link>
           </Menu.Item>
-          <Menu.Item key="5" icon={<MedicineBoxOutlined />}>
-            <Link to="/staff/specialties">Manage Specialty</Link>
-          </Menu.Item>
           <Menu.Item key="6" icon={<CalendarOutlined />}>
             <Link to="/staff/appointments">Appointment Schedule</Link>
           </Menu.Item>
@@ -96,16 +93,13 @@ const StaffLayout = () => {
           <Menu.Item key="18" icon={<QuestionCircleOutlined />}>
             <Link to="/staff/profile">Profile</Link>
           </Menu.Item>
-          <Menu.Item key="19" icon={<LogoutOutlined />} onClick={handleLogout}/>
 
           <Menu.Item key="16" icon={<QuestionCircleOutlined />}>
             <Link to="/staff/schedule">Manage Schedule</Link>
           </Menu.Item>
           <Menu.Item key="17" icon={<LogoutOutlined />} onClick={handleLogout}>
-
             Logout
           </Menu.Item>
-
         </Menu>
       </Sider>
       <Layout>

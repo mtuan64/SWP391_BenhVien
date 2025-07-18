@@ -248,7 +248,7 @@ const AboutPage = () => {
         </section>
       </div>
 
-      <FooterComponent />
+
     </>
   );
 };

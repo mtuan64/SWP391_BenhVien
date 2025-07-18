@@ -80,6 +80,7 @@ import ProfileStaff from "./pages/staff/ProfileStaff";
 import ProfileDoctor from "./pages/ProfileDoctor";
 // them FAQ
 import FAQList from "./pages/FAQ.jsx";
+import NutritionAdvice from "./pages/NutritionAdvice.jsx";
 
 const DRAWER_WIDTH = 240;
 
@@ -278,7 +279,7 @@ const AppRoutes = () => {
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/notifications" element={<NotificationCenter />} />
           <Route path="/notifications/:id" element={<NotificationDetail />} />
-
+          <Route path="/health/food" element={<NutritionAdvice />} />
           <Route path="/qahistory" element={<QAHistories />} />
           <Route path="/qa" element={<SendQAForm />} />
           <Route path="/faq" element={<FAQList />} /> {/*them FAQ cho user xem*/}
