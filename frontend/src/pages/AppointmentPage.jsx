@@ -182,6 +182,7 @@ const AppointmentPage = () => {
       } else {
         setError("Đặt lịch thất bại. Thử lại sau.");
       }
+      setSelectedTime(null);
     }
   };
 
