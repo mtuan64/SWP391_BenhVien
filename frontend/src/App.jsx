@@ -73,6 +73,7 @@ import BlogDetail from "./pages/BlogDetail";
 import ViewMedicalRecord from "./pages/ViewMedicalRecord";
 import Header from "./components/HeaderComponent";
 import NotFoundPage from "./pages/NotFoundPage";
+import DoctorAttendance from './pages/DoctorAttendance';
 
 const DRAWER_WIDTH = 240;
 
@@ -163,6 +164,7 @@ const App = () => {
               path="notifications"
               element={<div>Notifications Page</div>}
             />
+            <Route path="/doctor/attendance" element={<DoctorAttendance />} />
             <Route path="work-schedule" element={<WorkSchedulePage />} />
           </Route>
 

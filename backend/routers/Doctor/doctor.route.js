@@ -8,8 +8,13 @@ router.post("/", profileController.createProfile);
 // Lấy tất cả hồ sơ
 router.get("/", profileController.getAllProfiles);
 
-// Lấy hồ sơ theo doctorId (mới thêm)
+// Lấy hồ sơ theo doctorId
 router.get("/all/:doctorId", profileController.getProfilesByDoctor);
+
+// 🔥 Thêm dòng này để lấy hồ sơ theo identityNumber
+// router.get("/by-identity/:identityNumber", profileController.getProfileById);
+
+router.get("/by-identity/:identityNumber", profileController.searchByIdentityNumber);
 
 // Lấy hồ sơ theo ID
 router.get("/:profileId", profileController.getProfileById);

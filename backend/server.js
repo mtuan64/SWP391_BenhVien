@@ -36,6 +36,7 @@ app.use("/api/staff", require("./routers/Staff/staff.route"));
 app.use("/api/staff/blog", require("./routers/Staff/blog.route"));
 app.use("/api/staff/news", require("./routers/Staff/news.route"));
 app.use("/api/staff/medical-record", require("./routers/Staff/medicalrecord.route"));
+app.use("/api/attendance", require("./routers/Doctor/attendance.routes"));
 
 
 app.use("/api/appointmentScheduleManagement", require("./routers/Staff/appointmentScheduleManagement.route"));
