@@ -76,6 +76,7 @@ import NewsDetail from "./pages/NewsDetail";
 import BlogDetail from "./pages/BlogDetail";
 import ViewMedicalRecord from "./pages/ViewMedicalRecord";
 import NotFoundPage from "./pages/NotFoundPage";
+import DoctorAttendance from './pages/DoctorAttendance';
 import MedicineListPage from "./pages/MedicineListPage.jsx";
 import MedicineDetail from "./pages/MedicineDetail";
 import ServiceDetail from "./pages/ServiceDetail.jsx";
@@ -118,7 +119,7 @@ const RoleRedirect = () => {
     //   navigate("/staff", { replace: true });
     // } else if (role === "Doctor" && !path.startsWith("/doctor")) {
     //   navigate("/doctor", { replace: true });
-    // } 
+    // }
     else if (
       role === "patient" &&
       (path.startsWith("/admin") || path.startsWith("/staff"))
@@ -170,7 +171,23 @@ const AppRoutes = () => {
         <RoleRedirect />
 
         <Routes>
-          {/* Admin */}
+          <Route path="/doctor" element={<DoctorLayout />}>
+            <Route path="medical-profile" element={<UserMedicalProfile />} />
+            <Route path="medicine" element={<MedicinePage />} />
+            <Route
+              path="appointments"
+              element={<AppointmentPage/>}
+            />
+            <Route
+              path="notifications"
+              element={<div>Notifications Page</div>}
+            />
+            <Route path="/doctor/attendance" element={<DoctorAttendance />} />
+            <Route path="work-schedule" element={<WorkSchedulePage />} />
+          </Route>
+
+          <Route path="/" element={<HomePage />} />
+          {/* Admin Layout Routes */}
           <Route
             path="/admin/*"
             element={

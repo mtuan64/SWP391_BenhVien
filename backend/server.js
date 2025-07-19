@@ -33,6 +33,12 @@ app.use("/api/staff", require("./routers/Staff/blog.route"));
 app.use("/api/staff", require("./routers/Staff/news.route"));
 app.use("/api/staff", require("./routers/Staff/medicalrecord.route"));
 app.use("/api/staff", require("./routers/Staff/medicine.route"));
+app.use("/api/work-schedule", require("./routers/Doctor/workschedule.route"));
+app.use("/api/staff", require("./routers/Staff/staff.route"));
+app.use("/api/staff/blog", require("./routers/Staff/blog.route"));
+app.use("/api/staff/news", require("./routers/Staff/news.route"));
+app.use("/api/staff/medical-record", require("./routers/Staff/medicalrecord.route"));
+app.use("/api/attendance", require("./routers/Doctor/attendance.routes"));
 
 // Routers import
 const userRouter = require("./routers/User/user.route");
