@@ -76,6 +76,7 @@ import NewsDetail from "./pages/NewsDetail";
 import BlogDetail from "./pages/BlogDetail";
 import ViewMedicalRecord from "./pages/ViewMedicalRecord";
 import NotFoundPage from "./pages/NotFoundPage";
+import DoctorAttendance from './components/staff/DoctorAttendance';
 import MedicineListPage from "./pages/MedicineListPage.jsx";
 import MedicineDetail from "./pages/MedicineDetail";
 import ServiceDetail from "./pages/ServiceDetail.jsx";
@@ -88,6 +89,8 @@ import ProfileDoctor from "./pages/ProfileDoctor";
 import FAQList from "./pages/FAQ.jsx";
 import NutritionAdvice from "./pages/NutritionAdvice.jsx";
 import AppointmentSuccess from "./components/AppointmentSuccess.jsx";
+import MedicinePage from "./pages/MedicinePage.jsx";
+import LabTestPage from "./pages/LabTestPage.jsx";
 
 const DRAWER_WIDTH = 240;
 
@@ -118,7 +121,7 @@ const RoleRedirect = () => {
     //   navigate("/staff", { replace: true });
     // } else if (role === "Doctor" && !path.startsWith("/doctor")) {
     //   navigate("/doctor", { replace: true });
-    // } 
+    // }
     else if (
       role === "patient" &&
       (path.startsWith("/admin") || path.startsWith("/staff"))
@@ -170,7 +173,24 @@ const AppRoutes = () => {
         <RoleRedirect />
 
         <Routes>
-          {/* Admin */}
+          <Route path="/doctor" element={<DoctorLayout />}>
+            <Route path="medical-profile" element={<UserMedicalProfile />} />
+            <Route path="medicine" element={<MedicinePage />} />
+            <Route
+              path="appointments"
+              element={<AppointmentPage/>}
+            />
+            <Route
+              path="notifications"
+              element={<div>Notifications Page</div>}
+            />
+            <Route path="/doctor/attendance" element={<DoctorAttendance />} />
+            <Route path="/doctor/labtest" element={<LabTestPage />} />
+            <Route path="work-schedule" element={<WorkSchedulePage />} />
+          </Route>
+
+          <Route path="/" element={<HomePage />} />
+          {/* Admin Layout Routes */}
           <Route
             path="/admin/*"
             element={
