@@ -20,10 +20,12 @@ const profileSchema = new mongoose.Schema(
     },
     doctorId: { type: mongoose.Schema.Types.ObjectId, ref: "Employee" },
 
-    service: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Services",
-    },
+    service: [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Services",
+        }
+    ],
 
     createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "Employee" },
   },

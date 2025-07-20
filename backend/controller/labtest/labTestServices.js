@@ -44,3 +44,4 @@ module.exports.findById = async (req, res) => {
         data: testLab
     })
 }
+

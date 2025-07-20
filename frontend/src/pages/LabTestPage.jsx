@@ -262,7 +262,9 @@ const UserMedicalProfileDetail = () => {
               <Checkbox.Group>
                 <Space direction="vertical">
                   {services.map((s) => (
-                    <Checkbox key={s._id} value={s._id}>
+                    <Checkbox key={s._id} value={s._id}
+                              disabled={true}
+                    >
                       {s.name} - ${s.price}
                     </Checkbox>
                   ))}
@@ -278,20 +280,19 @@ const UserMedicalProfileDetail = () => {
               <Input.TextArea
                 rows={4}
                 placeholder="Enter the diagnosis details..."
-                disabled
               />
             </Form.Item>
             <Form.Item name="note" label="3. Doctor's Note">
               <Input.TextArea
                 rows={2}
                 placeholder="Enter any additional notes..."
+                disabled
               />
             </Form.Item>
             <Form.Item name="issues" label="4. Patient's Reported Issues">
               <Input.TextArea
                 rows={2}
                 placeholder="Describe the issues reported by the patient..."
-                disabled
               />
             </Form.Item>
             <Form.Item name="medicine" label="5. Prescribe Medicine">
@@ -303,7 +304,6 @@ const UserMedicalProfileDetail = () => {
                 onSearch={handleMedicineSearch}
                 loading={isMedicineLoading}
                 filterOption={false}
-                disabled
                 notFoundContent={
                   isMedicineLoading ? <Spin size="small" /> : null
                 }>
