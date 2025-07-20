@@ -5,13 +5,13 @@ import { UserOutlined, MedicineBoxOutlined, CalendarOutlined, BellOutlined, Sche
 const DoctorSidebar = () => {
   const links = [
     { to: "/doctor/medical-profile", label: "User Medical Profile", icon: <UserOutlined /> },
+    { to: "/doctor/labtest", label: "Lab Test", icon: <ScheduleOutlined /> },
     { to: "/doctor/medicine", label: "View Medicine", icon: <MedicineBoxOutlined /> },
     { to: "/doctor/appointments", label: "View Appointment", icon: <CalendarOutlined /> },
     { to: "/doctor/notifications", label: "Notification", icon: <BellOutlined /> },
     { to: "/doctor/work-schedule", label: "View Work Schedule", icon: <ScheduleOutlined /> },
-        { to: "/doctor/profile", label: "View profile", icon: <ScheduleOutlined /> },
-        
-
+    { to: "/doctor/profile", label: "View profile", icon: <ScheduleOutlined /> },
+    { to: "/doctor/attendance", label: "Attendance", icon: <ScheduleOutlined /> },
   ];
 
   return (

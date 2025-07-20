@@ -132,3 +132,19 @@ module.exports.delEmployees = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+
+module.exports.getAllDoctors = async (req, res) => {
+  res.status(200).json({ message: 'getAllDoctors not implemented' });
+};
+
+module.exports.searchDoctorsByName = async (req, res) => {
+  res.status(200).json({ message: 'searchDoctorsByName not implemented' });
+};
+
+module.exports.getDoctorsPaginated = async (req, res) => {
+  res.status(200).json({ message: 'getDoctorsPaginated not implemented' });
+};
+
+module.exports.getProfilesByUserId = async (req, res) => {
+  res.status(200).json({ message: 'getProfilesByUserId not implemented' });
+};

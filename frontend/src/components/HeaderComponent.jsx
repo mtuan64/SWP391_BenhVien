@@ -111,7 +111,6 @@ const Header = ({ onMenuClick, menuOpen }) => {
         <Link to="/department-home" className="header-link"><ApartmentOutlined /> <span>Department</span></Link>
         <Link to="/service-home" className="header-link"><CustomerServiceOutlined /> <span>Services</span></Link>
         <Link to="/doctor-home" className="header-link"><TeamOutlined /> <span>Doctors</span></Link>
-        <Link to="/qa" className="header-link"><span>Q/A</span></Link>
         <Link to="/medicines-home" className="header-link"><MedicineBoxOutlined /> <span>Medicines</span></Link>
         <Dropdown
           menu={{

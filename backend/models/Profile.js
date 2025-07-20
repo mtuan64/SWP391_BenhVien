@@ -14,16 +14,20 @@ const profileSchema = new mongoose.Schema(
     diagnose: { type: String },
     note: { type: String },
     issues: { type: String },
-    medicine: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Medicine",
-    },
+    medicine: [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Medicine",
+        }
+    ],
     doctorId: { type: mongoose.Schema.Types.ObjectId, ref: "Employee" },
 
-    service: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Services",
-    },
+    service: [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Services",
+        }
+    ],
 
     createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "Employee" },
   },

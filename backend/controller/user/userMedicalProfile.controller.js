@@ -1,4 +1,5 @@
 const Profile = require("../../models/Profile");
+const Service = require("../../models/Service");
 
 const findUserByIdentity = async (req, res) => {
   try {
@@ -118,6 +119,7 @@ module.exports.deleteProfileById = async (req, res) => {
 
 module.exports.updateProfileById = async (req, res) => {
   const { id } = req.params;
+
   const {
     name,
     dateOfBirth,
@@ -127,9 +129,15 @@ module.exports.updateProfileById = async (req, res) => {
     issues,
     doctorId,
     medicine,
+      service
   } = req.body;
 
   try {
+    const serviceObj = await Service.find({
+      _id: {
+        $in: service
+      }
+    });
     const updatedProfile = await Profile.findByIdAndUpdate(
       id,
       {
@@ -141,6 +149,7 @@ module.exports.updateProfileById = async (req, res) => {
         issues,
         doctorId,
         medicine,
+        service: serviceObj
       },
       { new: true }
     ).populate("doctorId medicine");

@@ -73,6 +73,10 @@ app.use(
 );
 app.use("/api/profile", userProfileRouter);
 app.use('/api/staff', scheduleRouter);
+app.use("/api/services", require("./routers/Service/service.route"));
+app.use("/api", require("./routers/medicine/medicine.route"));
+app.use("/api", require("./routers/appointment/appointment.routes"));
+
 // Start server after DB connected
 const PORT = process.env.PORT || 9999;
 

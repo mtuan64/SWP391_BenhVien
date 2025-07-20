@@ -76,7 +76,7 @@ import NewsDetail from "./pages/NewsDetail";
 import BlogDetail from "./pages/BlogDetail";
 import ViewMedicalRecord from "./pages/ViewMedicalRecord";
 import NotFoundPage from "./pages/NotFoundPage";
-import DoctorAttendance from './pages/DoctorAttendance';
+import DoctorAttendance from './components/staff/DoctorAttendance';
 import MedicineListPage from "./pages/MedicineListPage.jsx";
 import MedicineDetail from "./pages/MedicineDetail";
 import ServiceDetail from "./pages/ServiceDetail.jsx";
@@ -89,6 +89,8 @@ import ProfileDoctor from "./pages/ProfileDoctor";
 import FAQList from "./pages/FAQ.jsx";
 import NutritionAdvice from "./pages/NutritionAdvice.jsx";
 import AppointmentSuccess from "./components/AppointmentSuccess.jsx";
+import MedicinePage from "./pages/MedicinePage.jsx";
+import LabTestPage from "./pages/LabTestPage.jsx";
 
 const DRAWER_WIDTH = 240;
 
@@ -183,6 +185,7 @@ const AppRoutes = () => {
               element={<div>Notifications Page</div>}
             />
             <Route path="/doctor/attendance" element={<DoctorAttendance />} />
+            <Route path="/doctor/labtest" element={<LabTestPage />} />
             <Route path="work-schedule" element={<WorkSchedulePage />} />
           </Route>
 

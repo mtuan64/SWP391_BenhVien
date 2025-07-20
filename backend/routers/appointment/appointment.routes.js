@@ -10,5 +10,4 @@ appointmentRouter.get('/paginated', apmServices.getDoctorsPaginated);
 //lay profile theo userid
 appointmentRouter.get('/:userId/profiles', apmServices.getProfilesByUserId);
 
-
 module.exports = appointmentRouter;
