@@ -271,10 +271,7 @@ const UserMedicalProfileDetail = () => {
             </Form.Item>
             <Form.Item
               name="diagnose"
-              label="2. Diagnose"
-              rules={[
-                { required: true, message: "Diagnose cannot be empty." },
-              ]}>
+              label="2. Diagnose">
               <Input.TextArea
                 rows={4}
                 placeholder="Enter the diagnosis details..."
