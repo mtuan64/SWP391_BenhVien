@@ -1,6 +1,7 @@
 require("dotenv").config();
 const User = require("../../models/User");
 const Employee = require("../../models/Employee");
+const Appointment = require("../../models/Appointment");
 const bcrypt = require("bcrypt");
 
 // Admin - user manage
@@ -130,6 +131,25 @@ module.exports.delEmployees = async (req, res) => {
     res.json({ message: "Employee deleted successfully" });
   } catch (err) {
     res.status(500).json({ message: err.message });
+  }
+};
+
+module.exports.getAllAppointments = async (req, res) => {
+  try {
+    const { doctorId } = req.query;
+
+    const filter = doctorId ? { doctorId } : {};
+
+    const appointments = await Appointment.find(filter)
+        .populate('userId', 'name email')
+        .populate('profileId', 'fullName gender dateOfBirth')
+        .populate('doctorId', 'name department')
+        .sort({ appointmentDate: -1 });
+
+    res.status(200).json(appointments);
+  } catch (error) {
+    console.error('Error fetching appointments:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
 
