@@ -92,6 +92,7 @@ import AppointmentSuccess from "./components/AppointmentSuccess.jsx";
 import MedicinePage from "./pages/MedicinePage.jsx";
 import LabTestPage from "./pages/LabTestPage.jsx";
 import DoctorAppointments from "./pages/DoctorAppointment.jsx";
+import CreateInvoice2 from "./components/staff/CreateInvoiceTest.jsx";
 
 const DRAWER_WIDTH = 240;
 
@@ -216,13 +217,14 @@ const AppRoutes = () => {
           >
             <Route index element={<BlogManagement />} />
             <Route path="blogs" element={<BlogManagement />} />
-            <Route path="invoices/create" element={<CreateInvoice />}></Route>
+            <Route path="invoices/create" element={<CreateInvoice2 />}></Route>
             <Route path="services" element={<ServiceManagement />} />
             <Route path="services/create" element={<CreateServicePage />} />
             <Route path="services/edit/:id" element={<EditServicePage />} />
             <Route path="departments" element={<DepartmentManagement />} />
             <Route path="specialties" element={<SpecialtyManagement />} />
             <Route path="invoices" element={<InvoiceList />} />
+            {/* <Route path="invoices/create2" element={<CreateInvoice2 />} /> */}
             <Route path="payments" element={<PaymentView />} />
             <Route path="news" element={<NewsManagement />} />
             <Route path="add/medicalrecords" element={<AddMedicalRecord />} />
