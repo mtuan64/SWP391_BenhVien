@@ -1,4 +1,5 @@
 const express = require("express");
+const mongoose = require("mongoose");
 const router = express.Router();
 const appointmentController = require("../../controller/staff/appointmentScheduleManagementController");
 
@@ -15,5 +16,6 @@ router.get("/profile/:userId", appointmentController.getProfilesByUser2);
 router.get("/schedules/:doctorId", appointmentController.getDoctorSchedules);
 router.post("/profiles", appointmentController.createProfile);
 router.get('/profiles/:userId', appointmentController.getProfilesByUser);
+router.get("/profileByIdentity", appointmentController.getProfileByIdentity);
 
 module.exports = router;

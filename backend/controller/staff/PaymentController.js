@@ -304,6 +304,7 @@ exports.deleteInvoice = async (req, res) => {
 //     }
 // };
 const moment = require("moment");
+const Service = require('../../models/Service');
 exports.getPaymentSummary = async (req, res) => {
     try {
         const todayStart = moment().startOf("day").toDate();
@@ -487,6 +488,49 @@ exports.createPaymentLinkEmbedded = async (req, res) => {
     } catch (error) {
         console.error("Lỗi tạo link:", error.response?.data || error.message);
         res.status(500).json({ message: "Lỗi tạo link thanh toán", error: error.message });
+    }
+};
+exports.createPaymentLinkEmbeddedForBookAppointment = async (req, res) => {
+    try {
+        console.log("Request body:", req.body);
+        const { profileId, userId, doctorId, department, appointmentDate } = req.body;
+
+        if (!userId || !profileId || !doctorId || !department || !appointmentDate) {
+            throw new Error("Thiếu thông tin bắt buộc");
+        }
+
+        const servicesID = "6878a90d732616504cf8bddc";
+        const service = await Service.findById(servicesID);
+        if (!service) throw new Error("Dịch vụ không tồn tại");
+
+        const total = service.price;
+        const orderCode = Date.now(); // Đảm bảo duy nhất, có thể dùng ID từ database
+
+        const dateObj = new Date(appointmentDate);
+        if (isNaN(dateObj.getTime())) throw new Error("Ngày giờ hẹn không hợp lệ");
+        const date = dateObj.toISOString().split("T")[0];
+        const time = dateObj.toTimeString().split(" ")[0].slice(0, 5);
+        const returnUrl = `http://localhost:5173/appointment/success?orderCode=${orderCode}&serviceId=${servicesID}&amount=${total}&userId=${userId}&profileId=${profileId}&doctorId=${doctorId}&department=${department}&date=${date}&time=${time}`;
+
+        const result = await payos.createPaymentLink({
+            orderCode,
+            amount: total,
+            description: `Thanh toán kiwicare`,
+            cancelUrl: "http://localhost:5173/appointment",
+            returnUrl: returnUrl,
+        });
+
+        console.log("Payment Link Result:", result);
+        res.json({
+            checkoutUrl: result.checkoutUrl,
+            returnUrl: returnUrl,
+        });
+    } catch (error) {
+        console.error("Lỗi tạo link:", error.response?.data || error.message);
+        res.status(400).json({
+            message: "Thông tin truyền lên không hợp lệ",
+            error: error.message,
+        });
     }
 };
 

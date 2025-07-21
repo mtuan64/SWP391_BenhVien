@@ -1,4 +1,5 @@
 const express = require("express");
+const staffRouter = express.Router();
 const {
   getNotifications,
   createNotification,
@@ -6,13 +7,10 @@ const {
   deleteNotification,
   getAllUserEmails,
 } = require("../../controller/staff/notificationService");
-const staffRouter = express.Router();
-const {getAllQA,replyQA} = require('../../controller/staff/staffService');
-staffRouter.get('/qa',getAllQA);
-staffRouter.put('/qa/:id',replyQA);
-module.exports = staffRouter;
+const { getAllQA, replyQA, createCheckup, createSchedule, getSchedules, updateSchedule, deleteSchedule, getFeedbacksForStaff } = require('../../controller/staff/staffService');
 const { getAllServices, createService, deleteService, getServiceById, updateService } = require('../../controller/staff/servicesControlelr');
 const staffController = require('../../controller/staff/staffService');
+staffRouter.post('/qa/:id/mark-as-faq',staffController.markAsFAQ); // them api moi
 const { createMedicalRecord, allMedicalRecord, editMedicalRecord, createProfile, getAllProfiles } = require('../../controller/staff/medicalRecordController');
 const paymentController = require('../../controller/staff/PaymentController');
 const doctorServices = require('../../controller/doctor/doctorService');
@@ -27,6 +25,8 @@ staffRouter.put('/medical-records/:id', editMedicalRecord);
 staffRouter.get('/invoices', invoiceController.getAllInvoices);
 staffRouter.get('/services/:invoiceId', invoiceController.getServices);
 staffRouter.post('/invoices', invoiceController.CreateInvoices);
+staffRouter.post('/appointmentinvoices', invoiceController.CreateInvoices2);
+
 staffRouter.put('/services/paid/:invoiceId', paymentController.paidServices);
 staffRouter.delete('/services/delete/:invoiceId', paymentController.deleteInvoice);
 staffRouter.get('/payments', paymentController.getPayments);
@@ -35,14 +35,15 @@ staffRouter.get("/services", invoiceController.getAllServices);
 staffRouter.get("/profiles/:userId", invoiceController.getProfilesByUserId)
 staffRouter.get('/doctors', doctorServices.getAllDoctors);
 staffRouter.get('/:userId/profiles', doctorServices.getProfilesByUserId);
+
 // Checkup
-staffRouter.post('/checkup', staffController.createCheckup);
+staffRouter.post('/checkup', createCheckup);
 
 // Schedule
-staffRouter.post('/schedule', staffController.createSchedule);
-staffRouter.get('/schedule', staffController.getSchedules);
-staffRouter.put('/schedule/:id', staffController.updateSchedule);
-staffRouter.delete('/schedule/:id', staffController.deleteSchedule);
+staffRouter.post('/schedule', createSchedule);
+staffRouter.get('/schedule', getSchedules);
+staffRouter.put('/schedule/:id', updateSchedule);
+staffRouter.delete('/schedule/:id', deleteSchedule);
 staffRouter.get("/getNoti", getNotifications);
 staffRouter.post("/createNoti", createNotification);
 staffRouter.put("/urgent/:id", markUrgent);
@@ -56,4 +57,10 @@ staffRouter.post('/create/services', createService); // POST /api/staff/services
 staffRouter.put('/update/services/:id', updateService); // PUT /api/staff/services/:id - Update a service
 staffRouter.delete('/delete/services/:id', deleteService); // DELETE /api/staff/services/:id - Delete a service
 // staffRouter.get('/labtestresult/:profileId', LabTestbyProfileId);
+staffRouter.get('/qa',getAllQA);
+staffRouter.put('/qa/:id',replyQA);
+
+// Feedback
+staffRouter.get('/feedback', getFeedbacksForStaff);
+
 module.exports = staffRouter;

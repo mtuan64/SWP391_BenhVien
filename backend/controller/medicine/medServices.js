@@ -2,15 +2,15 @@ const Invoice = require('../../models/Invoice');
 const User = require('../../models/User');
 const Profile = require('../../models/Profile');
 const Service = require('../../models/Service');
+const Medicine = require('../../models/Medicine');
 
 // Sử dụng exports.<tên_hàm>
 exports.getAllInvoices = async (req, res) => {
   try {
     const invoices = await Invoice.find()
-      .populate('userId')        // Populate user info
-      .populate('profileId')     // Populate profile info
-      .populate('services');     // Populate services info
-
+        .populate('userId')
+        .populate('profileId')
+        .populate('services');
     res.status(200).json(invoices);
   } catch (error) {
     console.error('Error fetching invoices:', error);
@@ -61,9 +61,9 @@ exports.createInvoice = async (req, res) => {
 
     // Populate thông tin liên quan
     const populatedInvoice = await Invoice.findById(savedInvoice._id)
-      .populate('userId')
-      .populate('profileId')
-      .populate('services');
+        .populate('userId')
+        .populate('profileId')
+        .populate('services');
 
     res.status(201).json({
       message: 'Invoice created successfully',
@@ -72,5 +72,18 @@ exports.createInvoice = async (req, res) => {
   } catch (error) {
     console.error('Error creating invoice:', error);
     res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+
+exports.getAllMedicines = async (req, res) => {
+  try {
+    const medicines = await Medicine.find()
+        .sort({ updatedAt: -1 });
+
+    res.status(200).json(medicines);
+  } catch (error) {
+    console.error('Error fetching medicines:', error);
+    res.status(500).json({ message: 'Lỗi máy chủ', error: error.message });
   }
 };
