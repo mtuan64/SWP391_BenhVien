@@ -118,20 +118,6 @@ exports.createAppointment = async (req, res) => {
   const userId = req.user.id;
 
   try {
-    // Kiểm tra xem bác sĩ đã có lịch vào giờ này chưa
-    const existingAppointment = await Appointment.findOne({
-      doctorId,
-      appointmentDate: new Date(appointmentDate),
-      status: { $ne: "Canceled" },
-    });
-
-    if (existingAppointment) {
-      return res.status(409).json({
-        message: "This doctor already has an appointment at the selected time.",
-      });
-    }
-
-    // Nếu không trùng thì tạo mới lịch khám
     const newAppointment = new Appointment({
       userId,
       profileId,
@@ -159,7 +145,7 @@ exports.createAppointment = async (req, res) => {
       // Duyệt và cập nhật status của slot phù hợp
       const updatedTimeSlots = schedule.timeSlots.map((slot) => {
         if (new Date(slot.startTime) <= appointmentDateObj && new Date(slot.endTime) > appointmentDateObj) {
-          return { ...slot, status: 'Booked' };
+          return { ...slot.toObject(), status: 'Booked' };
         }
         return slot;
       });
@@ -216,32 +202,46 @@ exports.getAppointmentsByUser = async (req, res) => {
   }
 };
 
-// Hủy lịch hẹn
 exports.cancelAppointment = async (req, res) => {
-  const { id } = req.params;
+  const { id } = req.params; // appointmentId
   const userId = req.user.id;
+
+  console.log(`Yêu cầu hủy: id=${id}, userId=${userId}`);
 
   try {
     const appointment = await Appointment.findOne({ _id: id, userId });
-    if (!appointment)
-      return res.status(404).json({ message: "Appointment not found" });
-
-    if (appointment.status === "Canceled") {
-      return res
-        .status(400)
-        .json({ message: "Appointment is already canceled" });
+    if (!appointment) {
+      return res.status(404).json({ message: "Lịch hẹn không tồn tại hoặc không thuộc về bạn" });
     }
 
-    appointment.status = "Canceled";
+    if (appointment.status === "Canceled") {
+      return res.status(400).json({ message: "Lịch hẹn đã bị hủy trước đó" });
+    }
+
+    if (appointment.status === "PendingCancel") {
+      return res.status(400).json({ message: "Lịch hẹn đang chờ duyệt hủy" });
+    }
+
+    // Đánh dấu trạng thái chờ duyệt
+    appointment.status = "PendingCancel";
     await appointment.save();
 
-    res
-      .status(200)
-      .json({ message: "Appointment canceled successfully", appointment });
+    // Tạo notification cho staff (receiver: null để broadcast)
+    const notification = new Notification({
+      title: "Yêu cầu hủy lịch hẹn",
+      content: `User ${req.user.name} (ID: ${userId}) yêu cầu hủy lịch hẹn ID: ${id}. Vui lòng duyệt.`,
+      isUrgent: true, // Có thể set urgent
+      receiver: null, // Broadcast cho tất cả staff
+    });
+    await notification.save();
+
+    res.status(200).json({
+      message: "Yêu cầu hủy đã được gửi, chờ staff duyệt",
+      appointment
+    });
   } catch (err) {
-    res
-      .status(500)
-      .json({ message: "Failed to cancel appointment", error: err.message });
+    console.error("Lỗi hủy lịch:", err);
+    res.status(500).json({ message: "Gửi yêu cầu hủy thất bại", error: err.message });
   }
 };
 

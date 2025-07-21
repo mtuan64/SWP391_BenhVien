@@ -7,7 +7,7 @@ const appointmentSchema = new mongoose.Schema({
   department: { type: mongoose.Schema.Types.ObjectId, ref: 'Department', required: true },
   appointmentDate: { type: Date, required: true, index: true },
   type: { type: String, enum: ['Online', 'Offline'], required: true },
-  status: { type: String, enum: ['Booked', 'In-Progress', 'Completed', 'Canceled'], default: 'Booked' },
+  status: { type: String, enum: ['Booked', 'In-Progress', 'Completed', 'Canceled', 'PendingCancel'], default: 'Booked' },
   reminderSent: { type: Boolean, default: false }
 }, { timestamps: true });
 

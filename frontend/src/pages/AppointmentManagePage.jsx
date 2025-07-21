@@ -32,7 +32,7 @@ const AppointmentManagePage = () => {
   const handleCancel = async (id) => {
     if (!window.confirm("Bạn có chắc muốn hủy lịch hẹn này?")) return;
     try {
-      await axios.post(
+      const res = await axios.post(
         `http://localhost:9999/api/user/cancel/${id}`,
         {},
         {
@@ -41,12 +41,14 @@ const AppointmentManagePage = () => {
           },
         }
       );
-      setAppointments((prev) =>
-        prev.map((a) => (a._id === id ? { ...a, status: "Canceled" } : a))
-      );
+      // Hiển thị thông báo từ backend
+      alert(res.data.message);
+      // Reload danh sách để cập nhật status mới (PendingCancel)
+      fetchAppointments();
     } catch (err) {
       console.error("Cancel failed", err);
-      alert("Hủy lịch hẹn thất bại. Vui lòng thử lại.");
+      const errorMessage = err.response?.data?.message || "Hủy lịch hẹn thất bại. Vui lòng thử lại.";
+      alert(errorMessage);
     }
   };
 
@@ -114,7 +116,6 @@ const AppointmentManagePage = () => {
               </tr>
             </thead>
             <tbody>
-
               {filteredAppointments.map((appt) => (
                 <tr key={appt._id}>
                   <td>{appt.doctorId?.name || "(Không rõ)"}</td>
@@ -125,6 +126,8 @@ const AppointmentManagePage = () => {
                   <td>
                     {appt.status === "Booked" ? (
                       <Button variant="danger" size="sm" onClick={() => handleCancel(appt._id)}>Hủy</Button>
+                    ) : appt.status === "PendingCancel" ? (
+                      <span>Chờ duyệt</span>
                     ) : appt.status === "Completed" ? (
                       <Button variant="info" size="sm" onClick={() => openFeedbackModal(appt._id)}>Gửi Feedback</Button>
                     ) : (
@@ -163,7 +166,6 @@ const AppointmentManagePage = () => {
       </Modal>
     </>
   );
-
 };
 
 export default AppointmentManagePage;

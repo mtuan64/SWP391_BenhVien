@@ -1,4 +1,5 @@
 const express = require("express");
+const { authStaffMiddleware } = require("../../middleware/auth.middleware");
 const {
   getNotifications,
   createNotification,
@@ -7,7 +8,7 @@ const {
   getAllUserEmails,
 } = require("../../controller/staff/notificationService");
 const staffRouter = express.Router();
-const { getAllQA, replyQA, getFeedbacksForStaff } = require('../../controller/staff/staffService');
+const { getAllQA, replyQA, getFeedbacksForStaff, approveCancellation } = require('../../controller/staff/staffService');
 staffRouter.get('/qa', getAllQA);
 staffRouter.put('/qa/:id', replyQA);
 module.exports = staffRouter;
@@ -61,5 +62,6 @@ staffRouter.delete('/delete/services/:id', deleteService); // DELETE /api/staff/
 
 // Feedback
 staffRouter.get('/feedback', getFeedbacksForStaff);
+staffRouter.post('/:id/approve', authStaffMiddleware, approveCancellation);
 
 module.exports = staffRouter;
