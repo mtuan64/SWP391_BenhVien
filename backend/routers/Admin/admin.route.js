@@ -22,6 +22,7 @@ const {
   getUserGrowthStats,
   getEmployeeStats,
 } = require("../../controller/admin/statisService");
+const { getAllAttendance, getAttendanceById, createAttendance, updateAttendance, deleteAttendance, getAttendanceSummary, getConfig, updateConfig } = require("../../controller/admin/attendanceService");
 
 // Admin - user manage
 adminRouter.get("/users", getUserAccs);
@@ -45,5 +46,18 @@ adminRouter.get("/revenue-methods", getRevenueByMethod);
 adminRouter.get("/summaries", getDashboardSummaries);
 adminRouter.get("/user-growth-stats", getUserGrowthStats);
 adminRouter.get("/employee-stats", getEmployeeStats);
+
+// Admin - attendance management
+
+adminRouter.get('/attend', getAllAttendance);
+adminRouter.get('/attend/:id', getAttendanceById);
+adminRouter.post('/createAttend', createAttendance);
+adminRouter.put('/updAttend/:id', updateAttendance);
+adminRouter.delete('/delAttend/:id', deleteAttendance);
+adminRouter.get('/attend/stats/summary', getAttendanceSummary);
+
+adminRouter.get('/attend-config', getConfig)
+adminRouter.post('/upd-config', updateConfig)
+
 
 module.exports = adminRouter;

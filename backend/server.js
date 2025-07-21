@@ -1,6 +1,6 @@
 // Load environment variables early
 require("dotenv").config();
-
+const autoMarkAbsent = require('./utils/autoMarkAbsentJob');
 // Import packages
 const express = require("express");
 const morgan = require("morgan");
@@ -32,6 +32,16 @@ app.use("/api/doctor", require("./routers/Doctor/doctor.route"));
 app.use("/api/staff", require("./routers/Staff/blog.route"));
 app.use("/api/staff", require("./routers/Staff/news.route"));
 app.use("/api/staff", require("./routers/Staff/medicalrecord.route"));
+app.use("/api/staff", require("./routers/Staff/medicine.route"));
+app.use("/api/work-schedule", require("./routers/Doctor/workschedule.route"));
+app.use("/api/staff", require("./routers/Staff/staff.route"));
+app.use("/api/staff/blog", require("./routers/Staff/blog.route"));
+app.use("/api/staff/news", require("./routers/Staff/news.route"));
+app.use(
+  "/api/staff/medical-record",
+  require("./routers/Staff/medicalrecord.route")
+);
+app.use("/api/attendance", require("./routers/Doctor/attendance.routes"));
 
 // Routers import
 const userRouter = require("./routers/User/user.route");
@@ -44,7 +54,7 @@ const staffRouter = require("./routers/Staff/staff.route");
 const userProfileRouter = require("./routers/User/profile.route");
 // 15-7
 const foodrouter = require("./routers/User/api.food");
-
+const scheduleRouter = require("./routers/Staff/schedule.route");
 // Mount routers
 app.use("/api/user", userRouter);
 app.use("/api/user-profile", userMedicalProfile);
@@ -65,6 +75,10 @@ app.use(
   require("./routers/Staff/departmentManagement.route")
 );
 app.use("/api/profile", userProfileRouter);
+app.use("/api/staff", scheduleRouter);
+app.use("/api/services", require("./routers/Service/service.route"));
+app.use("/api", require("./routers/medicine/medicine.route"));
+app.use("/api", require("./routers/appointment/appointment.routes"));
 
 // Start server after DB connected
 const PORT = process.env.PORT || 9999;
@@ -73,6 +87,12 @@ connectDb()
   .then(() => {
     app.listen(PORT, () => {
       console.log(`✅ Server is running on port ${PORT}`);
+    });
+
+    // ✅ Tự động chạy lúc 08:05 mỗi sáng
+    cron.schedule("5 8 * * *", () => {
+      console.log("🔔 Running autoMarkAbsent...");
+      autoMarkAbsent();
     });
   })
   .catch((err) => {

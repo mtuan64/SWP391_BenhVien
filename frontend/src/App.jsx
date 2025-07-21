@@ -79,6 +79,12 @@ import QAHistories from "./pages/QAHistories";
 import ProfileStaff from "./pages/staff/ProfileStaff";
 import ProfileDoctor from "./pages/ProfileDoctor";
 import NutritionAdvice from "./pages/NutritionAdvice.jsx";
+import AppointmentSuccess from "./components/AppointmentSuccess.jsx";
+import MedicinePage from "./pages/MedicinePage.jsx";
+import LabTestPage from "./pages/LabTestPage.jsx";
+import DoctorAppointments from "./pages/DoctorAppointment.jsx";
+import CreateInvoice2 from "./components/staff/CreateInvoiceTest.jsx";
+import AttendanceManagement from "./pages/admin/AttendanceManagement.jsx";
 
 const DRAWER_WIDTH = 240;
 
@@ -173,6 +179,7 @@ const AppRoutes = () => {
             <Route index element={<Dashboard />} />
             <Route path="accounts" element={<AccountManagement />} />
             <Route path="employees" element={<EmployeeManagement />} />
+            <Route path="attendance" element={<AttendanceManagement />} />
           </Route>
 
           {/* Staff */}
