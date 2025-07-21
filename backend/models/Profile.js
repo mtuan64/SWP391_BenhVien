@@ -20,16 +20,22 @@ const profileSchema = new mongoose.Schema(
             ref: "Medicine",
         }
     ],
-    doctorId: { type: mongoose.Schema.Types.ObjectId, ref: "Employee" },
-
+    doctorId: { 
+      type: mongoose.Schema.Types.ObjectId, 
+      ref: "Employee" 
+    },
     service: [
         {
             type: mongoose.Schema.Types.ObjectId,
             ref: "Services",
         }
     ],
-
+    labTestId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "LabTest"
+    },
     createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "Employee" },
+
   },
   { timestamps: true }
 );

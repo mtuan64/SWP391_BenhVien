@@ -1,5 +1,7 @@
 const Profile = require("../../models/Profile");
 const Service = require("../../models/Service");
+const Employee = require('../../models/Employee');
+const { createLab, updateModel } = require("../labtest/labTestServices")
 
 const findUserByIdentity = async (req, res) => {
   try {
@@ -129,32 +131,73 @@ module.exports.updateProfileById = async (req, res) => {
     issues,
     doctorId,
     medicine,
-      service
+    service,
+    result,
+    dayTest
   } = req.body;
 
+  console.log("Request: ", req.body)
+
   try {
+
+    const doctor = await Employee.findById(doctorId);
+    console.log("Doctor", doctor)
+
+    if (!doctor) {
+      return res.status(404).json({ message: "Doctor not found." });
+    }
+
     const serviceObj = await Service.find({
       _id: {
         $in: service
       }
     });
-    const updatedProfile = await Profile.findByIdAndUpdate(
-      id,
-      {
-        name,
-        dateOfBirth,
-        gender,
-        diagnose,
-        note,
-        issues,
-        doctorId,
-        medicine,
-        service: serviceObj
-      },
-      { new: true }
-    ).populate("doctorId medicine");
 
-    if (!updatedProfile) {
+    let profile = await Profile.findById(id);
+    let labTest;
+    console.log("profile.labTestId", profile.labTestId)
+    if (!profile.labTestId) {
+      console.log("Create labtest")
+      labTest = await createLab(serviceObj);
+    } else if (result && dayTest) {
+      updateModel(profile.labTestId, result, dayTest)
+      labTest = profile.labTestId;
+    }
+
+    profile.name = name ? name : profile.name;
+    profile.dateOfBirth = dateOfBirth ? dateOfBirth : profile.dateOfBirth;
+    profile.gender = gender ? gender : profile.gender;
+    profile.diagnose = diagnose ? diagnose : profile.diagnose;
+    profile.note = note ? note : profile.note;
+    profile.issues = issues ? issues : profile.issues;
+    profile.doctorId = doctor._id;
+    profile.medicine = medicine;
+    profile.service = serviceObj;
+    profile.labTestId = labTest ? labTest._id : null;
+
+    // const updatedProfile = await Profile.findByIdAndUpdate(
+    //   id,
+    //   {
+    //     name,
+    //     dateOfBirth,
+    //     gender,
+    //     diagnose,
+    //     note,
+    //     issues,
+    //     doctorId,
+    //     medicine,
+    //     service: serviceObj
+    //   },
+    //   { new: true }
+    // ).populate("doctorId medicine labTestId");
+
+    const savedProfile = await profile.save()
+
+    const updatedProfile = await Profile.findById(id)
+      .populate('doctorId')
+      .populate('medicine')
+      .populate('labTestId');
+    if (!profile) {
       return res.status(404).json({ message: "Profile not found." });
     }
 
@@ -172,7 +215,7 @@ module.exports.searchByIdentityNumber = async (req, res) => {
   const { identityNumber } = req.params; // 👈 Lấy từ params chứ không phải query
 
   try {
-    const profiles = await Profile.find({ identityNumber }).populate("medicine");
+    const profiles = await Profile.find({ identityNumber }).populate("medicine labTestId userId doctorId");
     res.status(200).json({ data: profiles });
   } catch (err) {
     console.error("Search error:", err);

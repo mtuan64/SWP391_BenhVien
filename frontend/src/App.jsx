@@ -91,6 +91,7 @@ import NutritionAdvice from "./pages/NutritionAdvice.jsx";
 import AppointmentSuccess from "./components/AppointmentSuccess.jsx";
 import MedicinePage from "./pages/MedicinePage.jsx";
 import LabTestPage from "./pages/LabTestPage.jsx";
+import DoctorAppointments from "./pages/DoctorAppointment.jsx";
 
 const DRAWER_WIDTH = 240;
 
@@ -178,7 +179,7 @@ const AppRoutes = () => {
             <Route path="medicine" element={<MedicinePage />} />
             <Route
               path="appointments"
-              element={<AppointmentPage/>}
+              element={<DoctorAppointments/>}
             />
             <Route
               path="notifications"
