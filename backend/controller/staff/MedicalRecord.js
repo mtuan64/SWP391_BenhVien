@@ -18,7 +18,8 @@ exports.getAllProfile = async (req, res) => {
       .populate('userId', 'name')
       .populate('doctorId', 'name email role')
       .populate('medicine', 'name type unitPrice')
-      .populate('service', 'name price');
+      .populate('service', 'name price')
+      .populate('labTestId', 'result dayTest');
 
     const formattedProfiles = profiles.map(profile => ({
       _id: profile._id,
@@ -36,16 +37,21 @@ exports.getAllProfile = async (req, res) => {
         email: profile.doctorId.email,
         role: profile.doctorId.role
       } : null,
-      medicine: profile.medicine ? {
-        _id: profile.medicine._id,
-        name: profile.medicine.name,
-        type: profile.medicine.type,
-        unitPrice: profile.medicine.unitPrice
-      } : null,
-      service: profile.service ? {
-        _id: profile.service._id,
-        name: profile.service.name,
-        price: profile.service.price
+      medicines: profile.medicine?.map(med => ({
+        _id: med._id,
+        name: med.name,
+        type: med.type,
+        unitPrice: med.unitPrice
+      })) || [],
+      services: profile.service?.map(serv => ({
+        _id: serv._id,
+        name: serv.name,
+        price: serv.price
+      })) || [],
+      labTest: profile.labTestId ? {
+        _id: profile.labTestId._id,
+        result: profile.labTestId.result,
+        dayTest: profile.labTestId.dayTest
       } : null,
       createdAt: profile.createdAt,
       updatedAt: profile.updatedAt
