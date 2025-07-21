@@ -27,6 +27,8 @@ const menuByRole = (role) => {
       { title: "Foods", path: "/health/food", icon: <HeartOutlined /> },
       { title: "BMI", path: "/health/calculator", icon: <FileTextOutlined /> },
       { title: "Q/A", path: "/qa", icon: <BookOutlined /> },
+      { title: "Q/A History", path: "/qahistory", icon: <ClockCircleOutlined /> },
+      { title: "Invoice", path: "/invoice", icon: <DollarOutlined /> },
       { title: "FAQ", path: "/faq", icon: <QuestionCircleOutlined /> },
     ],
   };
