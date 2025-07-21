@@ -11,7 +11,7 @@ const AppointmentManagePage = () => {
   const { token } = useAuth();
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
   const [selectedAppointmentId, setSelectedAppointmentId] = useState(null);
-  const [feedbackData, setFeedbackData] = useState({ content: '', rating: 5 });
+  const [feedbackData, setFeedbackData] = useState({ content: "", rating: 5 });
 
   const fetchAppointments = async () => {
     try {
@@ -20,7 +20,22 @@ const AppointmentManagePage = () => {
           Authorization: `Bearer ${token}`,
         },
       });
-      setAppointments(res.data);
+
+      // ✅ Xử lý trường hợp API trả object, không phải mảng
+      const data = res.data;
+
+      const appointmentsData = Array.isArray(data)
+        ? data
+        : data.appointments || data.user?.appointments || [];
+
+      if (!Array.isArray(appointmentsData)) {
+        console.error("API không trả về mảng appointments:", data);
+        setError("Dữ liệu lịch hẹn không hợp lệ.");
+        setAppointments([]);
+      } else {
+        setAppointments(appointmentsData);
+      }
+
     } catch (err) {
       console.error("Failed to fetch appointments", err);
       setError("Không thể tải danh sách lịch hẹn.");
@@ -55,20 +70,24 @@ const AppointmentManagePage = () => {
     setShowFeedbackModal(true);
   };
 
-  // Handler gửi feedback
   const handleSendFeedback = async () => {
     try {
-      await axios.post("http://localhost:9999/api/user/createFeedback", {
-        content: feedbackData.content,
-        rating: feedbackData.rating,
-        appointmentId: selectedAppointmentId,
-      }, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await axios.post(
+        "http://localhost:9999/api/user/createFeedback",
+        {
+          content: feedbackData.content,
+          rating: feedbackData.rating,
+          appointmentId: selectedAppointmentId,
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
       setShowFeedbackModal(false);
-      alert("Feedback sent successfully!");
+      alert("Gửi phản hồi thành công!");
     } catch (err) {
-      alert("Failed to send feedback.");
+      console.error("Feedback error:", err);
+      alert("Gửi phản hồi thất bại.");
     }
   };
 
@@ -114,7 +133,6 @@ const AppointmentManagePage = () => {
               </tr>
             </thead>
             <tbody>
-
               {filteredAppointments.map((appt) => (
                 <tr key={appt._id}>
                   <td>{appt.doctorId?.name || "(Không rõ)"}</td>
@@ -124,9 +142,21 @@ const AppointmentManagePage = () => {
                   <td>{appt.status}</td>
                   <td>
                     {appt.status === "Booked" ? (
-                      <Button variant="danger" size="sm" onClick={() => handleCancel(appt._id)}>Hủy</Button>
+                      <Button
+                        variant="danger"
+                        size="sm"
+                        onClick={() => handleCancel(appt._id)}
+                      >
+                        Hủy
+                      </Button>
                     ) : appt.status === "Completed" ? (
-                      <Button variant="info" size="sm" onClick={() => openFeedbackModal(appt._id)}>Gửi Feedback</Button>
+                      <Button
+                        variant="info"
+                        size="sm"
+                        onClick={() => openFeedbackModal(appt._id)}
+                      >
+                        Gửi Feedback
+                      </Button>
                     ) : (
                       <span>-</span>
                     )}
@@ -138,7 +168,10 @@ const AppointmentManagePage = () => {
         )}
       </div>
 
-      <Modal show={showFeedbackModal} onHide={() => setShowFeedbackModal(false)}>
+      <Modal
+        show={showFeedbackModal}
+        onHide={() => setShowFeedbackModal(false)}
+      >
         <Modal.Header closeButton>
           <Modal.Title>Gửi Feedback</Modal.Title>
         </Modal.Header>
@@ -146,24 +179,48 @@ const AppointmentManagePage = () => {
           <Form>
             <Form.Group className="mb-3">
               <Form.Label>Nội dung</Form.Label>
-              <Form.Control as="textarea" value={feedbackData.content} onChange={(e) => setFeedbackData({ ...feedbackData, content: e.target.value })} />
+              <Form.Control
+                as="textarea"
+                value={feedbackData.content}
+                onChange={(e) =>
+                  setFeedbackData({ ...feedbackData, content: e.target.value })
+                }
+              />
             </Form.Group>
             <Form.Group className="mb-3">
               <Form.Label>Đánh giá (1-5)</Form.Label>
-              <Form.Select value={feedbackData.rating} onChange={(e) => setFeedbackData({ ...feedbackData, rating: Number(e.target.value) })}>
-                {[1, 2, 3, 4, 5].map(n => <option key={n} value={n}>{n} sao</option>)}
+              <Form.Select
+                value={feedbackData.rating}
+                onChange={(e) =>
+                  setFeedbackData({
+                    ...feedbackData,
+                    rating: Number(e.target.value),
+                  })
+                }
+              >
+                {[1, 2, 3, 4, 5].map((n) => (
+                  <option key={n} value={n}>
+                    {n} sao
+                  </option>
+                ))}
               </Form.Select>
             </Form.Group>
           </Form>
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowFeedbackModal(false)}>Hủy</Button>
-          <Button variant="primary" onClick={handleSendFeedback}>Gửi</Button>
+          <Button
+            variant="secondary"
+            onClick={() => setShowFeedbackModal(false)}
+          >
+            Hủy
+          </Button>
+          <Button variant="primary" onClick={handleSendFeedback}>
+            Gửi
+          </Button>
         </Modal.Footer>
       </Modal>
     </>
   );
-
 };
 
 export default AppointmentManagePage;

@@ -57,12 +57,6 @@ const MedicinePage = () => {
             sorter: (a, b) => a.group.localeCompare(b.group),
         },
         {
-            title: 'Hoạt chất',
-            dataIndex: 'ingredient',
-            key: 'ingredient',
-            sorter: (a, b) => a.ingredient.localeCompare(b.ingredient),
-        },
-        {
             title: 'Chỉ định',
             dataIndex: 'indication',
             key: 'indication',
@@ -89,13 +83,6 @@ const MedicinePage = () => {
             dataIndex: 'quantity',
             key: 'quantity',
             sorter: (a, b) => a.quantity - b.quantity,
-        },
-        {
-            title: 'Đơn giá',
-            dataIndex: 'unitPrice',
-            key: 'unitPrice',
-            sorter: (a, b) => a.unitPrice - b.unitPrice,
-            render: (price) => price?.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' }),
         },
         {
             title: 'Hạn sử dụng',
