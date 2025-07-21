@@ -1,38 +1,22 @@
 const mongoose = require('mongoose');
 
 const labTestSchema = new mongoose.Schema({
-    fullName: {
-        type: String,
-        required: true,
-    },
-    gender: {
-        type: String,
-        required: true,
-    },
-    sampleType: {
-        type: String,
-        required: true,
-    },
-    collectionDate: {
-        type: Date,
-        default: Date.now,
-    },
-    collectedBy: {
-        type: String,
-        required: true,
-    },
-    containerType: {
-        type: String,
-        required: true,
+    employeeId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User"
     },
     result: {
         type: String,
-        default: '',
     },
-    status: {
-        type: String,
-        default: "pending",
-    }
+    dayTest: {
+        type: Date
+    },
+    services: [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Services"
+        }
+    ]
 }, { timestamps: true });
 
 module.exports = mongoose.model('LabTest', labTestSchema)

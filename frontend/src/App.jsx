@@ -18,6 +18,7 @@ import AboutPage from "./pages/AboutPage";
 import ProfilePage from "./pages/ProfilePage";
 import HomePage from "./pages/Homepage";
 import AppointmentPage from "./pages/AppointmentPage";
+import ListAppointmentPage from "./pages/ListAppointmentPage.jsx";
 import ProfileManagePage from "./pages/ProfileManagePage";
 import AppointmentManagePage from "./pages/AppointmentManagePage";
 import MedicalLabPage from "./pages/BlogTestPage.jsx";
@@ -75,11 +76,23 @@ import NewsDetail from "./pages/NewsDetail";
 import BlogDetail from "./pages/BlogDetail";
 import ViewMedicalRecord from "./pages/ViewMedicalRecord";
 import NotFoundPage from "./pages/NotFoundPage";
+import DoctorAttendance from './components/staff/DoctorAttendance';
+import MedicineListPage from "./pages/MedicineListPage.jsx";
+import MedicineDetail from "./pages/MedicineDetail";
+import ServiceDetail from "./pages/ServiceDetail.jsx";
+import DepartmentPage from "./pages/DepartmentListPage.jsx";
+import DepartmentDetail from "./pages/DepartmentDetail.jsx";
 import QAHistories from "./pages/QAHistories";
 import ProfileStaff from "./pages/staff/ProfileStaff";
 import ProfileDoctor from "./pages/ProfileDoctor";
+// them FAQ
+import FAQList from "./pages/FAQ.jsx";
 import NutritionAdvice from "./pages/NutritionAdvice.jsx";
 import AppointmentSuccess from "./components/AppointmentSuccess.jsx";
+import MedicinePage from "./pages/MedicinePage.jsx";
+import LabTestPage from "./pages/LabTestPage.jsx";
+import DoctorAppointments from "./pages/DoctorAppointment.jsx";
+import CreateInvoice2 from "./components/staff/CreateInvoiceTest.jsx";
 
 const DRAWER_WIDTH = 240;
 
@@ -110,7 +123,7 @@ const RoleRedirect = () => {
     //   navigate("/staff", { replace: true });
     // } else if (role === "Doctor" && !path.startsWith("/doctor")) {
     //   navigate("/doctor", { replace: true });
-    // } 
+    // }
     else if (
       role === "patient" &&
       (path.startsWith("/admin") || path.startsWith("/staff"))
@@ -162,7 +175,24 @@ const AppRoutes = () => {
         <RoleRedirect />
 
         <Routes>
-          {/* Admin */}
+          <Route path="/doctor" element={<DoctorLayout />}>
+            <Route path="medical-profile" element={<UserMedicalProfile />} />
+            <Route path="medicine" element={<MedicinePage />} />
+            <Route
+              path="appointments"
+              element={<DoctorAppointments/>}
+            />
+            <Route
+              path="notifications"
+              element={<div>Notifications Page</div>}
+            />
+            <Route path="/doctor/attendance" element={<DoctorAttendance />} />
+            <Route path="/doctor/labtest" element={<LabTestPage />} />
+            <Route path="work-schedule" element={<WorkSchedulePage />} />
+          </Route>
+
+          <Route path="/" element={<HomePage />} />
+          {/* Admin Layout Routes */}
           <Route
             path="/admin/*"
             element={
@@ -187,13 +217,14 @@ const AppRoutes = () => {
           >
             <Route index element={<BlogManagement />} />
             <Route path="blogs" element={<BlogManagement />} />
-            <Route path="invoices/create" element={<CreateInvoice />}></Route>
+            <Route path="invoices/create" element={<CreateInvoice2 />}></Route>
             <Route path="services" element={<ServiceManagement />} />
             <Route path="services/create" element={<CreateServicePage />} />
             <Route path="services/edit/:id" element={<EditServicePage />} />
             <Route path="departments" element={<DepartmentManagement />} />
             <Route path="specialties" element={<SpecialtyManagement />} />
             <Route path="invoices" element={<InvoiceList />} />
+            {/* <Route path="invoices/create2" element={<CreateInvoice2 />} /> */}
             <Route path="payments" element={<PaymentView />} />
             <Route path="news" element={<NewsManagement />} />
             <Route path="add/medicalrecords" element={<AddMedicalRecord />} />
@@ -235,25 +266,17 @@ const AppRoutes = () => {
           </Route>
           {/* Public routes */}
           <Route path="/home" element={<HomePage />} />
-          <Route path="/service" element={<ServicePage />} />
+          <Route path="/service-home" element={<ServicePage />} />
           <Route path="/doctor-home" element={<DoctorPage />} />
-
           <Route path="/blogs" element={<BlogListPage />} />
           <Route path="/news" element={<NewsListPage />} />
           <Route path="/blog/:slug" element={<BlogDetail />} />
           <Route path="/news/:slug" element={<NewsDetail />} />
-          <Route
-            path="/view_medicalrecord"
-            element={
-              <PrivateRouteByRole allowedRoles={["patient"]}>
-                <ViewMedicalRecord />
-              </PrivateRouteByRole>
-            }
-          />
-          <Route path="/doctors" element={<DoctorPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/about" element={<AboutPage />} />
+          <Route path="/medicines-home" element={<MedicineListPage />} />
+          <Route path="/department-home" element={<DepartmentPage />} />
           <Route path="/myprofile" element={<ProfilePage />} />
           <Route path="/invoice" element={<InvoiceUser />} />
           <Route path="/profilemanage" element={<ProfileManagePage />} />
@@ -261,6 +284,11 @@ const AppRoutes = () => {
           <Route path="/appointmentmanage" element={<AppointmentManagePage />} />
           <Route path="/not-found" element={<NotFoundPage />} />
           <Route path="/doctor/:doctorId" element={<DoctorDetail />} />
+          <Route path="/medicines/:medicineId" element={<MedicineDetail />} />
+          <Route path="service/:serviceId" element={<ServiceDetail />} />
+          <Route path="/department/:departmentId" element={<DepartmentDetail />} />
+          <Route path="/myappointments" element={<ListAppointmentPage />} />
+
 
           {/* <Route path="/medicalrecord" element={<AddMedicalRecord />} />
           <Route path="/medicalrecords" element={<ViewMedicalRecords />} /> */}
@@ -281,6 +309,7 @@ const AppRoutes = () => {
           <Route path="/health/food" element={<NutritionAdvice />} />
           <Route path="/qahistory" element={<QAHistories />} />
           <Route path="/qa" element={<SendQAForm />} />
+          <Route path="/faq" element={<FAQList />} /> {/*them FAQ cho user xem*/}
 
           {/* Protected routes */}
           <Route

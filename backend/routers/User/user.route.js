@@ -1,18 +1,20 @@
 const { authMiddleware } = require("../../middleware/auth.middleware");
 const express = require("express");
 const verifyToken = require("../../middleware/verifyToken");
+const userService = require("../../controller/user/userService");
 const userRouter = express.Router();
-const User = require('../../models/User'); // đường dẫn đúng đến file User.js
-const { verifyToken1 } = require('../../middleware/tokencheck');
-const Employee = require('../../models/Employee');
-const { getMyProfiles, sendQA, getAllQAUser } = require('../../controller/user/userService');
+const User = require("../../models/User"); // đường dẫn đúng đến file User.js
+const Department = require("../../models/Department");
+
+const { verifyToken1 } = require("../../middleware/tokencheck");
+const Employee = require("../../models/Employee");
 // Update user by ID
-userRouter.put('/update', async (req, res) => {
+userRouter.put("/update", async (req, res) => {
   try {
     const { email, name, phone, status, department, specialization } = req.body;
 
     if (!email) {
-      return res.status(400).json({ message: 'Email is required' });
+      return res.status(400).json({ message: "Email is required" });
     }
 
     // Chuẩn bị field chung cần cập nhật
@@ -33,13 +35,25 @@ userRouter.put('/update', async (req, res) => {
       const employee = await Employee.findOne({ email });
 
       if (!employee) {
-        return res.status(404).json({ message: 'User or employee not found with this email' });
+        return res
+          .status(404)
+          .json({ message: "User or employee not found with this email" });
       }
 
       // Nếu là Doctor, cho phép cập nhật thêm department và specialization
-      if (employee.role === 'Doctor') {
-        if (department !== undefined) updateFields.department = department;
-        if (specialization !== undefined) updateFields.specialization = specialization;
+      if (employee.role === "Doctor") {
+        if (department !== undefined) {
+          const deptDoc = await Department.findById(department);
+          if (!deptDoc) {
+            return res.status(400).json({
+              message: "Department not found with id: " + department,
+            });
+          }
+          updateFields.department = deptDoc._id;
+        }
+
+        if (specialization !== undefined)
+          updateFields.specialization = specialization;
       }
 
       updatedUser = await Employee.findOneAndUpdate(
@@ -51,8 +65,8 @@ userRouter.put('/update', async (req, res) => {
 
     return res.status(200).json(updatedUser);
   } catch (error) {
-    console.error('Update user error:', error);
-    return res.status(500).json({ message: 'Server error' });
+    console.error("Update user error:", error);
+    return res.status(500).json({ message: "Server error" });
   }
 });
 const {
@@ -68,6 +82,7 @@ const {
   cancelAppointment,
   createFeedback,
 } = require("../../controller/user/userService");
+const { getAllFAQ, markAsFAQ } = require("../../controller/staff/staffService");
 
 userRouter.get(
   "/getNoti",
@@ -86,11 +101,15 @@ userRouter.post("/create-link-appointment", createPaymentLinkEmbeddedForBookAppo
 
 userRouter.put("/pay/success", CompletedInvoices);
 
-userRouter.get('/profile/my-records', verifyToken1, getMyProfiles);
-userRouter.post('/qa', sendQA);
-userRouter.get('/qahistory', getAllQAUser);
+userRouter.get("/profile/my-records", verifyToken1, userService.getMyProfiles);
+userRouter.post("/qa", userService.sendQA);
+userRouter.get("/qahistory", userService.getAllQAUser);
 
-module.exports = userRouter;
+// them router FAQ
+userRouter.get('/faqs',getAllFAQ);
+
+////
+
 userRouter.get("/", (req, res) => {
   res.send("User route is working!");
 });
@@ -99,5 +118,14 @@ userRouter.post("/create", authMiddleware, createAppointment);
 userRouter.get("/user", authMiddleware, getAppointmentsByUser);
 userRouter.post("/cancel/:id", authMiddleware, cancelAppointment);
 userRouter.post('/createFeedback', authMiddleware, createFeedback);
+
+userRouter.get('/doctor', userService.getAllDoctors);
+userRouter.get('/doctor/:doctorId', userService.getDoctorById);
+userRouter.get('/service', userService.getAllServices);
+userRouter.get('/service/:serviceId', userService.getServiceById);
+userRouter.get('/department', userService.getAllDepartment);
+userRouter.get('/department/:departmentId', userService.getDepartmentById);
+userRouter.get('/medicines', userService.getAllMedicines);
+userRouter.get('/medicines/:medicineId', userService.getMedicineById);
 
 module.exports = userRouter;

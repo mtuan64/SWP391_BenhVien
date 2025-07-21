@@ -10,6 +10,7 @@ const {
   delEmployees,
   createEmployees,
   changeStatus,
+  getAllDepartments,
 } = require("../../controller/admin/adminService");
 const {
   getAppointmentTypeStats,
@@ -25,7 +26,7 @@ const {
 // Admin - user manage
 adminRouter.get("/users", getUserAccs);
 adminRouter.put("/updUser/:id", editUsers);
-adminRouter.put("/changeStatus/:id", changeStatus); // Assuming this is for changing user status
+adminRouter.put("/changeStatus/:id", changeStatus);
 adminRouter.delete("/delUser/:id", delUsers);
 
 // Admin - employee manage
@@ -33,6 +34,7 @@ adminRouter.get("/employees", getEmployees);
 adminRouter.put("/updEmp/:id", editEmployees);
 adminRouter.delete("/delEmp/:id", delEmployees);
 adminRouter.post("/createEmp", createEmployees);
+adminRouter.get("/getDepart", getAllDepartments); 
 
 // Admin - statistics
 adminRouter.get("/user-registrations", getUserRegistrationTrend);

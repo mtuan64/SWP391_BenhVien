@@ -9,23 +9,33 @@ const profileSchema = new mongoose.Schema(
     // BỎ unique để cho phép trùng CCCD
     identityNumber: { type: String, required: true },
 
-    userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: false },
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
 
     diagnose: { type: String },
     note: { type: String },
     issues: { type: String },
-    medicine: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Medicine",
+    medicine: [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Medicine",
+        }
+    ],
+    doctorId: { 
+      type: mongoose.Schema.Types.ObjectId, 
+      ref: "Employee" 
     },
-    doctorId: { type: mongoose.Schema.Types.ObjectId, ref: "Employee" },
-
-    service: {
+    service: [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Services",
+        }
+    ],
+    labTestId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Service",
+      ref: "LabTest"
     },
-
     createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "Employee" },
+
   },
   { timestamps: true }
 );
