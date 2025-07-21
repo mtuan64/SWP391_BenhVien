@@ -75,7 +75,7 @@ const Header = ({ onMenuClick, menuOpen }) => {
         <Link to="/" className="header-logo">
           <h1><i className="fa fa-heartbeat"></i> Kiwicare</h1>
         </Link>
-        <Link to="/" className="header-link"><HomeOutlined /> <span>Home</span></Link>
+        <Link to="/home" className="header-link"><HomeOutlined /> <span>Home</span></Link>
         <Link to="/about" className="header-link"><InfoCircleOutlined /> <span>About</span></Link>
 
         <Dropdown
