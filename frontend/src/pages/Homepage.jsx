@@ -5,91 +5,15 @@ import axios from "axios";
 import MilestoneSection from "../components/MilestoneSection";
 import "../assets/css/HomePage.css";
 
-// Hardcoded doctor data
-const doctors = [
-  {
-    _id: "1",
-    userId: { fullname: "Nguyễn Văn An" },
-    ProfileImage: "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d",
-    Specialty: "Nội Tổng Quát",
-    Status: "active",
-  },
-  {
-    _id: "2",
-    userId: { fullname: "Trần Thị Bình" },
-    ProfileImage: "https://images.unsplash.com/photo-1594824476967-48c8b964273f",
-    Specialty: "Nhi Khoa",
-    Status: "active",
-  },
-  {
-    _id: "3",
-    userId: { fullname: "Lê Minh Châu" },
-    ProfileImage: "https://images.unsplash.com/photo-1598257006626-48b0c252070d",
-    Specialty: "Phụ Sản",
-    Status: "active",
-  },
-  {
-    _id: "4",
-    userId: { fullname: "Phạm Quốc Đạt" },
-    ProfileImage: "https://nhakhoaviethan.vn/wp-content/uploads/2021/12/BS-QUAN.png",
-    Specialty: "Ngoại Khoa",
-    Status: "active",
-  },
-  {
-    _id: "5",
-    userId: { fullname: "Hoàng Thị Mai" },
-    ProfileImage: "https://images.unsplash.com/photo-1594824476967-48c8b964273f",
-    Specialty: "Chẩn Đoán Hình Ảnh",
-    Status: "active",
-  },
-];
-
-// Hardcoded services data
-const services = [
-  {
-    id: "1",
-    title: "Khám Nội Tổng Quát",
-    description: "Đánh giá toàn diện sức khỏe với các bác sĩ nội khoa giàu kinh nghiệm.",
-    icon: "fa fa-stethoscope",
-  },
-  {
-    id: "2",
-    title: "Nhi Khoa",
-    description: "Chăm sóc sức khỏe trẻ em từ sơ sinh đến tuổi thiếu niên.",
-    icon: "fa fa-child",
-  },
-  {
-    id: "3",
-    title: "Phụ Sản",
-    description: "Hỗ trợ chăm sóc sức khỏe phụ nữ, thai kỳ và sau sinh.",
-    icon: "fa fa-female",
-  },
-  {
-    id: "4",
-    title: "Chẩn Đoán Hình Ảnh",
-    description: "Sử dụng công nghệ CT, MRI tiên tiến để chẩn đoán chính xác.",
-    icon: "fa fa-x-ray",
-  },
-  {
-    id: "5",
-    title: "Phẫu Thuật Ngoại Khoa",
-    description: "Thực hiện các ca phẫu thuật với trang thiết bị hiện đại.",
-    icon: "fa fa-scalpel",
-  },
-  {
-    id: "6",
-    title: "Khám Sức Khỏe Định Kỳ",
-    description: "Gói khám tổng quát giúp phát hiện và phòng ngừa bệnh tật.",
-    icon: "fa fa-heartbeat",
-  },
-];
-
 const HomePage = () => {
-  const [carouselIndex, setCarouselIndex] = useState(0);
+  const [serviceCarouselIndex, setServiceCarouselIndex] = useState(0); // Separate index for services
+  const [carouselIndex, setCarouselIndex] = useState(0); // Index for departments
   const [blogCarouselIndex, setBlogCarouselIndex] = useState(0);
   const [newsCarouselIndex, setNewsCarouselIndex] = useState(0);
   const [topViewedBlogs, setTopViewedBlogs] = useState([]);
   const [prioritizedNews, setPrioritizedNews] = useState([]);
+  const [services, setServices] = useState([]);
+  const [departments, setDepartments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -112,93 +36,72 @@ const HomePage = () => {
     return truncateText(content, 50);
   };
 
-  // Filter active doctors
-  const activeDoctors = doctors.filter((doctor) => doctor.Status !== "inactive");
-
-  // Handle carousel navigation for doctors
-  const handleNext = () => {
-    setCarouselIndex((prevIndex) => (prevIndex + 1) % activeDoctors.length);
-  };
-
-  const handlePrev = () => {
-    setCarouselIndex((prevIndex) =>
-      prevIndex === 0 ? activeDoctors.length - 1 : prevIndex - 1
-    );
-  };
-
-  // Handle carousel navigation for blogs
-  const handleBlogNext = () => {
-    setBlogCarouselIndex((prevIndex) => (prevIndex + 1) % topViewedBlogs.length);
-  };
-
-  const handleBlogPrev = () => {
-    setBlogCarouselIndex((prevIndex) =>
-      prevIndex === 0 ? topViewedBlogs.length - 1 : prevIndex - 1
-    );
-  };
-
-  // Handle carousel navigation for news
-  const handleNewsNext = () => {
-    setNewsCarouselIndex((prevIndex) => (prevIndex + 1) % prioritizedNews.length);
-  };
-
-  const handleNewsPrev = () => {
-    setNewsCarouselIndex((prevIndex) =>
-      prevIndex === 0 ? prioritizedNews.length - 1 : prevIndex - 1
-    );
-  };
-
-  // Get the doctors to display based on carouselIndex
-  const getVisibleDoctors = () => {
-    const visibleDoctors = [];
-    for (let i = 0; i < 4; i++) {
-      const index = (carouselIndex + i) % activeDoctors.length;
-      visibleDoctors.push(activeDoctors[index]);
-    }
-    return visibleDoctors;
-  };
-
-  // Get the blogs to display based on blogCarouselIndex
-  const getVisibleBlogs = () => {
-    const visibleBlogs = [];
-    for (let i = 0; i < 4; i++) {
-      const index = (blogCarouselIndex + i) % topViewedBlogs.length;
-      visibleBlogs.push(topViewedBlogs[index]);
-    }
-    return visibleBlogs;
-  };
-
-  // Get the news to display based on newsCarouselIndex
-  const getVisibleNews = () => {
-    const visibleNews = [];
-    for (let i = 0; i < 4; i++) {
-      const index = (newsCarouselIndex + i) % prioritizedNews.length;
-      visibleNews.push(prioritizedNews[index]);
-    }
-    return visibleNews;
-  };
-
-  // Fetch top viewed blogs and prioritized news
+  // Fetch data
   useEffect(() => {
     const fetchData = async () => {
       try {
         const token = localStorage.getItem("token");
         const headers = token ? { Authorization: `Bearer ${token}` } : {};
 
-        // Fetch top viewed blogs and prioritized news
-        const [blogResponse, newsResponse] = await Promise.all([
-          axios.get("http://localhost:9999/api/staff/blogs/top-viewed", { headers }),
-          axios.get("http://localhost:9999/api/staff/news/priority", { headers }),
+        const [serviceResponse, departmentResponse, blogResponse, newsResponse] = await Promise.all([
+          axios.get(`http://localhost:9999/api/user/service?t=${Date.now()}`, { headers }),
+          axios.get(`http://localhost:9999/api/user/department?t=${Date.now()}`, { headers }),
+          axios.get(`http://localhost:9999/api/staff/blogs/top-viewed?t=${Date.now()}`, { headers }),
+          axios.get(`http://localhost:9999/api/staff/news/priority?t=${Date.now()}`, { headers }),
         ]);
 
-        setTopViewedBlogs(blogResponse.data.data || blogResponse.data);
-        setPrioritizedNews(newsResponse.data.data || []);
+        // Log raw responses for debugging
+        console.log("Raw Service Response:", serviceResponse);
+        console.log("Raw Department Response:", departmentResponse);
+        console.log("Raw Blog Response:", blogResponse);
+        console.log("Raw News Response:", newsResponse);
+
+        // Process services
+        let serviceData = [];
+        if (Array.isArray(serviceResponse.data.data)) {
+          serviceData = serviceResponse.data.data;
+        } else if (Array.isArray(serviceResponse.data.services)) {
+          serviceData = serviceResponse.data.services;
+        } else if (Array.isArray(serviceResponse.data)) {
+          serviceData = serviceResponse.data;
+        }
+        console.log("Processed Service Data:", serviceData);
+        const mappedServices = serviceData.map((service) => ({
+          _id: service._id || service.id || `service-${Math.random()}`,
+          title: service.name || service.serviceName || service.title || "Dịch vụ không rõ tên",
+          description: service.description || "Không có mô tả",
+          image: service.image || "https://via.placeholder.com/150x150",
+        }));
+        console.log("Mapped Services:", mappedServices);
+
+        // Process departments
+        let departmentData = [];
+        if (Array.isArray(departmentResponse.data.data)) {
+          departmentData = departmentResponse.data.data;
+        } else if (Array.isArray(departmentResponse.data.departments)) {
+          departmentData = departmentResponse.data.departments;
+        } else if (Array.isArray(departmentResponse.data)) {
+          departmentData = departmentResponse.data;
+        }
+        console.log("Processed Department Data:", departmentData);
+        const mappedDepartments = departmentData.map((department) => ({
+          _id: department._id || department.id || `department-${Math.random()}`,
+          name: department.name || "Khoa không rõ tên",
+          description: department.description || "Không có mô tả",
+          image: department.image || "https://via.placeholder.com/150x150",
+        }));
+        console.log("Mapped Departments:", mappedDepartments);
+
+        setServices(mappedServices);
+        setDepartments(mappedDepartments);
+        setTopViewedBlogs(blogResponse.data.data || blogResponse.data || []);
+        setPrioritizedNews(newsResponse.data.data || newsResponse.data || []);
         setLoading(false);
       } catch (err) {
-        console.error("Lỗi khi tải dữ liệu:", err);
+        console.error("Error fetching data:", err);
         setError(
           err.response?.data?.message ||
-            "Không thể tải bài viết hoặc tin tức. Vui lòng kiểm tra API."
+            "Không thể tải dữ liệu. Vui lòng kiểm tra API."
         );
         setLoading(false);
       }
@@ -206,6 +109,96 @@ const HomePage = () => {
 
     fetchData();
   }, []);
+
+  // Pagination logic for services
+  const getVisibleServices = () => {
+    if (!Array.isArray(services) || services.length === 0) return [];
+    const itemsPerPage = 4;
+    const startIndex = serviceCarouselIndex % services.length;
+    const visibleServices = [];
+    const maxItems = Math.min(itemsPerPage, services.length);
+    for (let i = 0; i < maxItems; i++) {
+      const index = (startIndex + i) % services.length;
+      visibleServices.push(services[index]);
+    }
+    return visibleServices;
+  };
+
+  const handleServiceNext = () => {
+    setServiceCarouselIndex((prevIndex) => prevIndex + 1);
+  };
+
+  const handleServicePrev = () => {
+    setServiceCarouselIndex((prevIndex) => (prevIndex === 0 ? services.length - 1 : prevIndex - 1));
+  };
+
+  // Pagination logic for departments
+  const activeDepartments = Array.isArray(departments) ? departments : [];
+
+  const getVisibleDepartments = () => {
+    if (!Array.isArray(activeDepartments) || activeDepartments.length === 0) return [];
+    const itemsPerPage = 4;
+    const startIndex = carouselIndex % activeDepartments.length;
+    const visibleDepartments = [];
+    const maxItems = Math.min(itemsPerPage, activeDepartments.length);
+    for (let i = 0; i < maxItems; i++) {
+      const index = (startIndex + i) % activeDepartments.length;
+      visibleDepartments.push(activeDepartments[index]);
+    }
+    return visibleDepartments;
+  };
+
+  const handleDepartmentNext = () => {
+    setCarouselIndex((prevIndex) => prevIndex + 1);
+  };
+
+  const handleDepartmentPrev = () => {
+    setCarouselIndex((prevIndex) => (prevIndex === 0 ? activeDepartments.length - 1 : prevIndex - 1));
+  };
+
+  // Pagination logic for blogs
+  const getVisibleBlogs = () => {
+    if (!Array.isArray(topViewedBlogs) || topViewedBlogs.length === 0) return [];
+    const itemsPerPage = 4;
+    const startIndex = blogCarouselIndex % topViewedBlogs.length;
+    const visibleBlogs = [];
+    const maxItems = Math.min(itemsPerPage, topViewedBlogs.length);
+    for (let i = 0; i < maxItems; i++) {
+      const index = (startIndex + i) % topViewedBlogs.length;
+      visibleBlogs.push(topViewedBlogs[index]);
+    }
+    return visibleBlogs;
+  };
+
+  const handleBlogNext = () => {
+    setBlogCarouselIndex((prevIndex) => prevIndex + 1);
+  };
+
+  const handleBlogPrev = () => {
+    setBlogCarouselIndex((prevIndex) => (prevIndex === 0 ? topViewedBlogs.length - 1 : prevIndex - 1));
+  };
+
+  // Pagination logic for news
+  const getVisibleNews = () => {
+    if (!Array.isArray(prioritizedNews) || prioritizedNews.length === 0) return [];
+    const itemsPerPage = 4;
+    const startIndex = newsCarouselIndex % prioritizedNews.length;
+    const visibleNews = [];
+    const maxItems = Math.min(itemsPerPage, prioritizedNews.length);
+    for (let i = 0; i < maxItems; i++) {
+      const index = (startIndex + i) % prioritizedNews.length;
+      visibleNews.push(prioritizedNews[index]);
+    }
+    return visibleNews;
+  };
+
+  const handleNewsNext = () => {
+    setNewsCarouselIndex((prevIndex) => prevIndex + 1);
+  };
+
+  const handleNewsPrev = () => {
+    setNewsCarouselIndex((prevIndex) => (prevIndex === 0 ? prioritizedNews.length - 1 : prevIndex - 1));
+  };
 
   if (loading) {
     return <div className="homepage-loading">Đang tải...</div>;
@@ -324,7 +317,7 @@ const HomePage = () => {
       {/* Tiêu chí phòng khám */}
       <MilestoneSection />
 
-{/* Cơ sở vật chất */}
+      {/* Cơ sở vật chất */}
       <section className="mb-5">
         <h3 className="text-primary mb-4 fw-bold text-center">Cơ Sở Vật Chất</h3>
         <div id="facilityCarousel" className="carousel slide carousel-fade" data-bs-ride="carousel" data-bs-interval="3000">
@@ -356,20 +349,19 @@ const HomePage = () => {
                 src="https://benhvienungbuoukhanhhoa.vn/uploads/news/2023_05/he-thong-chup-clvt.jpg"
                 className="d-block w-100"
                 alt="Máy chụp CT"
-                data-ascending="true"
-                style={{ objectFit: 'cover', height: '50vh', borderRadius: '8px' }}
+                style={{ objectFit: "cover", height: "50vh", borderRadius: "8px" }}
               />
               <div
                 className="carousel-caption d-flex flex-column justify-content-center align-items-center"
                 style={{
-                  backgroundColor: 'rgba(0, 0, 0, 0.6)',
+                  backgroundColor: "rgba(0, 0, 0, 0.6)",
                   top: 0,
                   bottom: 0,
                   left: 0,
                   right: 0,
-                  position: 'absolute',
-                  borderRadius: '8px',
-                  padding: '20px'
+                  position: "absolute",
+                  borderRadius: "8px",
+                  padding: "20px",
                 }}
               >
                 <h4 className="text-white fw-bold mb-3">Hệ Thống Chẩn Đoán Hình Ảnh</h4>
@@ -383,19 +375,19 @@ const HomePage = () => {
                 src="https://vietnamcleanroom.com/vcr-media/22/10/22/phong-mo-hien-dai.jpg"
                 className="d-block w-100"
                 alt="Phòng phẫu thuật"
-                style={{ objectFit: 'cover', height: '50vh', borderRadius: '8px' }}
+                style={{ objectFit: "cover", height: "50vh", borderRadius: "8px" }}
               />
               <div
                 className="carousel-caption d-flex flex-column justify-content-center align-items-center"
                 style={{
-                  backgroundColor: 'rgba(0, 0, 0, 0.6)',
+                  backgroundColor: "rgba(0, 0, 0, 0.6)",
                   top: 0,
                   bottom: 0,
                   left: 0,
                   right: 0,
-                  position: 'absolute',
-                  borderRadius: '8px',
-                  padding: '20px'
+                  position: "absolute",
+                  borderRadius: "8px",
+                  padding: "20px",
                 }}
               >
                 <h4 className="text-white fw-bold mb-3">Phòng Phẫu Thuật Hiện Đại</h4>
@@ -409,19 +401,19 @@ const HomePage = () => {
                 src="https://thietbilabhoasinh.com/ckeditor/plugins/fileman/Uploads/tu-an-toan-sinh-hoc-cap-2-xet-nghiem.jpg"
                 className="d-block w-100"
                 alt="Phòng xét nghiệm"
-                style={{ objectFit: 'cover', height: '50vh', borderRadius: '8px' }}
+                style={{ objectFit: "cover", height: "50vh", borderRadius: "8px" }}
               />
               <div
                 className="carousel-caption d-flex flex-column justify-content-center align-items-center"
                 style={{
-                  backgroundColor: 'rgba(0, 0, 0, 0.6)',
+                  backgroundColor: "rgba(0, 0, 0, 0.6)",
                   top: 0,
                   bottom: 0,
                   left: 0,
                   right: 0,
-                  position: 'absolute',
-                  borderRadius: '8px',
-                  padding: '20px'
+                  position: "absolute",
+                  borderRadius: "8px",
+                  padding: "20px",
                 }}
               >
                 <h4 className="text-white fw-bold mb-3">Phòng Xét Nghiệm</h4>
@@ -452,59 +444,43 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* Services Section */}
-      <Container fluid className="bg-light py-5">
-        <Container>
-          <h2 className="text-center text-primary fw-bold mb-5">
-            Các Loại Dịch Vụ
-          </h2>
-          <Row>
-            {services.map((service) => (
-              <Col md={4} lg={2} key={service.id} className="mb-4">
-                <div className="service-item bg-white shadow rounded p-4 text-center">
-                  <i className={`${service.icon} fa-3x text-primary mb-3`}></i>
-                  <h5>{service.title}</h5>
-                  <p className="text-muted">{service.description}</p>
-                </div>
-              </Col>
-            ))}
-          </Row>
-        </Container>
-      </Container>
-
-            {/* Priority News Section */}
+      {/* Priority News Section */}
       <Container fluid className="bg-light py-5">
         <Container>
           <h2 className="text-center text-primary fw-bold mb-5">Tin Tức Phòng Khám</h2>
-          {prioritizedNews.length <= 4 ? (
+          {prioritizedNews.length === 0 ? (
+            <p className="text-center text-muted">Không có tin tức nào để hiển thị.</p>
+          ) : prioritizedNews.length <= 4 ? (
             <Row>
               {prioritizedNews.map((news, index) => (
                 <Col key={index} md={6} lg={3} className="mb-4">
                   <div className="news-card bg-white rounded shadow h-100">
                     <Link to={`/news/${news.slug}`}>
                       <img
-                        src={news.thumbnail || "https://via.placeholder.com/100x100"}
+                        src={news.thumbnail || "https://via.placeholder.com/150x150"}
                         alt={news.title}
                         className="news-image img-fluid w-100"
                         style={{ height: "150px", objectFit: "cover" }}
-                        onError={(e) => (e.target.src = "https://via.placeholder.com/100x100")}
+                        onError={(e) => (e.target.src = "https://via.placeholder.com/150x150")}
                       />
                     </Link>
-                    <div className="p-3">
+                    <div className="p-3 d-flex flex-column justify-content-between h-100">
+                      <div>
+                        <Link
+                          to={`/news/${news.slug}`}
+                          className="text-decoration-none"
+                        >
+                          <h5 className="news-title mb-2">
+                            {truncateText(news.title, 20)}
+                          </h5>
+                        </Link>
+                        <p className="news-excerpt text-muted mb-2">
+                          {getNewsContentSummary(news.content)}
+                        </p>
+                      </div>
                       <Link
                         to={`/news/${news.slug}`}
-                        className="text-decoration-none"
-                      >
-                        <h5 className="news-title mb-2">
-                          {truncateText(news.title, 20)}
-                        </h5>
-                      </Link>
-                      <p className="news-excerpt text-muted mb-2">
-                        {getNewsContentSummary(news.content)}
-                      </p>
-                      <Link
-                        to={`/news/${news.slug}`}
-                        className="btn btn-outline-primary btn-sm"
+                        className="btn btn-outline-primary btn-sm mt-auto"
                       >
                         Đọc bài viết
                       </Link>
@@ -521,28 +497,30 @@ const HomePage = () => {
                     <div className="news-card bg-white rounded shadow h-100">
                       <Link to={`/news/${news.slug}`}>
                         <img
-                          src={news.thumbnail || "https://via.placeholder.com/100x100"}
+                          src={news.thumbnail || "https://via.placeholder.com/150x150"}
                           alt={news.title}
                           className="news-image img-fluid w-100"
                           style={{ height: "150px", objectFit: "cover" }}
-                          onError={(e) => (e.target.src = "https://via.placeholder.com/100x100")}
+                          onError={(e) => (e.target.src = "https://via.placeholder.com/150x150")}
                         />
                       </Link>
-                      <div className="p-3">
+                      <div className="p-3 d-flex flex-column justify-content-between h-100">
+                        <div>
+                          <Link
+                            to={`/news/${news.slug}`}
+                            className="text-decoration-none"
+                          >
+                            <h5 className="news-title mb-2">
+                              {truncateText(news.title, 20)}
+                            </h5>
+                          </Link>
+                          <p className="news-excerpt text-muted mb-2">
+                            {getNewsContentSummary(news.content)}
+                          </p>
+                        </div>
                         <Link
                           to={`/news/${news.slug}`}
-                          className="text-decoration-none"
-                        >
-                          <h5 className="news-title mb-2">
-                            {truncateText(news.title, 20)}
-                          </h5>
-                        </Link>
-                        <p className="news-excerpt text-muted mb-2">
-                          {getNewsContentSummary(news.content)}
-                        </p>
-                        <Link
-                          to={`/news/${news.slug}`}
-                          className="btn btn-outline-primary btn-sm"
+                          className="btn btn-outline-primary btn-sm mt-auto"
                         >
                           Đọc bài viết
                         </Link>
@@ -575,35 +553,39 @@ const HomePage = () => {
       {/* Most Viewed Blogs Section */}
       <Container className="py-5">
         <h2 className="text-center text-primary fw-bold mb-5">Bài Viết Nổi Bật</h2>
-        {topViewedBlogs.length <= 4 ? (
+        {topViewedBlogs.length === 0 ? (
+          <p className="text-center text-muted">Không có bài viết nào để hiển thị.</p>
+        ) : topViewedBlogs.length <= 4 ? (
           <Row>
             {topViewedBlogs.map((blog, index) => (
               <Col key={index} md={6} lg={3} className="mb-4">
                 <div className="blog-card bg-white rounded shadow h-100">
                   <Link to={`/blog/${blog.slug}`}>
                     <img
-                      src={blog.image || "https://via.placeholder.com/100x100"}
+                      src={blog.image || "https://via.placeholder.com/150x150"}
                       alt={blog.title}
                       className="blog-image img-fluid w-100"
                       style={{ height: "150px", objectFit: "cover" }}
-                      onError={(e) => (e.target.src = "https://via.placeholder.com/100x100")}
+                      onError={(e) => (e.target.src = "https://via.placeholder.com/150x150")}
                     />
                   </Link>
-                  <div className="p-3">
+                  <div className="p-3 d-flex flex-column justify-content-between h-100">
+                    <div>
+                      <Link
+                        to={`/blog/${blog.slug}`}
+                        className="text-decoration-none"
+                      >
+                        <h5 className="blog-title mb-2">
+                          {truncateText(blog.title, 20)}
+                        </h5>
+                      </Link>
+                      <p className="blog-excerpt text-muted mb-2">
+                        {getBlogContentSummary(blog.content)}
+                      </p>
+                    </div>
                     <Link
                       to={`/blog/${blog.slug}`}
-                      className="text-decoration-none"
-                    >
-                      <h5 className="blog-title mb-2">
-                        {truncateText(blog.title, 20)}
-                      </h5>
-                    </Link>
-                    <p className="blog-excerpt text-muted mb-2">
-                      {getBlogContentSummary(blog.content)}
-                    </p>
-                    <Link
-                      to={`/blog/${blog.slug}`}
-                      className="btn btn-outline-primary btn-sm"
+                      className="btn btn-outline-primary btn-sm mt-auto"
                     >
                       Đọc bài viết
                     </Link>
@@ -620,28 +602,30 @@ const HomePage = () => {
                   <div className="blog-card bg-white rounded shadow h-100">
                     <Link to={`/blog/${blog.slug}`}>
                       <img
-                        src={blog.image || "https://via.placeholder.com/100x100"}
+                        src={blog.image || "https://via.placeholder.com/150x150"}
                         alt={blog.title}
                         className="blog-image img-fluid w-100"
                         style={{ height: "150px", objectFit: "cover" }}
-                        onError={(e) => (e.target.src = "https://via.placeholder.com/100x100")}
+                        onError={(e) => (e.target.src = "https://via.placeholder.com/150x150")}
                       />
                     </Link>
-                    <div className="p-3">
+                    <div className="p-3 d-flex flex-column justify-content-between h-100">
+                      <div>
+                        <Link
+                          to={`/blog/${blog.slug}`}
+                          className="text-decoration-none"
+                        >
+                          <h5 className="blog-title mb-2">
+                            {truncateText(blog.title, 20)}
+                          </h5>
+                        </Link>
+                        <p className="blog-excerpt text-muted mb-2">
+                          {getBlogContentSummary(blog.content)}
+                        </p>
+                      </div>
                       <Link
                         to={`/blog/${blog.slug}`}
-                        className="text-decoration-none"
-                      >
-                        <h5 className="blog-title mb-2">
-                          {truncateText(blog.title, 20)}
-                        </h5>
-                      </Link>
-                      <p className="blog-excerpt text-muted mb-2">
-                        {getBlogContentSummary(blog.content)}
-                      </p>
-                      <Link
-                        to={`/blog/${blog.slug}`}
-                        className="btn btn-outline-primary btn-sm"
+                        className="btn btn-outline-primary btn-sm mt-auto"
                       >
                         Đọc bài viết
                       </Link>
@@ -670,38 +654,33 @@ const HomePage = () => {
         )}
       </Container>
 
-
-
-      {/* Our Doctors */}
+      {/* Departments Section */}
       <Container className="py-5">
-        <h2 className="text-center mb-4 fw-bold text-primary">Đội Ngũ Bác Sĩ</h2>
-        {activeDoctors.length <= 4 ? (
+        <h2 className="text-center mb-4 fw-bold text-primary">Chuyên Khoa</h2>
+        {activeDepartments.length === 0 ? (
+          <p className="text-center text-muted">Không có chuyên khoa nào để hiển thị.</p>
+        ) : activeDepartments.length <= 4 ? (
           <Row>
-            {activeDoctors.map((doctor) => (
-              <Col key={doctor._id} lg={3} md={6} sm={12} className="mb-4">
-                <div
-                  className="bg-light rounded shadow h-100"
-                  style={{ overflow: "hidden" }}
-                >
-                  <img
-                    src={doctor.ProfileImage}
-                    alt={doctor.userId?.fullname || "Doctor"}
-                    className="img-fluid w-100"
-                    style={{ height: "250px", objectFit: "cover" }}
-                  />
-                  <div className="p-3 text-center">
-                    <h5 className="mb-1">
-                      {doctor.userId
-                        ? `Bác sĩ ${doctor.userId.fullname}`
-                        : "Bác sĩ không rõ tên"}
-                    </h5>
-                    <p className="text-muted mb-2">
-                      <strong>Chuyên ngành:</strong>{" "}
-                      {doctor.Specialty || "Không rõ"}
-                    </p>
+            {activeDepartments.map((department) => (
+              <Col key={department._id} md={6} lg={3} className="mb-4">
+                <div className="department-card bg-white rounded shadow h-100">
+                  <Link to={`/department/${department._id}`}>
+                    <img
+                      src={department.image || "https://via.placeholder.com/150x150"}
+                      alt={department.name}
+                      className="img-fluid w-100"
+                      style={{ height: "150px", objectFit: "cover", borderRadius: "8px 8px 0 0" }}
+                      onError={(e) => (e.target.src = "https://via.placeholder.com/150x150")}
+                    />
+                  </Link>
+                  <div className="p-3 d-flex flex-column justify-content-between h-100">
+                    <div className="text-center">
+                      <h5 className="mb-1">{department.name}</h5>
+                      <p className="text-muted mb-2">{department.description}</p>
+                    </div>
                     <Link
-                      to={`/doctor/${doctor._id}`}
-                      className="btn btn-outline-primary btn-sm"
+                      to={`/department/${department._id}`}
+                      className="btn btn-outline-primary btn-sm mt-auto text-center"
                     >
                       Xem chi tiết
                     </Link>
@@ -711,33 +690,28 @@ const HomePage = () => {
             ))}
           </Row>
         ) : (
-          <div className="doctors-carousel">
-            <Row className="flex-nowrap doctors-carousel-inner">
-              {getVisibleDoctors().map((doctor) => (
-                <Col key={doctor._id} lg={3} md={6} sm={12} className="mb-4">
-                  <div
-                    className="bg-light rounded shadow h-100"
-                    style={{ overflow: "hidden" }}
-                  >
-                    <img
-                      src={doctor.ProfileImage}
-                      alt={doctor.userId?.fullname || "Doctor"}
-                      className="img-fluid w-100"
-                      style={{ height: "250px", objectFit: "cover" }}
-                    />
-                    <div className="p-3 text-center">
-                      <h5 className="mb-1">
-                        {doctor.userId
-                          ? `Bác sĩ ${doctor.userId.fullname}`
-                          : "Bác sĩ không rõ tên"}
-                      </h5>
-                      <p className="text-muted mb-2">
-                        <strong>Chuyên ngành:</strong>{" "}
-                        {doctor.Specialty || "Không rõ"}
-                      </p>
+          <div className="departments-carousel">
+            <Row className="flex-nowrap departments-carousel-inner">
+              {getVisibleDepartments().map((department) => (
+                <Col key={department._id} md={6} lg={3} className="mb-4">
+                  <div className="department-card bg-white rounded shadow h-100">
+                    <Link to={`/department/${department._id}`}>
+                      <img
+                        src={department.image || "https://via.placeholder.com/150x150"}
+                        alt={department.name}
+                        className="img-fluid w-100"
+                        style={{ height: "150px", objectFit: "cover", borderRadius: "8px 8px 0 0" }}
+                        onError={(e) => (e.target.src = "https://via.placeholder.com/150x150")}
+                      />
+                    </Link>
+                    <div className="p-3 d-flex flex-column justify-content-between h-100">
+                      <div className="text-center">
+                        <h5 className="mb-1">{department.name}</h5>
+                        <p className="text-muted mb-2">{department.description}</p>
+                      </div>
                       <Link
-                        to={`/doctor/${doctor._id}`}
-                        className="btn btn-outline-primary btn-sm"
+                        to={`/department/${department._id}`}
+                        className="btn btn-outline-primary btn-sm mt-auto text-center"
                       >
                         Xem chi tiết
                       </Link>
@@ -749,27 +723,109 @@ const HomePage = () => {
             <button
               className="carousel-control-prev"
               type="button"
-              onClick={handlePrev}
+              onClick={handleDepartmentPrev}
             >
-              <span
-                className="carousel-control-prev-icon"
-                aria-hidden="true"
-              ></span>
+              <span className="carousel-control-prev-icon" aria-hidden="true"></span>
               <span className="visually-hidden">Previous</span>
             </button>
             <button
               className="carousel-control-next"
               type="button"
-              onClick={handleNext}
+              onClick={handleDepartmentNext}
             >
-              <span
-                className="carousel-control-next-icon"
-                aria-hidden="true"
-              ></span>
+              <span className="carousel-control-next-icon" aria-hidden="true"></span>
               <span className="visually-hidden">Next</span>
             </button>
           </div>
         )}
+      </Container>
+
+      {/* Services Section */}
+      <Container fluid className="bg-light py-5">
+        <Container>
+          <h2 className="text-center text-primary fw-bold mb-5">Các Loại Dịch Vụ</h2>
+          {services.length === 0 ? (
+            <p className="text-center text-muted">Không có dịch vụ nào để hiển thị.</p>
+          ) : services.length <= 4 ? (
+            <Row>
+              {services.map((service) => (
+                <Col key={service._id} md={6} lg={3} className="mb-4">
+                  <div className="service-card bg-white rounded shadow h-100">
+                    <Link to={`/service/${service._id}`}>
+                      <img
+                        src={service.image || "https://via.placeholder.com/150x150"}
+                        alt={service.title}
+                        className="img-fluid w-100"
+                        style={{ height: "150px", objectFit: "cover", borderRadius: "8px 8px 0 0" }}
+                        onError={(e) => (e.target.src = "https://via.placeholder.com/150x150")}
+                      />
+                    </Link>
+                    <div className="p-3 d-flex flex-column justify-content-between h-100">
+                      <div className="text-center">
+                        <h5 className="mb-1">{service.title}</h5>
+                        <p className="text-muted mb-2">{service.description}</p>
+                      </div>
+                      <Link
+                        to={`/service/${service._id}`}
+                        className="btn btn-outline-primary btn-sm mt-auto text-center"
+                      >
+                        Xem chi tiết
+                      </Link>
+                    </div>
+                  </div>
+                </Col>
+              ))}
+            </Row>
+          ) : (
+            <div className="services-carousel">
+              <Row className="flex-nowrap services-carousel-inner">
+                {getVisibleServices().map((service) => (
+                  <Col key={service._id} md={6} lg={3} className="mb-4">
+                    <div className="service-card bg-white rounded shadow h-100">
+                      <Link to={`/service/${service._id}`}>
+                        <img
+                          src={service.image || "https://via.placeholder.com/150x150"}
+                          alt={service.title}
+                          className="img-fluid w-100"
+                          style={{ height: "150px", objectFit: "cover", borderRadius: "8px 8px 0 0" }}
+                          onError={(e) => (e.target.src = "https://via.placeholder.com/150x150")}
+                        />
+                      </Link>
+                      <div className="p-3 d-flex flex-column justify-content-between h-100">
+                        <div className="text-center">
+                          <h5 className="mb-1">{service.title}</h5>
+                          <p className="text-muted mb-2">{service.description}</p>
+                        </div>
+                        <Link
+                          to={`/service/${service._id}`}
+                          className="btn btn-outline-primary btn-sm mt-auto text-center"
+                        >
+                          Xem chi tiết
+                        </Link>
+                      </div>
+                    </div>
+                  </Col>
+                ))}
+              </Row>
+              <button
+                className="carousel-control-prev"
+                type="button"
+                onClick={handleServicePrev}
+              >
+                <span className="carousel-control-prev-icon" aria-hidden="true"></span>
+                <span className="visually-hidden">Previous</span>
+              </button>
+              <button
+                className="carousel-control-next"
+                type="button"
+                onClick={handleServiceNext}
+              >
+                <span className="carousel-control-next-icon" aria-hidden="true"></span>
+                <span className="visually-hidden">Next</span>
+              </button>
+            </div>
+          )}
+        </Container>
       </Container>
     </>
   );
