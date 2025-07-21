@@ -22,23 +22,40 @@
   z-index: -1;
 }
 
-.header-nav>div {
+.header-container {
   max-width: 1200px;
   margin: 0 auto;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 24px;
-  height: 70px;
+  padding: 0; /* Set padding to 0 as requested */
+  height: 100px;
+  width: 100%;
+  box-sizing: border-box;
+  position: relative; /* Allow child elements to use positioning */
 }
 
-/* Left Section */
+/* Adjust header-left to simulate negative padding effect */
 .header-left {
   display: flex;
   align-items: center;
   gap: 16px;
+  margin-left: -70px; /* Pull left edge outward by 30px */
+  padding-left: 0;
 }
 
+/* Adjust header-right to simulate negative padding effect */
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: flex-end;
+  flex-grow: 1;
+  max-width: 70%;
+  margin-right: -70px; /* Pull right edge outward by 30px */
+}
+
+/* Button styling in header-left */
 .header-left .ant-btn {
   display: flex;
   align-items: center;
@@ -56,6 +73,7 @@
   transform: translateY(-1px);
 }
 
+/* Logo styling */
 .header-logo {
   text-decoration: none;
   transition: all 0.3s ease;
@@ -86,24 +104,16 @@
 }
 
 @keyframes heartbeat {
-
   0%,
   100% {
     transform: scale(1);
   }
-
   50% {
     transform: scale(1.1);
   }
 }
 
-/* Right Section */
-.header-right {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
+/* Link styling */
 .header-link {
   display: flex;
   align-items: center;
@@ -322,12 +332,10 @@
   .header-right {
     gap: 4px;
   }
-
   .header-link {
     padding: 8px 12px;
     font-size: 13px;
   }
-
   .appointment-button {
     padding: 10px 16px;
     font-size: 13px;
@@ -335,27 +343,23 @@
 }
 
 @media (max-width: 768px) {
-  .header-nav>div {
-    padding: 0 16px;
+  .header-container {
+    padding: 0 15px; /* Reduce padding to ~15px on mobile for balance */
     height: 64px;
   }
-
   .header-logo h1 {
     font-size: 24px;
   }
-
   .header-right {
     gap: 2px;
+    max-width: 60%;
   }
-
   .header-link span {
     display: none;
   }
-
   .appointment-button span {
     display: none;
   }
-
   .account-button span {
     display: none;
   }
@@ -401,7 +405,6 @@
     transform: translateY(-100%);
     opacity: 0;
   }
-
   to {
     transform: translateY(0);
     opacity: 1;

@@ -1,8 +1,9 @@
 const Profile = require("../../models/Profile");
 const Question = require("../../models/Question");
+const Feedback = require("../../models/Feedback");
 const User = require("../../models/User");
 const sendEmail = require('../../utils/sendEmail');
-module.exports.createCheckup = async (req, res) => {
+const createCheckup = async (req, res) => {
   try {
     const { patientId, doctorId, date, time, symptoms } = req.body;
     if (!patientId || !doctorId || !date || !time || !symptoms) {
@@ -16,7 +17,8 @@ module.exports.createCheckup = async (req, res) => {
   }
 };
 
-exports.replyQA = async (req, res) => {
+
+const replyQA = async (req, res) => {
   const { id } = req.params;
   const { replyMessage } = req.body;
 
@@ -44,14 +46,14 @@ exports.replyQA = async (req, res) => {
   }
 };
 
-exports.getAllQA = async (req, res) => {
+const getAllQA = async (req, res) => {
   const { sort, searchId, statusfilter, page = 1, limit = 10 } = req.query; //Dùng req.query
 
   try {
     let filter = {};
 
     if (searchId) {
-      filter.userId = searchId;
+      filter.title = searchId;
     }
 
     if (statusfilter) {
@@ -89,10 +91,90 @@ exports.getAllQA = async (req, res) => {
       message: "Đã xảy ra lỗi, vui lòng thử lại sau."
     });
   }}
+
+// them ham xu li moi cho FAQ
+const getAllFAQ = async (req, res) => {
+  const { sort, title, message, page = 1, limit = 10, searchId } = req.query;
+
+  try {
+    let filter = {};
+
+    if (searchId) {
+      filter.userId = searchId;
+    }
+    if (title) {
+      filter.title = title;
+    }
+    if (message) {
+      filter.message = message;
+    }
+
+    // Chỉ lấy các câu đã được đánh dấu là FAQ
+    filter.isFaq = true;
+
+    // Xử lý sắp xếp
+    let sortOption = {};
+    if (sort) {
+      const [field, order] = sort.split('_');
+      sortOption[field] = order === 'asc' ? 1 : -1;
+    } else {
+      sortOption = { createdAt: -1 };
+    }
+
+    const skip = (page - 1) * limit;
+    const total = await Question.countDocuments(filter);
+
+    const QAs = await Question.find(filter)
+      .sort(sortOption)
+      .skip(skip)
+      .limit(Number(limit)); // Chuyển limit thành số
+
+    res.status(200).json({
+      success: true,
+      page: Number(page),
+      limit: Number(limit),
+      total,
+      totalPages: Math.ceil(total / limit),
+      isFaq: QAs.isFaq,
+      data: QAs
+    });
+  } catch (error) {
+    console.error("Lỗi khi lấy danh sách Q&A:", error);
+    res.status(500).json({
+      success: false,
+      message: "Đã xảy ra lỗi, vui lòng thử lại sau.",
+      error: error.message
+    });
+  }
+};
+
+
+////// ham mark as FAQ
+const markAsFAQ = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const question = await Question.findById(id);
+
+    if (!question) {
+      return res.status(404).json({ success: false, message: "Câu hỏi không tồn tại." });
+    }
+
+    question.isFaq = true;
+    await question.save();
+
+    return res.status(200).json({ success: true, message: "Đã đánh dấu câu hỏi là FAQ." });
+  } catch (error) {
+    console.error("Lỗi khi đánh dấu FAQ:", error);
+    return res.status(500).json({ success: false, message: "Lỗi server." });
+  }
+};
+//
+
   
 const Schedule = require('../../models/Schedule');
 
-module.exports.createSchedule = async (req, res) => {
+const createSchedule = async (req, res) => {
   try {
     const { employeeId, department, date, timeSlots } = req.body;
 
@@ -110,7 +192,7 @@ module.exports.createSchedule = async (req, res) => {
   }
 };
 
-module.exports.getSchedules = async (req, res) => {
+const getSchedules = async (req, res) => {
   try {
     const query = {};
     if (req.query.employeeId) query.employeeId = req.query.employeeId;
@@ -125,7 +207,7 @@ module.exports.getSchedules = async (req, res) => {
   }
 };
 
-module.exports.updateSchedule = async (req, res) => {
+const updateSchedule = async (req, res) => {
   try {
     const { id } = req.params;
     const { employeeId, department, date, timeSlots } = req.body;
@@ -152,7 +234,7 @@ module.exports.updateSchedule = async (req, res) => {
   }
 };
 
-module.exports.deleteSchedule = async (req, res) => {
+const deleteSchedule = async (req, res) => {
   try {
     const { id } = req.params;
     const deleted = await Schedule.findByIdAndDelete(id);
@@ -166,4 +248,33 @@ module.exports.deleteSchedule = async (req, res) => {
     console.error(error);
     return res.status(500).json({ message: "Internal server error" });
   }
+};
+
+
+const getFeedbacksForStaff = async (req, res) => {
+  try {
+    const feedbacks = await Feedback.find()
+      .populate('userId', 'name')
+      .populate({
+        path: 'appointmentId',
+        populate: { path: 'doctorId', select: 'name' }, // Populate nested để lấy tên bác sĩ
+        select: 'appointmentDate doctorId'
+      });
+    res.json(feedbacks);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch feedbacks' });
+  }
+};
+
+module.exports = {
+  createCheckup,
+  replyQA,
+  getAllQA,
+  createSchedule,
+  getSchedules,
+  updateSchedule,
+  deleteSchedule,
+  getFeedbacksForStaff,
+  getAllFAQ,
+  markAsFAQ,
 };

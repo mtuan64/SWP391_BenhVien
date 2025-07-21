@@ -1,4 +1,34 @@
 const Profile = require("../../models/Profile");
+const Service = require("../../models/Service");
+const Employee = require('../../models/Employee');
+const { createLab, updateModel } = require("../labtest/labTestServices")
+
+const findUserByIdentity = async (req, res) => {
+  try {
+    // Lấy identityNumber từ URL mà frontend gửi lên
+    const { identityNumber } = req.params;
+
+    // Dùng Mongoose để tìm MỘT người dùng có identityNumber khớp
+    // Giả sử trong User model của bạn có trường là 'identityNumber'
+    const user = await User.findOne({ identityNumber: identityNumber });
+
+    // Nếu không tìm thấy người dùng
+    if (!user) {
+      return res.status(404).json({ message: 'Không tìm thấy người dùng với số ID này.' });
+    }
+
+    // Nếu tìm thấy, trả về thông tin người dùng với status 200 OK
+    res.status(200).json(user);
+
+  } catch (error) {
+    // Nếu có lỗi server
+    res.status(500).json({ message: 'Lỗi server', error: error.message });
+  }
+};
+
+module.exports = {
+  findUserByIdentity,
+};
 
 module.exports.createProfile = async (req, res) => {
   const {
@@ -91,6 +121,7 @@ module.exports.deleteProfileById = async (req, res) => {
 
 module.exports.updateProfileById = async (req, res) => {
   const { id } = req.params;
+
   const {
     name,
     dateOfBirth,
@@ -100,25 +131,73 @@ module.exports.updateProfileById = async (req, res) => {
     issues,
     doctorId,
     medicine,
+    service,
+    result,
+    dayTest
   } = req.body;
 
-  try {
-    const updatedProfile = await Profile.findByIdAndUpdate(
-      id,
-      {
-        name,
-        dateOfBirth,
-        gender,
-        diagnose,
-        note,
-        issues,
-        doctorId,
-        medicine,
-      },
-      { new: true }
-    ).populate("doctorId medicine");
+  console.log("Request: ", req.body)
 
-    if (!updatedProfile) {
+  try {
+
+    const doctor = await Employee.findById(doctorId);
+    console.log("Doctor", doctor)
+
+    if (!doctor) {
+      return res.status(404).json({ message: "Doctor not found." });
+    }
+
+    const serviceObj = await Service.find({
+      _id: {
+        $in: service
+      }
+    });
+
+    let profile = await Profile.findById(id);
+    let labTest;
+    console.log("profile.labTestId", profile.labTestId)
+    if (!profile.labTestId) {
+      console.log("Create labtest")
+      labTest = await createLab(serviceObj);
+    } else if (result && dayTest) {
+      updateModel(profile.labTestId, result, dayTest)
+      labTest = profile.labTestId;
+    }
+
+    profile.name = name ? name : profile.name;
+    profile.dateOfBirth = dateOfBirth ? dateOfBirth : profile.dateOfBirth;
+    profile.gender = gender ? gender : profile.gender;
+    profile.diagnose = diagnose ? diagnose : profile.diagnose;
+    profile.note = note ? note : profile.note;
+    profile.issues = issues ? issues : profile.issues;
+    profile.doctorId = doctor._id;
+    profile.medicine = medicine;
+    profile.service = serviceObj;
+    profile.labTestId = labTest ? labTest._id : null;
+
+    // const updatedProfile = await Profile.findByIdAndUpdate(
+    //   id,
+    //   {
+    //     name,
+    //     dateOfBirth,
+    //     gender,
+    //     diagnose,
+    //     note,
+    //     issues,
+    //     doctorId,
+    //     medicine,
+    //     service: serviceObj
+    //   },
+    //   { new: true }
+    // ).populate("doctorId medicine labTestId");
+
+    const savedProfile = await profile.save()
+
+    const updatedProfile = await Profile.findById(id)
+      .populate('doctorId')
+      .populate('medicine')
+      .populate('labTestId');
+    if (!profile) {
       return res.status(404).json({ message: "Profile not found." });
     }
 
@@ -131,3 +210,17 @@ module.exports.updateProfileById = async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
+
+module.exports.searchByIdentityNumber = async (req, res) => {
+  const { identityNumber } = req.params; // 👈 Lấy từ params chứ không phải query
+
+  try {
+    const profiles = await Profile.find({ identityNumber }).populate("medicine labTestId userId doctorId");
+    res.status(200).json({ data: profiles });
+  } catch (err) {
+    console.error("Search error:", err);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+

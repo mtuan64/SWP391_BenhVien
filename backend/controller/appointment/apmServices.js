@@ -1,6 +1,7 @@
 require("dotenv").config();
 const User = require("../../models/User");
 const Employee = require("../../models/Employee");
+const Appointment = require("../../models/Appointment");
 const bcrypt = require("bcrypt");
 
 // Admin - user manage
@@ -131,4 +132,39 @@ module.exports.delEmployees = async (req, res) => {
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
+};
+
+module.exports.getAllAppointments = async (req, res) => {
+  try {
+    const { doctorId } = req.query;
+
+    const filter = doctorId ? { doctorId } : {};
+
+    const appointments = await Appointment.find(filter)
+        .populate('userId', 'name email')
+        .populate('profileId', 'fullName gender dateOfBirth')
+        .populate('doctorId', 'name department')
+        .sort({ appointmentDate: -1 });
+
+    res.status(200).json(appointments);
+  } catch (error) {
+    console.error('Error fetching appointments:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+module.exports.getAllDoctors = async (req, res) => {
+  res.status(200).json({ message: 'getAllDoctors not implemented' });
+};
+
+module.exports.searchDoctorsByName = async (req, res) => {
+  res.status(200).json({ message: 'searchDoctorsByName not implemented' });
+};
+
+module.exports.getDoctorsPaginated = async (req, res) => {
+  res.status(200).json({ message: 'getDoctorsPaginated not implemented' });
+};
+
+module.exports.getProfilesByUserId = async (req, res) => {
+  res.status(200).json({ message: 'getProfilesByUserId not implemented' });
 };

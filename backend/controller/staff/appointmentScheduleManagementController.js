@@ -5,6 +5,9 @@ const User = require("../../models/User");
 const Employee = require("../../models/Employee");
 const Schedule = require('../../models/Schedule');
 const Profile = require('../../models/Profile');
+const Department = require("../../models/Department");
+const mongoose = require("mongoose");
+
 
 // Lấy danh sách lịch hẹn có kèm tên bác sĩ, người dùng, số điện thoại và user_code với phân trang
 exports.getAllAppointments = async (req, res) => {
@@ -32,7 +35,7 @@ exports.getAllAppointments = async (req, res) => {
     }
 
     const totalAppointments = await Appointment.countDocuments(query);
-    const appointments = await Appointment.find(query).skip(skip).limit(limitNum);
+    const appointments = await Appointment.find(query).populate("profileId", "name").skip(skip).limit(limitNum);
 
     const doctorIds = [...new Set(appointments.map(a => a.doctorId?.toString()))];
     const userIds = [...new Set(appointments.map(a => a.userId?.toString()))];
@@ -50,12 +53,14 @@ exports.getAllAppointments = async (req, res) => {
     }, {});
 
     let enrichedAppointments = appointments.map(a => ({
-      ...a._doc,
-      doctorName: doctorMap[a.doctorId?.toString()] || "Unknown Doctor",
-      userName: userMap[a.userId?.toString()]?.name || "Unknown User",
-      userPhone: userMap[a.userId?.toString()]?.phone || "N/A",
-      userCode: userMap[a.userId?.toString()]?.user_code || "N/A"
-    }));
+    ...a._doc,
+    doctorName: doctorMap[a.doctorId?.toString()] || "Unknown Doctor",
+    userName: userMap[a.userId?.toString()]?.name || "Unknown User",
+    userPhone: userMap[a.userId?.toString()]?.phone || "N/A",
+    userCode: userMap[a.userId?.toString()]?.user_code || "N/A",
+    profileName: a.profileId?.name || "N/A"
+  }));
+
 
     if (search.trim() !== "") {
       const searchLower = search.toLowerCase();
@@ -102,10 +107,30 @@ exports.getAllAppointments = async (req, res) => {
 exports.createAppointment = async (req, res) => {
   try {
     const data = { ...req.body };
+
+    // Kiểm tra bắt buộc phải có profileId
     if (!data.profileId || data.profileId === "null" || data.profileId === "") {
-      delete data.profileId;
+      return res.status(400).json({ message: "Missing profileId. Please resolve profile by identity number first." });
     }
-    const newAppointment = new Appointment(data);
+
+    // (Tuỳ chọn) Kiểm tra profile có tồn tại không
+    const profileExists = await Profile.findById(data.profileId);
+    if (!profileExists) {
+      return res.status(404).json({ message: "Profile not found with provided profileId." });
+    }
+
+    // Tạo cuộc hẹn mới
+    const newAppointment = new Appointment({
+      appointmentDate: data.appointmentDate,
+      department: data.department,
+      doctorId: data.doctorId,
+      timeSlot: data.timeSlot,
+      type: data.type || "Offline",
+      status: data.status || "Booked",
+      reminderSent: data.reminderSent || false,
+      profileId: data.profileId,
+    });
+
     await newAppointment.save();
     res.status(201).json(newAppointment);
   } catch (error) {
@@ -113,6 +138,7 @@ exports.createAppointment = async (req, res) => {
     res.status(500).json({ message: "Lỗi server", error: error.message });
   }
 };
+
 
 // Cập nhật lịch hẹn
 exports.updateAppointment = async (req, res) => {
@@ -144,33 +170,76 @@ exports.deleteAppointment = async (req, res) => {
 exports.getAllDoctors = async (req, res) => {
   try {
     const { department, date } = req.query;
-    let query = { role: "Doctor" };
+    const query = { role: "Doctor", status: "active" };
+
+    // ✅ Lọc theo khoa (ObjectId)
     if (department) {
-      query.department = department;
+      if (!mongoose.Types.ObjectId.isValid(department)) {
+        return res.status(400).json({ message: "Invalid department ID" });
+      }
+      query.department = new mongoose.Types.ObjectId(department);
     }
-    if (date) {
-      const formattedDate = new Date(date).toISOString().split("T")[0];
-      const schedules = await Schedule.find({
-        date: { $gte: new Date(formattedDate), $lt: new Date(formattedDate + "T23:59:59.999Z") },
-        timeSlots: { $elemMatch: { status: "Available" } }
-      });
-      const doctorIds = schedules.map(s => s.employeeId);
-      query._id = { $in: doctorIds };
+
+    // Nếu có ngày -> tìm lịch có slot Available
+if (date) {
+  const targetDate = new Date(date);
+  if (isNaN(targetDate.getTime())) {
+    return res.status(400).json({ message: "Invalid date format" });
+  }
+
+  const startOfDay = new Date(targetDate.setHours(0, 0, 0, 0));
+  const endOfDay = new Date(targetDate.setHours(23, 59, 59, 999));
+
+  const scheduleQuery = {
+    date: { $gte: startOfDay, $lte: endOfDay },
+    timeSlots: { $elemMatch: { status: "Available" } },
+  };
+
+  // ⚠️ Nếu có department => lọc thêm ở Schedule luôn
+  if (department) {
+    if (!mongoose.Types.ObjectId.isValid(department)) {
+      return res.status(400).json({ message: "Invalid department ID" });
     }
-    const doctors = await Employee.find(query, { _id: 1, name: 1, department: 1 });
+    scheduleQuery.department = new mongoose.Types.ObjectId(department);
+    query.department = scheduleQuery.department; // lọc ở employee luôn
+  }
+
+  const schedules = await Schedule.find(scheduleQuery);
+  const availableDoctorIds = schedules
+    .map((s) => s.employeeId?.toString())
+    .filter(Boolean);
+
+  if (availableDoctorIds.length === 0) {
+    return res.status(200).json([]);
+  }
+
+  query._id = { $in: availableDoctorIds };
+}
+
+
+    const doctors = await Employee.find(query, {
+      _id: 1,
+      name: 1,
+      department: 1,
+    }).populate("department", "name"); // (tuỳ chọn) nếu bạn muốn trả cả tên khoa
+
     res.status(200).json(doctors);
   } catch (error) {
-    res.status(500).json({ message: "Lỗi server", error: error.message });
+    console.error("Error in getAllDoctors:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 };
+
+
 
 // Lấy danh sách tất cả department (không trùng)
 exports.getAllDepartments = async (req, res) => {
   try {
-    const departments = await Appointment.distinct("department");
+    const departments = await Department.find({}, { _id: 1, name: 1 });
     res.status(200).json(departments);
   } catch (error) {
-    res.status(500).json({ message: "Lỗi server", error: error.message });
+    console.error("Error fetching departments:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 };
 
@@ -190,6 +259,23 @@ exports.getProfilesByUser = async (req, res) => {
     const userId = req.params.userId;
     const profiles = await Profile.find({ userId });
     res.status(200).json(profiles);
+  } catch (error) {
+    console.error("Error fetching profiles:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+exports.getProfilesByUser2 = async (req, res) => {
+  try {
+    const userId = req.params.userId;
+    const profiles = await Profile.find({ identityNumber: userId });
+    console.log(profiles.length);
+    let userIdOfProfile = "";
+    if (profiles.length > 0) {
+      userIdOfProfile = profiles[0].userId;
+    } else {
+      console.log("Không tìm thấy profile nào.");
+    }
+    res.status(200).json({ profiles: profiles, uid: userIdOfProfile });
   } catch (error) {
     console.error("Error fetching profiles:", error);
     res.status(500).json({ message: "Server error", error: error.message });
@@ -241,5 +327,45 @@ exports.createProfile = async (req, res) => {
   } catch (error) {
     console.error("Error creating profile:", error);
     res.status(500).json({ message: "Error creating profile", error: error.message });
+  }
+
+
+};
+
+exports.getProfileByIdentity = async (req, res) => {
+  try {
+    const { identityNumber } = req.query;
+    if (!identityNumber) {
+      return res.status(400).json({ message: "Missing identityNumber" });
+    }
+
+    const profiles = await Profile.find({ identityNumber });
+
+    if (profiles.length === 0) {
+      return res.status(404).json({ message: "No profiles found" });
+    }
+
+    res.status(200).json(profiles);
+  } catch (err) {
+    console.error("Error fetching profiles:", err);
+    res.status(500).json({ message: "Server error", error: err.message });
+  }
+};
+
+exports.getProfilesByUser2 = async (req, res) => {
+  try {
+    const userId = req.params.userId;
+    const profiles = await Profile.find({ identityNumber: userId });
+    console.log(profiles.length);
+    let userIdOfProfile = "";
+    if (profiles.length > 0) {
+      userIdOfProfile = profiles[0].userId;
+    } else {
+      console.log("Không tìm thấy profile nào.");
+    }
+    res.status(200).json({ profiles: profiles, uid: userIdOfProfile });
+  } catch (error) {
+    console.error("Error fetching profiles:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 };

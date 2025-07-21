@@ -3,31 +3,42 @@ const mongoose = require("mongoose");
 const profileSchema = new mongoose.Schema(
   {
     name: { type: String, required: true },
-    user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
     dateOfBirth: { type: Date, required: true },
     gender: { type: String, enum: ["Male", "Female", "Other"], required: true },
+
+    // BỎ unique để cho phép trùng CCCD
+    identityNumber: { type: String, required: true },
+
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+
     diagnose: { type: String },
     note: { type: String },
     issues: { type: String },
-    doctorId: { type: mongoose.Schema.Types.ObjectId, ref: "Employee" },
-    medicine: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Medicine",
+    medicine: [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Medicine",
+        }
+    ],
+    doctorId: { 
+      type: mongoose.Schema.Types.ObjectId, 
+      ref: "Employee" 
     },
-    userId: {
+    service: [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Services",
+        }
+    ],
+    labTestId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      required: false,
+      ref: "LabTest"
     },
-    cccd:{type: String, required: true},
-    serviceId:{
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Service",
-    }
+    createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "Employee" },
+
   },
   { timestamps: true }
 );
 
-profileSchema.index({ name: 1 });
 
 module.exports = mongoose.model("Profile", profileSchema);
