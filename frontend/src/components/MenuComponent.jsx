@@ -1,85 +1,61 @@
-// src/components/MenuComponent.jsx
-import React, { useEffect } from "react";
+import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Drawer } from "antd";
 import {
   HomeOutlined,
   UserOutlined,
-  LockOutlined,
   CloseOutlined,
-  TeamOutlined,
   FileTextOutlined,
-  SettingOutlined,
+  HeartOutlined,
+  BookOutlined,
+  DollarOutlined,
+  CalendarOutlined,
+  ClockCircleOutlined,
+  EditOutlined,
+  FileDoneOutlined,
+  QuestionCircleOutlined,
 } from "@ant-design/icons";
 
 const DRAWER_WIDTH = 240;
 
-const menuByRole = {
-  admin: [
-    { title: "Home", path: "/", icon: <HomeOutlined /> },
-    { title: "Manage Users", path: "/users-management", icon: <TeamOutlined /> },
-    { title: "Manage Recruitment", path: "/manage-recruitment", icon: <FileTextOutlined /> },
-    { title: "Manage BlogList", path: "/bloglist", icon: <FileTextOutlined /> },
-    { title: "Manage Doctor Account", path: "/doctoraccount", icon: <FileTextOutlined /> },
-    { title: "Settings", path: "/settings", icon: <SettingOutlined /> },
-  ],
-  doctor: [
-    { title: "Home", path: "/", icon: <HomeOutlined /> },
-    { title: "My Project", path: "/my-project", icon: <TeamOutlined /> },
-    { title: "Report Management", path: "/report", icon: <LockOutlined /> },
-    { title: "Message Management", path: "/message-management", icon: <LockOutlined /> },
-    { title: "Attendance Management", path: "/attendance-management", icon: <LockOutlined /> },
-    { title: "Recruitment Management", path: "/recruitment-management-mentor", icon: <LockOutlined /> },
-  ],
-  staff: [
-    { title: "Home", path: "/", icon: <HomeOutlined /> },
-    { title: "Addresses", path: "/addresses", icon: <UserOutlined /> },
-    { title: "Change Password", path: "/change-password", icon: <LockOutlined /> },
-  ],
-  patient: [
-    { title: "Home", path: "/", icon: <HomeOutlined /> },
-    { title: "My Project", path: "/my-project-intern", icon: <HomeOutlined /> },
-    { title: "Medical Record", path: "/view_medicalrecord", icon: <FileTextOutlined /> },
-    { title: "Report Management", path: "/report-management", icon: <FileTextOutlined /> },
-    { title: "Schedule", path: "/schedule", icon: <FileTextOutlined /> },
-    { title: "Attendance", path: "/attendance", icon: <FileTextOutlined /> },
-    { title: "Mark Report", path: "/attendance", icon: <FileTextOutlined /> },
-  ],
+// Define menu dynamically based on role
+const menuByRole = (role) => {
+  const menus = {
+    patient: [
+      { title: "Profile Manage", path: "/profilemanage", icon: <UserOutlined /> },
+      { title: "My Appointments", path: "/myappointments", icon: <CalendarOutlined /> },
+      { title: "Foods", path: "/health/food", icon: <HeartOutlined /> },
+      { title: "BMI", path: "/health/calculator", icon: <FileTextOutlined /> },
+      { title: "Q/A", path: "/qa", icon: <BookOutlined /> },
+      { title: "FAQ", path: "/faq", icon: <QuestionCircleOutlined /> },
+    ],
+  };
+
+  return menus[role] || [];
 };
 
 const MenuComponent = ({ isOpen, onClose, role }) => {
-  const navigations = menuByRole[role] || [];
   const location = useLocation();
-
-  console.log("MenuComponent - isOpen:", isOpen, "Role:", role);
-
-  useEffect(() => {
-    if (!isOpen) return;
-
-    const handleClickOutside = (e) => {
-      if (e.target.closest(".ant-drawer-content")) return;
-      console.log("Click outside detected, closing menu");
-      onClose();
-    };
-
-    document.addEventListener("click", handleClickOutside);
-    return () => document.removeEventListener("click", handleClickOutside);
-  }, [isOpen, onClose]);
+  const navigations = menuByRole(role);
 
   return (
     <Drawer
       title={null}
       placement="left"
-      onClose={() => {
-        console.log("Drawer onClose triggered");
-        onClose();
-      }}
+      onClose={onClose}
       open={isOpen}
       closeIcon={<CloseOutlined style={{ fontSize: 20 }} />}
       width={DRAWER_WIDTH}
       style={{ top: 70 }}
       mask={false}
-      keyboard={false}
+      styles={{
+        body: {
+          scrollbarWidth: "thin",
+          msOverflowStyle: "auto",
+          overflowY: "hidden", // Prevent default scrollbar on body
+        },
+      }}
+      className="custom-drawer"
     >
       <nav
         style={{
@@ -89,9 +65,10 @@ const MenuComponent = ({ isOpen, onClose, role }) => {
           alignItems: "flex-start",
           minHeight: "100%",
           height: "calc(100vh - 70px)",
-          overflowY: "auto",
+          overflowY: "auto", // Single scrollbar for nav content
           paddingTop: 4,
           paddingBottom: 4,
+          width: "100%",
         }}
       >
         {navigations.map(({ title, path, icon }) => {
@@ -100,10 +77,7 @@ const MenuComponent = ({ isOpen, onClose, role }) => {
             <Link
               key={title}
               to={path}
-              onClick={() => {
-                console.log("Link clicked:", path);
-                onClose();
-              }}
+              onClick={onClose}
               style={{
                 display: "flex",
                 alignItems: "center",
@@ -117,7 +91,8 @@ const MenuComponent = ({ isOpen, onClose, role }) => {
                 fontWeight: isActive ? 600 : 400,
                 margin: "2px 0",
                 cursor: "pointer",
-                transition: "background 0.2s,color 0.2s",
+                transition: "background 0.2s, color 0.2s",
+                width: "100%", // Ensure full width
               }}
             >
               {React.cloneElement(icon, { style: { fontSize: 20 } })}
