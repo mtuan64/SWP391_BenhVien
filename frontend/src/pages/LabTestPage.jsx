@@ -142,7 +142,7 @@ const UserMedicalProfileDetail = () => {
         {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({...values, doctorId: doctor._id}),
+          body: JSON.stringify({ ...values, doctorId: doctor._id }),
         }
       )
       if (!response.ok) {
@@ -164,15 +164,16 @@ const UserMedicalProfileDetail = () => {
   const handleProfileSelect = (profile) => {
     setSelectedProfile(profile)
     modalForm.setFieldsValue({
-      doctorName: profile.doctorId.name,
+      doctorName: profile?.doctorId?.name || "",
       service: profile.service || [],
       diagnose: profile.diagnose || "",
       note: profile.note || "",
       issues: profile.issues || "",
       medicine: profile.medicine || [],
-      dayTest: profile.labTestId.dayTest ? dayjs(profile.labTestId.dayTest) : null,
-      result: profile.labTestId.result
+      dayTest: profile.labTestId?.dayTest ? dayjs(profile.labTestId.dayTest) : null,
+      result: profile.labTestId?.result || ""
     })
+
     setModalView("edit") // Chuyển sang chế độ chỉnh sửa
   }
 
@@ -225,25 +226,25 @@ const UserMedicalProfileDetail = () => {
         footer={
           modalView === "list"
             ? [
-                <Button key="cancelList" onClick={handleCloseModal}>
-                  Cancel
-                </Button>,
-              ]
+              <Button key="cancelList" onClick={handleCloseModal}>
+                Cancel
+              </Button>,
+            ]
             : [
-                <Button key="back" onClick={handleBackToList}>
-                  Back to List
-                </Button>,
-                <Button key="cancelEdit" onClick={handleCloseModal}>
-                  Cancel
-                </Button>,
-                <Button
-                  key="submit"
-                  type="primary"
-                  loading={isUpdating}
-                  onClick={() => modalForm.submit()}>
-                  Update Profile
-                </Button>,
-              ]
+              <Button key="back" onClick={handleBackToList}>
+                Back to List
+              </Button>,
+              <Button key="cancelEdit" onClick={handleCloseModal}>
+                Cancel
+              </Button>,
+              <Button
+                key="submit"
+                type="primary"
+                loading={isUpdating}
+                onClick={() => modalForm.submit()}>
+                Update Profile
+              </Button>,
+            ]
         }>
         {modalView === "list" ? (
           <ProfileSelectionList
@@ -255,7 +256,7 @@ const UserMedicalProfileDetail = () => {
             form={modalForm}
             layout="vertical"
             onFinish={handleUpdateProfile}>
-              <Form.Item name="doctorName" label="Doctor">
+            <Form.Item name="doctorName" label="Doctor">
               <Input.TextArea
                 rows={1}
                 disabled
@@ -274,7 +275,7 @@ const UserMedicalProfileDetail = () => {
                 <Space direction="vertical">
                   {services.map((s) => (
                     <Checkbox key={s._id} value={s._id}
-                              disabled={true}
+                      disabled={true}
                     >
                       {s.name} - ${s.price}
                     </Checkbox>
@@ -291,7 +292,7 @@ const UserMedicalProfileDetail = () => {
             <Form.Item name="dayTest" label="3. Day Test">
               <DatePicker defaultValue={dayjs('01/01/2015', 'DD/MM/YYYY')} />
             </Form.Item>
-            
+
           </Form>
         )}
       </Modal>
