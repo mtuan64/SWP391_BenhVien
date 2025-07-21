@@ -1,6 +1,6 @@
 const medicineRepo = require('../../repository/medicine.repository');
 const jwt = require('jsonwebtoken');
-
+require('dotenv').config();
 const createMedicine = async (req, res) => {
   try {
     const token = req.header('Authorization')?.replace('Bearer ', '');
@@ -10,7 +10,8 @@ const createMedicine = async (req, res) => {
     }
     //co token
     try {
-      const decode = jwt.verify(token, "your_jwt_secret_key");
+      const decode = jwt.verify(token, process.env.JWT_SECRET);
+
       console.log("decode", JSON.stringify(decode));
       const payload = { ...req.body, supplierId: decode.id };
       const medicine = await medicineRepo.createMedicine(payload);
@@ -40,7 +41,7 @@ const getAllMedicines = async (req, res) => {
     }
     //co token
     try {
-      const decode = jwt.verify(token, "your_jwt_secret_key");
+      const decode = jwt.verify(token, process.env.JWT_SECRET);
       console.log("decode", JSON.stringify(decode));
     } catch (error) {
       console.log("error", error)
