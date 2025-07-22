@@ -30,8 +30,14 @@ exports.createProfile = async (req, res) => {
 exports.getProfilesByUser = async (req, res) => {
     try {
         const userId = req.user.id;
-        const profiles = await Profile.find({ userId });
-
+        const profiles = await Profile.find({ userId })
+            .populate('medicine', 'name')  // Populate tên thuốc từ Medicine
+            .populate('service', 'name')   // Populate tên dịch vụ từ Services
+            .populate('doctorId', 'name') // Populate tên bác sĩ từ Employee
+            .populate({
+                path: 'labTestId',         // Populate LabTest
+                populate: { path: 'services', select: 'name' }  // Populate services trong LabTest
+            });
         res.status(200).json(profiles);
     } catch (err) {
         res.status(500).json({ message: 'Failed to fetch profiles', error: err.message });

@@ -6,6 +6,8 @@ const Feedback = require("../../models/Feedback");
 const Schedule = require("../../models/Schedule");
 const { sendAppointmentConfirmation } = require("../../utils/mailService");
 const Employee = require("../../models/Employee");
+const Notification = require("../../models/Notification");
+const mongoose = require('mongoose');
 
 const doctorRepo = require("../../repository/employee.repository");
 const serviceRepo = require("../../repository/service.repository");
@@ -222,47 +224,24 @@ const getAppointmentsByUser = async (req, res) => {
   }
 };
 
-// Hủy lịch hẹn
 const cancelAppointment = async (req, res) => {
   const { id } = req.params;
   const userId = req.user.id;
 
-  console.log(`Yêu cầu hủy: id=${id}, userId=${userId}`);
-
   try {
     const appointment = await Appointment.findOne({ _id: id, userId });
-    if (!appointment) {
-      return res.status(404).json({ message: "Lịch hẹn không tồn tại hoặc không thuộc về bạn" });
+    if (!appointment) return res.status(404).json({ message: 'Appointment not found' });
+
+    if (appointment.status === 'Canceled') {
+      return res.status(400).json({ message: 'Appointment is already canceled' });
     }
 
-    if (appointment.status === "Canceled") {
-      return res.status(400).json({ message: "Lịch hẹn đã bị hủy trước đó" });
-    }
-
-    if (appointment.status === "PendingCancel") {
-      return res.status(400).json({ message: "Lịch hẹn đang chờ duyệt hủy" });
-    }
-
-    // Đánh dấu trạng thái chờ duyệt
-    appointment.status = "PendingCancel";
+    appointment.status = 'Canceled';
     await appointment.save();
 
-    // Tạo notification cho staff (receiver: null để broadcast)
-    const notification = new Notification({
-      title: "Yêu cầu hủy lịch hẹn",
-      content: `User ${req.user.name} (ID: ${userId}) yêu cầu hủy lịch hẹn ID: ${id}. Vui lòng duyệt.`,
-      isUrgent: true, // Có thể set urgent
-      receiver: null, // Broadcast cho tất cả staff
-    });
-    await notification.save();
-
-    res.status(200).json({
-      message: "Yêu cầu hủy đã được gửi, chờ staff duyệt",
-      appointment
-    });
+    res.status(200).json({ message: 'Appointment canceled successfully', appointment });
   } catch (err) {
-    console.error("Lỗi hủy lịch:", err);
-    res.status(500).json({ message: "Gửi yêu cầu hủy thất bại", error: err.message });
+    res.status(500).json({ message: 'Failed to cancel appointment', error: err.message });
   }
 };
 
