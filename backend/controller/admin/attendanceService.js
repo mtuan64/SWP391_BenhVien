@@ -1,10 +1,7 @@
 const Attendance = require("../../models/Attendance");
-const Employee = require("../../models/Employee");
-const Schedule = require("../../models/Schedule");
-const AttendanceConfig = require('../../models/AttendanceConfig');
+const AttendConfig = require("../../models/AttendanceConfig");
 const dayjs = require("dayjs");
 
-// GET /api/attendance
 exports.getAllAttendance = async (req, res) => {
   try {
     const { employeeId, startDate, endDate, status } = req.query;
@@ -23,60 +20,86 @@ exports.getAllAttendance = async (req, res) => {
       .populate("employeeId", "name email")
       .sort({ date: -1 });
 
-    res.json({ status: "SUCCESS", data: records });
+    const enrichedRecords = records.map((rec) => {
+      let workingDuration = null;
+
+      if (rec.checkInTime && rec.checkOutTime) {
+        const inTime = dayjs(rec.checkInTime, "HH:mm");
+        const outTime = dayjs(rec.checkOutTime, "HH:mm");
+
+        const minutes = outTime.diff(inTime, "minute");
+        if (minutes > 0) {
+          const hours = Math.floor(minutes / 60);
+          const mins = minutes % 60;
+          workingDuration = `${hours}h ${mins}m`;
+        }
+      }
+
+      return {
+        ...rec._doc,
+        workingDuration,
+      };
+    });
+
+    res.json({ status: "SUCCESS", data: enrichedRecords });
+  } catch (err) {
+    res.status(500).json({ status: "ERROR", message: err.message });
+    console.log(err);
+  }
+};
+
+exports.updateNote = async (req, res) => {
+  try {
+    const { note } = req.body;
+    const attendance = await Attendance.findById(req.params.id);
+    if (!attendance) {
+      return res.status(404).json({ message: "Attendance not found" });
+    }
+
+    attendance.notes = note;
+    await attendance.save();
+
+    res.json({ status: "SUCCESS", message: "Note updated", data: attendance });
   } catch (err) {
     res.status(500).json({ status: "ERROR", message: err.message });
   }
 };
 
-// GET /api/attendance/:id
-exports.getAttendanceById = async (req, res) => {
-  try {
-    const record = await Attendance.findById(req.params.id).populate(
-      "employeeId"
-    );
-    if (!record) return res.status(404).json({ message: "Not found" });
-
-    res.json({ status: "SUCCESS", data: record });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-};
-
-// POST /api/attendance
 exports.createAttendance = async (req, res) => {
   try {
     const { employeeId, checkInTime, date } = req.body;
 
     const checkInDate = dayjs(date).startOf("day");
-    const deadlineTime = dayjs(`${checkInDate.format("YYYY-MM-DD")}T08:30`);
-
+    const actualCheckIn = dayjs(checkInTime);
     const existing = await Attendance.findOne({
       employeeId,
       date: checkInDate.toDate(),
     });
 
-    const actualCheckIn = new Date(checkInTime);
+    const config = await AttendanceConfig.findOne();
+    const deadlineTimeStr = config?.checkInDeadline || "08:30";
+    const deadlineTime = dayjs(
+      `${checkInDate.format("YYYY-MM-DD")}T${deadlineTimeStr}`
+    );
+
     let status = "Present";
     let notes = "";
 
-    if (dayjs(actualCheckIn).isAfter(deadlineTime)) {
-      const lateMinutes = dayjs(actualCheckIn).diff(deadlineTime, "minute");
+    if (actualCheckIn.isAfter(deadlineTime)) {
+      const lateMinutes = actualCheckIn.diff(deadlineTime, "minute");
       notes = `Late check-in by ${lateMinutes} minutes`;
     }
 
     if (existing) {
-      // Nếu trước đó là Absent → cập nhật thành Present
-      existing.checkInTime = checkInTime;
+      existing.checkInTime = actualCheckIn.toDate();
       existing.status = status;
       existing.notes = notes;
       await existing.save();
       return res.json({ message: "Check-in updated", data: existing });
     } else {
-      // Chưa có bản ghi nào → tạo mới
       const record = await Attendance.create({
         employeeId,
-        checkInTime,
+        checkInTime: actualCheckIn.toDate(),
         date: checkInDate.toDate(),
         status,
         notes,
@@ -87,106 +110,37 @@ exports.createAttendance = async (req, res) => {
         .json({ message: "Check-in recorded", data: record });
     }
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Internal server error" });
+    res
+      .status(500)
+      .json({ message: "Internal server error", error: err.message });
   }
 };
 
-// PUT /api/attendance/:id
-exports.updateAttendance = async (req, res) => {
+exports.getAttendConfig = async (req, res) => {
   try {
-    const updated = await Attendance.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      { new: true }
-    );
-    res.json({ status: "SUCCESS", data: updated });
+    const config = await AttendConfig.findOne();
+    if (!config) return res.status(404).json({ message: "Config not found" });
+    res.status(200).json({ data: config });
   } catch (err) {
     res.status(500).json({ message: err.message });
+    console.log(err);
   }
 };
 
-// DELETE /api/attendance/:id
-exports.deleteAttendance = async (req, res) => {
+exports.updateAttendConfig = async (req, res) => {
   try {
-    await Attendance.findByIdAndDelete(req.params.id);
-    res.json({ status: "SUCCESS", message: "Deleted" });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-};
+    const { deadlineTime } = req.body;
+    let config = await AttendConfig.findOne();
 
-// GET /api/attendance/stats/summary
-exports.getAttendanceSummary = async (req, res) => {
-  try {
-    const { employeeId, month } = req.query;
-    const start = dayjs(month).startOf("month").toDate();
-    const end = dayjs(month).endOf("month").toDate();
-
-    const query = { date: { $gte: start, $lte: end } };
-    if (employeeId) query.employeeId = employeeId;
-
-    const records = await Attendance.find(query);
-
-    const summary = {
-      present: 0,
-      absent: 0,
-      onLeave: 0,
-      totalWorkHours: 0,
-    };
-
-    for (const rec of records) {
-      if (rec.status === "Present") {
-        summary.present++;
-        if (rec.checkInTime && rec.checkOutTime) {
-          summary.totalWorkHours +=
-            (new Date(rec.checkOutTime) - new Date(rec.checkInTime)) /
-            (1000 * 60 * 60);
-        }
-      } else if (rec.status === "Absent") {
-        summary.absent++;
-      } else {
-        summary.onLeave++;
-      }
-    }
-
-    res.json({ status: "SUCCESS", data: summary });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-};
-
-exports.getConfig = async (req, res) => {
-  try {
-    let config = await AttendanceConfig.findOne();
     if (!config) {
-      config = await AttendanceConfig.create({ checkInDeadline: "08:30" });
-    }
-    res.status(200).json({ config });
-  } catch (err) {
-    res.status(500).json({ message: 'Lỗi server', error: err.message });
-  }
-};
-
-// Cập nhật deadline
-exports.updateConfig = async (req, res) => {
-  try {
-    const { checkInDeadline } = req.body;
-
-    if (!checkInDeadline || !/^\d{2}:\d{2}$/.test(checkInDeadline)) {
-      return res.status(400).json({ message: "Định dạng giờ không hợp lệ (HH:mm)" });
-    }
-
-    let config = await AttendanceConfig.findOne();
-    if (!config) {
-      config = await AttendanceConfig.create({ checkInDeadline });
+      config = new AttendConfig({ deadlineTime });
     } else {
-      config.checkInDeadline = checkInDeadline;
-      await config.save();
+      config.deadlineTime = deadlineTime;
     }
 
-    res.status(200).json({ message: "Cập nhật thành công", config });
+    await config.save();
+    res.status(200).json({ message: "Updated successfully", data: config });
   } catch (err) {
-    res.status(500).json({ message: 'Lỗi server', error: err.message });
+    res.status(500).json({ message: err.message });
   }
 };

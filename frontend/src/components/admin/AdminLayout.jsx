@@ -48,10 +48,10 @@ const AdminLayout = () => {
           <Menu.Item key="3" icon={<TeamOutlined />}>
             <Link to="/admin/employees">Employee Management</Link>
           </Menu.Item>
-          <Menu.Item key="3" icon={<TeamOutlined />}>
+          <Menu.Item key="4" icon={<TeamOutlined />}>
             <Link to="/admin/attendance">Attendance Management</Link>
           </Menu.Item>
-          <Menu.Item key="4" icon={<LogoutOutlined />} onClick={handleLogout}>
+          <Menu.Item key="5" icon={<LogoutOutlined />} onClick={handleLogout}>
             Logout
           </Menu.Item>
         </Menu>
