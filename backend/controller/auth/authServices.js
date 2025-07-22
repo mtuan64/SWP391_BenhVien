@@ -2,156 +2,153 @@ const User = require("../../models/User");
 const jwt = require("jsonwebtoken");
 const mongoose = require('mongoose');
 const nodemailer = require('nodemailer');
+const Employee = require('../../models/Employee');
+const bcrypt = require('bcrypt');
+const Counter = require('../../models/Counter');
+
 require('dotenv').config();
 const Login = async (req, res) => {
-  const { userEmail, userPassword } = req.body;
-  try{
-    //tim ng dung trong db
-    console.log(req.body);
-    const user = await User.findOne({email :userEmail});
-    if(!user) {
-      return res.status(400).json({message: "invalid email"});
-    }
-    if(userPassword !== user.password){
-      return res.status(400).json({message: "invalid password"});
+  const { email, password } = req.body;
+  try {
+    const user = await User.findOne({ email });
+    const employee = await Employee.findOne({ email });
+
+    if (!user && !employee) {
+      return res.status(400).json({ message: "Invalid email" });
     }
 
-    const payLoad = {
-      
-      id: user._id,
-      email: user.email,
-      name: user.name
+    // So sánh mật khẩu
+    const target = user || employee;
+    const isMatch = await bcrypt.compare(password, target.password);
+    
+    if (!isMatch) {
+      return res.status(400).json({ message: "Invalid password" });
+    }
+
+    // Payload
+    const payload = {
+      id: target._id,
+      email: target.email,
+      name: target.name,
+      role: target.role || "patient", // optional
+      status: target.status,
     };
 
-    const token = jwt.sign(payLoad,"3ubgunbguisgy47ni7rynvgtkuenkjdsfnhrvbyr7tvbkuynv",{expiresIn: '1h'});
-    res.status(200).json({message: "OK", token:token, user : user});
-  } catch(error){
-    res.status(500).json({message: "loi server"});
+    if (target.status === "inactive") {
+      return res
+        .status(403)
+        .json({ message: "You are banned from the system" });
+    }
+
+    // Tạo JWT
+    const token = jwt.sign(payload, process.env.JWT_SECRET, {
+      expiresIn: "1h",
+    });
+
+    return res.status(200).json({
+      message: "OK",
+      token,
+      user: target,
+    });
+  } catch (error) {
+    console.error("Login error:", error);
+    return res.status(500).json({ message: "Server error" });
   }
-}
-
-
+};
 
 const Signup = async (req, res) => {
-  
-   if (!req.body) {
+  if (!req.body) {
     return res.status(400).json({ error: "Missing request body" });
   }
+
   const { email, password, name, phone } = req.body;
+
   try {
+    // 1) Kiểm tra email đã tồn tại chưa
     const emailExist = await User.findOne({ email });
     if (emailExist) {
-      return res.status(400).json({ message: 'Email da ton tai'});
+      return res.status(400).json({ message: "Email da ton tai" });
     }
+    const salt = await bcrypt.genSalt(10); // tạo salt
+    const hashedPassword = await bcrypt.hash(password, salt);
 
+    // 3) Tạo user mới (user_code sẽ được middleware pre('save') sinh tự động)
     const newUser = new User({
       email,
-      password,
+      password: hashedPassword,
       name,
       phone,
-      status: 'active',
-      emailVerificationCode : null, // Lưu code reset
-      verificationExpires:null , // Thời gian hết hạn
+      status: "active",
+      emailVerificationCode: null,
+      verificationExpires: null,
     });
-    console.log(newUser);
-    await newUser.save();
-console.log("User saved:", await User.findOne({ email }));
 
-    res.status(200).json({message: "Dang ky thanh cong"});
+    // 4) Lưu và lấy ra bản ghi đã lưu để chắc chắn có user_code
+    const savedUser = await newUser.save();
+
+    // 5) Trả kết quả về cho Postman (kèm user_code)
+    return res.status(200).json({
+      message: "Đăng ký thành công",
+      user_code: savedUser.user_code,  
+      user: {
+        _id: savedUser._id,
+        email: savedUser.email,
+        name: savedUser.name,
+        phone: savedUser.phone,
+        status: savedUser.status,
+        createdAt: savedUser.createdAt,
+        updatedAt: savedUser.updatedAt,
+      },
+    });
   } catch (error) {
+
     
-    res.status(500).json({message: "Lỗi máy chủ"});
+res.status(500).json({ message: "Lỗi máy chủ", error: error.message });
+
   }
 };
+
 const check = async (req, res) => {
-    res.status(200).json({message: "API hoat dong"});
+  res.status(200).json({ message: "API hoat dong" });
 };
+
+
 
 const changePassword = async (req, res) => {
-    try {
-        const { email, newPassword } = req.body;
+  try {
+    const { email, newPassword } = req.body;
 
-        // Kiểm tra thông tin đầu vào
-        if (!email) {
-            return res.status(400).json({ message: "email and new password are required" });
-        }
-
-        // Kiểm tra xem email là email hay số điện thoại hợp lệ
-        // const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-        // const isPhone = /^\+?[1-9]\d{1,14}$/.test(email);
-
-        // if (!isEmail && !isPhone) {
-        //     return res.status(400).json({ message: "Invalid email or phone number format" });
-        // }
-
-        // Tìm người dùng trong cơ sở dữ liệu
-        const user = await User.findOne({ email: email } );
-
-        if (!user) {
-            return res.status(404).json({ message: "User not found" });
-        }
-
-        // const hashedPassword = await bcrypt.hash(newPassword, 10);
-
-        // // Cập nhật mật khẩu mới và xóa OTP
-        user.password = newPassword;
-        // user.emailVerificationCode = null;
-        // user.phoneVerificationCode = null;
-        // user.isEmailVerified = false; // Reset trạng thái xác minh
-        // user.isPhoneVerified = false;
-        await user.save();
-
-        return res.status(200).json({ message: "Password changed successfully" });
-    } catch (error) {
-        console.error("Error in changePassword:", error);
-        res.status(500).json({ message: "Server error", error: error.message });
+    if (!email || !newPassword) {
+      return res.status(400).json({ message: "Email và mật khẩu mới là bắt buộc" });
     }
+
+    // Tìm trong bảng User
+    let user = await User.findOne({ email });
+
+    if (user) {
+      user.password = await bcrypt.hash(newPassword, 10);
+      await user.save();
+      return res.status(200).json({ message: "Đổi mật khẩu thành công (user)" });
+    }
+
+    // Nếu không tìm thấy trong User, thử Employee
+    let employee = await Employee.findOne({ email });
+
+    if (employee) {
+      employee.password = await bcrypt.hash(newPassword, 10);
+      await employee.save();
+      return res.status(200).json({ message: "Đổi mật khẩu thành công (employee)" });
+    }
+
+    return res.status(404).json({ message: "Không tìm thấy người dùng hoặc nhân viên" });
+  } catch (error) {
+    console.error("Lỗi trong changePassword:", error);
+    res.status(500).json({ message: "Lỗi server", error: error.message });
+  }
 };
-//  const forgotPassword = async (req, res) => {
-//     try {
-//         const { email } = req.body;
 
-//         // Kiểm tra nếu là email hợp lệ
+module.exports = changePassword;
 
-//         if (!email) {
-//             return res.status(400).json({ message: "Invalid email format" });
-//         }
-
-//         // Tìm người dùng theo email 
-//         const user = await User.findOne({ email: email });
-
-//         if (!user) {
-//             return res.status(404).json({ message: "Email not registered" });
-//         }
-
-//         // Generate OTP
-//         const otp = generateVerificationCode();
-//         const expirationTime = new Date(Date.now() + 15 * 60 * 1000); // OTP hết hạn sau 15 phút
-
-//         // Cập nhật OTP vào người dùng
-//         if (email) {
-//             user.emailVerificationCode = otp;
-//         } else {
-//             user.phoneVerificationCode = otp;
-//         }
-//         user.verificationExpires = expirationTime;
-
-//         // Lưu lại thay đổi trên cơ sở dữ liệu
-//         await user.save();
-
-//         // Gửi OTP qua email hoặc SMS
-//         if (email) {
-//             await email.sendVerificationEmail(contact, otp);
-//         } else {
-//             await sendVerificationSMS(contact, otp); // Sử dụng dịch vụ SMS
-//         }
-
-//         return res.status(200).json({ message: "OTP sent successfully" });
-//     } catch (error) {
-//         console.error("Error in forgotPassword: ", error);
-//         res.status(500).json({ message: "Server error", error: error.message });
-//     }
-// };
 // Cấu hình Nodemailer
 const transporter = nodemailer.createTransport({
   host: process.env.EMAIL_HOST,
@@ -172,25 +169,29 @@ const forgotPassword = async (req, res) => {
   try {
     const { email } = req.body;
 
-    // Validate email
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      return res.status(400).json({ message: 'Invalid email format' });
+      return res.status(400).json({ message: "Invalid email format" });
     }
 
-    // Tìm user
-    const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(404).json({ message: 'Email not registered' });
-    }
-
-    // Tạo OTP
     const otp = generateVerificationCode();
     const expirationTime = new Date(Date.now() + 15 * 60 * 1000);
 
-    // Lưu OTP
-    user.emailVerificationCode = otp;
-    user.verificationExpires = expirationTime;
-    await user.save();
+    // Tìm trong User trước
+    let user = await User.findOne({ email });
+    if (user) {
+      user.emailVerificationCode = otp;
+      user.verificationExpires = expirationTime;
+      await user.save();
+    } else {
+      // Nếu không có trong User, tìm trong Employee
+      let employee = await Employee.findOne({ email });
+      if (!employee) {
+        return res.status(404).json({ message: 'Email not registered' });
+      }
+      employee.emailVerificationCode = otp;
+      employee.verificationExpires = expirationTime;
+      await employee.save();
+    }
 
     // Gửi email
     const mailOptions = {
@@ -206,49 +207,71 @@ const forgotPassword = async (req, res) => {
     };
 
     await transporter.sendMail(mailOptions);
-    return res.status(200).json({ message: 'OTP sent successfully' });
+    return res.status(200).json({ message: "OTP sent successfully" });
   } catch (error) {
-    console.error('Error in forgotPassword:', error);
-    return res.status(500).json({ message: 'Server error', error: error.message });
+    console.error("Error in forgotPassword:", error);
+    return res
+      .status(500)
+      .json({ message: "Server error", error: error.message });
   }
 };
+
 const resetPassword = async (req, res) => {
   try {
     const { email, code, newPassword } = req.body;
 
     if (!email || !code || !newPassword) {
-      return res.status(400).json({ message: 'Email, code, and new password are required' });
+      return res
+        .status(400)
+        .json({ message: "Email, code, and new password are required" });
     }
 
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      return res.status(400).json({ message: 'Invalid email format' });
+      return res.status(400).json({ message: "Invalid email format" });
     }
 
-    const user = await User.findOne({
+    // Tìm trong User trước
+    let user = await User.findOne({
       email,
       emailVerificationCode: code,
       verificationExpires: { $gt: Date.now() },
     });
 
-    if (!user) {
+    if (user) {
+      user.password = await bcrypt.hash(newPassword, 10);
+      user.emailVerificationCode = null;
+      user.verificationExpires = null;
+      await user.save();
+      return res.status(200).json({ message: 'Password reset successfully (user)' });
+    }
+
+    // Nếu không có trong User, tìm trong Employee
+    let employee = await Employee.findOne({
+      email,
+      emailVerificationCode: code,
+      verificationExpires: { $gt: Date.now() },
+    });
+
+    if (!employee) {
       return res.status(400).json({ message: 'Invalid or expired OTP' });
     }
 
-    // const hashedPassword = await bcrypt.hash(newPassword, 10);
-    user.password = newPassword;
-    user.emailVerificationCode = null;
-    user.verificationExpires = null;
-    await user.save();
+    employee.password = await bcrypt.hash(newPassword, 10);
+    employee.emailVerificationCode = null;
+    employee.verificationExpires = null;
+    await employee.save();
 
-    return res.status(200).json({ message: 'Password reset successfully' });
+    return res.status(200).json({ message: 'Password reset successfully (employee)' });
   } catch (error) {
-    console.error('Error in resetPassword:', error);
-    return res.status(500).json({ message: 'Server error', error: error.message });
+    console.error("Error in resetPassword:", error);
+    return res
+      .status(500)
+      .json({ message: "Server error", error: error.message });
   }
 };
 
 
-module.exports = {
-  Login,Signup,check,changePassword,forgotPassword, resetPassword
-}
 
+module.exports = {
+  Login, Signup, check, changePassword, forgotPassword, resetPassword
+}

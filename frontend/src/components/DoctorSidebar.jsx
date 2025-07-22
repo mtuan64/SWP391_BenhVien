@@ -9,6 +9,9 @@ const DoctorSidebar = () => {
     { to: "/doctor/appointments", label: "View Appointment", icon: <CalendarOutlined /> },
     { to: "/doctor/notifications", label: "Notification", icon: <BellOutlined /> },
     { to: "/doctor/work-schedule", label: "View Work Schedule", icon: <ScheduleOutlined /> },
+        { to: "/doctor/profile", label: "View profile", icon: <ScheduleOutlined /> },
+        
+
   ];
 
   return (

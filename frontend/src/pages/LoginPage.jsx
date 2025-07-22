@@ -2,40 +2,51 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/authContext";
 import "../assets/css/Login.css";
+import { Modal } from "antd";
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch("http://localhost:9999/api/auth/Login", {
+      const response = await fetch("http://localhost:9999/api/auth/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ userEmail:email, userPassword:password }),
+        body: JSON.stringify({ email: email, password: password }),
       });
 
       const data = await response.json();
       if (response.ok) {
         console.log("Login successful, user data:", data.user);
 
-
         localStorage.setItem("user", JSON.stringify(data.user));
         localStorage.setItem("token", data.token);
 
         // Update auth context
-        login(data.user);
+        login(data.user, data.token);
 
         // Slight delay to ensure context update propagates
         setTimeout(() => navigate("/"), 0);
       } else {
-        console.error("Login failed:", data.msg);
-        alert(data.msg);
+        if (response.status === 403) {
+          Modal.warning({
+            title: "Tài khoản bị khóa",
+            content:
+              "Tài khoản của bạn đã bị vô hiệu hóa. Vui lòng liên hệ quản trị viên để được hỗ trợ. Gửi email tới: abc@gmail.com",
+          });
+        } else {
+          Modal.error({
+            title: "Đăng nhập thất bại",
+            content: data.message || "Có lỗi xảy ra. Vui lòng thử lại.",
+          });
+        }
       }
     } catch (error) {
       console.error("Login error:", error);
@@ -78,14 +89,31 @@ const LoginPage = () => {
               <label htmlFor="password" className="label">
                 Mật Khẩu
               </label>
-              <input
-                type="password"
-                id="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="input"
-                required
-              />
+              <div style={{ position: "relative" }}>
+                <input
+                  type={showPassword ? "text" : "password"}
+                  id="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="input"
+                  required
+                />
+                <span
+                  onClick={() => setShowPassword((prev) => !prev)}
+                  style={{
+                    position: "absolute",
+                    right: 10,
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    cursor: "pointer",
+                    fontSize: 14,
+                    color: "#555",
+                    userSelect: "none",
+                  }}
+                >
+                  {showPassword ? "Ẩn" : "Hiện"}
+                </span>
+              </div>
             </div>
             <div className="forgotPasswordLink">
               <a href="/forgot-password">Bạn quên mật khẩu ?</a>
