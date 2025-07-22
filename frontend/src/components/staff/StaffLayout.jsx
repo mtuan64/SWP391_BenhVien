@@ -15,6 +15,7 @@ import {
   BellOutlined,
   UserOutlined,
   PlusCircleOutlined,
+  CheckCircleOutlined, // Icon for Attendance
 } from "@ant-design/icons";
 import { Link, Outlet, useNavigate } from "react-router-dom";
 
@@ -97,6 +98,11 @@ const StaffLayout = () => {
           <Menu.Item key="16" icon={<QuestionCircleOutlined />}>
             <Link to="/staff/schedule">Manage Schedule</Link>
           </Menu.Item>
+
+          <Menu.Item key="19" icon={<CheckCircleOutlined />}>
+            <Link to="/staff/attendance">Attendance</Link>
+          </Menu.Item>
+
           <Menu.Item key="17" icon={<LogoutOutlined />} onClick={handleLogout}>
             Logout
           </Menu.Item>

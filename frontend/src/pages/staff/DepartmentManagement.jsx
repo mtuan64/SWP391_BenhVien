@@ -14,6 +14,7 @@ import {
   Pagination,
 } from "react-bootstrap";
 import { FaEdit, FaTrash } from "react-icons/fa";
+import { message } from "antd"; // Import message from antd
 import FooterComponent from "../../components/FooterComponent";
 import "../../assets/css/Homepage.css";
 
@@ -96,13 +97,15 @@ const DepartmentManagement = () => {
           `http://localhost:9999/api/departments/${currentDepartment._id}`,
           form
         );
+        message.success("Department updated successfully!"); // Success message
       } else {
         await axios.post("http://localhost:9999/api/departments", form);
+        message.success("Department added successfully!"); // Success message
       }
       setShowModal(false);
       fetchDepartments(searchQuery, currentPage);
     } catch (error) {
-      setError(error.response?.data?.message || "Operation failed.");
+      message.error(error.response?.data?.message || "Operation failed."); // Error message
     }
   };
 
@@ -114,10 +117,11 @@ const DepartmentManagement = () => {
   const confirmDelete = async () => {
     try {
       await axios.delete(`http://localhost:9999/api/departments/${deleteDepartmentId}`);
+      message.success("Department deleted successfully!"); // Success message
       setShowDeleteModal(false);
       fetchDepartments(searchQuery, currentPage);
     } catch (error) {
-      setError(error.response?.data?.message || "Delete failed.");
+      message.error(error.response?.data?.message || "Delete failed."); // Error message
     }
   };
 
@@ -146,15 +150,17 @@ const DepartmentManagement = () => {
             </InputGroup>
           </Col>
 
-          <Col md={3} sm={12} className="mb-2 mb-md-0">
-            <Button
-              variant="outline-primary"
-              onClick={handleClearFilters}
-              className="shadow-sm rounded-pill px-3 w-100"
-            >
-              Clear Filters
-            </Button>
-          </Col>
+              <Col md={3} sm={12} className="mb-2 mb-md-0">
+                <Button
+                  variant="outline-primary"
+                  onClick={handleClearFilters}
+                  className="shadow-sm rounded-pill px-2"  // Giảm padding ngang (px-2)
+                  size="sm"  // Đặt size là "sm" để làm nút nhỏ hơn
+                >
+                  Clear
+                </Button>
+              </Col>
+
 
           <Col md={6} sm={12} className="text-md-end">
             <Button
@@ -195,26 +201,27 @@ const DepartmentManagement = () => {
                       <td>{(currentPage - 1) * limit + index + 1}</td>
                       <td>{department.name}</td>
                       <td>{department.description || "N/A"}</td>
-                      <td>
-                        <div style={{ display: "flex", gap: "8px" }}>
-                          <Button
-                            variant="primary"
-                            size="sm"
-                            className="rounded-circle"
-                            onClick={() => handleEdit(department)}
-                          >
-                            <FaEdit />
-                          </Button>
-                          <Button
-                            variant="danger"
-                            size="sm"
-                            className="rounded-circle"
-                            onClick={() => handleDeleteClick(department._id)}
-                          >
-                            <FaTrash />
-                          </Button>
-                        </div>
-                      </td>
+                    <td>
+                      <div style={{ display: "flex", gap: "8px" }}>
+                        <Button
+                          variant="primary"
+                          size="sm"
+                          className="rounded-sm" // Dùng rounded-sm để bo góc nhẹ
+                          onClick={() => handleEdit(department)}
+                        >
+                          <FaEdit />
+                        </Button>
+                        <Button
+                          variant="danger"
+                          size="sm"
+                          className="rounded-sm" // Dùng rounded-sm để bo góc nhẹ
+                          onClick={() => handleDeleteClick(department._id)}
+                        >
+                          <FaTrash />
+                        </Button>
+                      </div>
+                    </td>
+
                     </tr>
                   ))}
                 </tbody>
@@ -303,8 +310,6 @@ const DepartmentManagement = () => {
           </Button>
         </Modal.Footer>
       </Modal>
-
-      
     </>
   );
 };
