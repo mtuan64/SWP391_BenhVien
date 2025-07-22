@@ -39,6 +39,7 @@ app.use("/api/staff/blog", require("./routers/Staff/blog.route"));
 app.use("/api/staff/news", require("./routers/Staff/news.route"));
 app.use("/api/staff/medical-record", require("./routers/Staff/medicalrecord.route"));
 app.use("/api/attendance", require("./routers/Doctor/attendance.routes"));
+app.use("/api/attendance", require("./routers/Staff/attendance.route"));
 
 // Routers import
 const userRouter = require("./routers/User/user.route");
