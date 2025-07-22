@@ -56,14 +56,12 @@ const AppointmentManagePage = () => {
           },
         }
       );
-      // Hiển thị thông báo từ backend
-      alert(res.data.message);
-      // Reload danh sách để cập nhật status mới (PendingCancel)
-      fetchAppointments();
+      alert(res.data.message); // Hiển thị message từ server (thành công hoặc lỗi)
+      fetchAppointments(); // Reload danh sách từ server
     } catch (err) {
       console.error("Cancel failed", err);
       const errorMessage = err.response?.data?.message || "Hủy lịch hẹn thất bại. Vui lòng thử lại.";
-      alert(errorMessage);
+      alert(errorMessage); // Hiển thị lỗi cụ thể
     }
   };
 
