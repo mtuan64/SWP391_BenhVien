@@ -77,6 +77,7 @@ import BlogDetail from "./pages/BlogDetail";
 import ViewMedicalRecord from "./pages/ViewMedicalRecord";
 import NotFoundPage from "./pages/NotFoundPage";
 import DoctorAttendance from './components/staff/DoctorAttendance';
+import StaffAttendance from './pages/staff/attendanceStaff.jsx';
 import MedicineListPage from "./pages/MedicineListPage.jsx";
 import MedicineDetail from "./pages/MedicineDetail";
 import ServiceDetail from "./pages/ServiceDetail.jsx";
@@ -242,7 +243,7 @@ const AppRoutes = () => {
             <Route path="medicines" element={<MedicineManagement />} />
             <Route path="schedule" element={<StaffScheduleManager />} />
             <Route path="profile" element={<ProfileStaff />} />
-
+            <Route path="attendance" element={<StaffAttendance />} /> {/* Add Staff Attendance route */}
           </Route>
 
 
