@@ -1,0 +1,216 @@
+/* AppointmentScheduleManagement.css */
+
+/* General container styling */
+.container {
+  background-color: #ffffff;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.05);
+}
+
+/* Page title */
+h2 {
+  font-weight: 700;
+  font-size: 1.8rem;
+  color: #004085;
+}
+
+/* Filters */
+.filter-card {
+  background-color: #f7f9fc;
+  padding: 1rem;
+  border-radius: 10px;
+  border: 1px solid #dee2e6;
+  margin-bottom: 2rem;
+}
+
+.filter-card .form-label {
+  font-weight: 500;
+  color: #495057;
+}
+
+.filter-card .form-control,
+.filter-card .form-select {
+  border-radius: 8px;
+}
+
+/* Table */
+.table-responsive {
+  border: 1px solid #dee2e6;
+  border-radius: 10px;
+  overflow-x: auto;
+}
+
+.table {
+  margin-bottom: 0;
+}
+
+.table thead th {
+  background-color: #0d6efd;
+  color: #ffffff;
+  font-weight: 600;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+.table td {
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+/* Pagination */
+.pagination {
+  margin-top: 1rem;
+}
+
+.pagination .page-item .page-link {
+  border-radius: 6px;
+  margin: 0 2px;
+}
+
+/* Loading & Error */
+.loading-container,
+.error-container {
+  text-align: center;
+  padding: 2rem 0;
+}
+
+.loading-container p,
+.error-container h5 {
+  margin-top: 1rem;
+  color: #6c757d;
+}
+
+/* Modal */
+.modal-header {
+  border-bottom: none;
+}
+
+.modal-title {
+  font-weight: 600;
+}
+
+.modal-body {
+  background-color: #fefefe;
+}
+
+.modal-footer {
+  background-color: #f8f9fa;
+  border-top: none;
+}
+
+/* Form fields */
+.form-label {
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: #343a40;
+}
+
+.form-control,
+.form-select {
+  border-radius: 8px;
+  padding: 0.45rem 0.75rem;
+}
+
+/* Form error */
+.text-danger.small {
+  font-size: 0.8rem;
+  margin-top: 0.25rem;
+}
+
+/* Buttons */
+.btn {
+  border-radius: 8px;
+  font-weight: 500;
+}
+
+.btn-primary {
+  background-color: #0d6efd;
+  border-color: #0d6efd;
+}
+
+.btn-primary:hover {
+  background-color: #0b5ed7;
+  border-color: #0a58ca;
+}
+
+.btn-outline-primary {
+  color: #0d6efd;
+  border-color: #0d6efd;
+}
+
+.btn-outline-primary:hover {
+  background-color: #0d6efd;
+  color: white;
+}
+
+.btn-danger:hover {
+  background-color: #c82333;
+  border-color: #bd2130;
+}
+
+/* Badge-like appearance for status */
+.badge-status {
+  padding: 0.4em 0.65em;
+  border-radius: 5px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: white;
+  text-transform: uppercase;
+}
+
+.status-Booked {
+  background-color: #17a2b8;
+}
+
+.status-In-Progress {
+  background-color: #ffc107;
+  color: #212529;
+}
+
+.status-Completed {
+  background-color: #28a745;
+}
+
+.status-Canceled {
+  background-color: #dc3545;
+}
+/* Form section titles */
+.section-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #0d6efd;
+  margin-bottom: 1rem;
+  border-left: 4px solid #0d6efd;
+  padding-left: 0.5rem;
+}
+
+/* Modal spacing */
+.appointment-modal-body {
+  background-color: #fdfdfd;
+}
+
+/* Form control spacing */
+.form-label {
+  font-weight: 600;
+}
+
+.form-control,
+.form-select {
+  border-radius: 6px;
+  padding: 0.5rem;
+}
+
+.text-danger {
+  font-size: 0.8rem;
+}
+
+.input-group > .form-control {
+  border-top-left-radius: 6px;
+  border-bottom-left-radius: 6px;
+}
+
+.input-group > .btn {
+  border-top-right-radius: 6px;
+  border-bottom-right-radius: 6px;
+}
