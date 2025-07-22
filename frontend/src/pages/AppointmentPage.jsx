@@ -86,7 +86,7 @@ const AppointmentPage = () => {
 
     try {
       const res = await axios.post(
-"http://localhost:9999/api/profile/create",
+        "http://localhost:9999/api/profile/create",
         {
           name: profileName,
           gender: profileGender,
@@ -180,7 +180,7 @@ const AppointmentPage = () => {
       if (err.response?.status === 409 || err.response?.data?.message?.includes("already has an appointment")) {
         setError("Lịch này đã được đặt. Vui lòng chọn thời gian khác.");
       } else {
-setError("Đặt lịch thất bại. Thử lại sau.");
+        setError("Đặt lịch thất bại. Thử lại sau.");
       }
       setSelectedTime(null);
     }
@@ -269,7 +269,7 @@ setError("Đặt lịch thất bại. Thử lại sau.");
                 type="text"
                 className="form-control"
                 value={profileName}
-onChange={(e) => setProfileName(e.target.value)}
+                onChange={(e) => setProfileName(e.target.value)}
                 placeholder="Nhập Họ và Tên"
               />
             </div>
@@ -348,7 +348,7 @@ onChange={(e) => setProfileName(e.target.value)}
                       <p className="text-muted small mb-0">{dep.description}</p>
                     )}
                   </label>
-</Col>
+                </Col>
               ))}
             </Row>
             <div className="d-flex justify-content-between mt-4">
@@ -428,7 +428,7 @@ onChange={(e) => setProfileName(e.target.value)}
                 Quay Lại
               </button>
               <button
-className="btn btn-primary"
+                className="btn btn-primary"
                 onClick={() => setStep("datetime")}
                 disabled={!selectedDoctor}
               >
@@ -508,7 +508,7 @@ className="btn btn-primary"
             </div>
           </div>
         );
-case "confirm":
+      case "confirm":
         return (
           <div className="p-4 bg-white rounded shadow-sm text-center">
             <h3 className="text-primary fw-bold mb-3">Thanh Toán Lịch Hẹn</h3>
@@ -536,7 +536,7 @@ case "confirm":
     }
   };
 
-  return (
+   return (
     <>
       <div className="bg-light py-3 px-5 d-none d-lg-block border-bottom shadow-sm">
         <Row className="align-items-center justify-content-between">
@@ -594,7 +594,7 @@ case "confirm":
                 Đặt Lịch Hẹn Tại KiwiCare
               </h1>
               <p className="text-white fs-5">
-Dễ dàng đặt lịch với các bác sĩ chuyên khoa hàng đầu
+                Dễ dàng đặt lịch với các bác sĩ chuyên khoa hàng đầu
               </p>
             </div>
           </div>
@@ -644,10 +644,6 @@ Dễ dàng đặt lịch với các bác sĩ chuyên khoa hàng đầu
           </Row>
         </section>
       </div>
-      <div
-        id="embedded-payment-container"
-        style={{ width: "100%", height: "400px", backgroundColor: "#f5f5f5", display: "none" }} // Không cần hiển thị
-      ></div>
     </>
   );
 };
