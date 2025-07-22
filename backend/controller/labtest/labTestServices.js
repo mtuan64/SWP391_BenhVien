@@ -2,6 +2,33 @@ const mongoose = require("mongoose");
 const LabTestSchema = require("../../models/LabTest");
 const UserSchema = require("../../models/User");
 
+module.exports.create = async (req, res) => {
+    const { services } = req.body;
+    await createLab(services);
+
+    res.status(201).json({
+        message: "Created successfully",
+        data: entity
+    });
+}
+
+module.exports.updateModel = async (id, result, dayTest) => {
+    const model = await LabTestSchema.findById(id);
+    if (model) {
+        model.result = result;
+        model.dayTest = dayTest
+        return await model.save();
+    }
+}
+
+module.exports.createLab = async (services) => {
+    const model = new LabTestSchema({
+        services
+    });
+
+    return await model.save();
+}
+
 module.exports.createLabTest = async (req, res) => {
     const {
         fullName,
@@ -44,3 +71,4 @@ module.exports.findById = async (req, res) => {
         data: testLab
     })
 }
+

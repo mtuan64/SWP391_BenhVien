@@ -1,10 +1,11 @@
 require("dotenv").config();
 const User = require("../../models/User");
 const Employee = require("../../models/Employee");
+const Department = require("../../models/Department");
 const bcrypt = require("bcrypt");
 
 // Admin - user manage
-const getUserAccs = async (req, res) => {
+module.exports.getUserAccs = async (req, res) => {
   try {
     const users = await User.find({}, "name email status createdAt");
     res.json(users);
@@ -13,7 +14,7 @@ const getUserAccs = async (req, res) => {
   }
 };
 
-const editUsers = async (req, res) => {
+module.exports.editUsers = async (req, res) => {
   try {
     const user = await User.findById(req.params.id);
     if (!user) return res.status(404).json({ message: "User not found" });
@@ -32,7 +33,7 @@ const editUsers = async (req, res) => {
   }
 };
 
-const changeStatus = async (req, res) => {
+module.exports.changeStatus = async (req, res) => {
   try {
     const user = await User.findById(req.params.id);
 
@@ -49,7 +50,7 @@ const changeStatus = async (req, res) => {
   }
 };
 
-const delUsers = async (req, res) => {
+module.exports.delUsers = async (req, res) => {
   try {
     const user = await User.findByIdAndDelete(req.params.id);
     if (!user) return res.status(404).json({ message: "User not found" });
@@ -64,9 +65,11 @@ const delUsers = async (req, res) => {
 
 //Admin - employee manage
 
-const getEmployees = async (req, res) => {
+module.exports.getEmployees = async (req, res) => {
   try {
-    const employees = await Employee.find({}, "-password");
+    const employees = await Employee.find({}, "-password")
+      .populate("department", "name");
+
     res.json(employees);
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -74,7 +77,7 @@ const getEmployees = async (req, res) => {
 };
 
 // CREATE employee
-const createEmployees = async (req, res) => {
+module.exports.createEmployees = async (req, res) => {
   try {
     const hashedPassword = await bcrypt.hash(req.body.password, 10);
     const employee = new Employee({
@@ -91,12 +94,11 @@ const createEmployees = async (req, res) => {
   } catch (err) {
     res.status(400).json({ message: err.message });
     console.log(err);
-    
   }
 };
 
 // UPDATE employee (full form)
-const editEmployees = async (req, res) => {
+module.exports.editEmployees = async (req, res) => {
   try {
     const updateFields = { ...req.body };
 
@@ -122,26 +124,25 @@ const editEmployees = async (req, res) => {
 };
 
 // DELETE employee
-const delEmployees = async (req, res) => {
+module.exports.delEmployees = async (req, res) => {
   try {
     const employee = await Employee.findByIdAndDelete(req.params.id);
     if (!employee)
       return res.status(404).json({ message: "Employee not found" });
 
-
+    
     res.json({ message: "Employee deleted successfully" });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 };
 
-module.exports = {
-  getUserAccs,
-  editUsers,
-  changeStatus,
-  delUsers,
-  getEmployees,
-  createEmployees,
-  editEmployees,
-  delEmployees,
-}
+module.exports.getAllDepartments = async (req, res) => {
+  try {
+    const departments = await Department.find().select("name");
+    res.json(departments);
+  } catch (error) {
+    console.error("Error fetching departments:", error);
+    res.status(500).json({ message: "Failed to get departments" });
+  }
+};

@@ -16,12 +16,13 @@ import {
 } from "antd";
 import axios from "axios";
 import moment from "moment";
-
+import "../../assets/css/AdminPages.css";
 const { Option } = Select;
 const { RangePicker } = DatePicker;
 
 function EmployeeManagement() {
   const [employees, setEmployees] = useState([]);
+  const [departments, setDepartments] = useState([]);
   const [searchText, setSearchText] = useState("");
   const [statusFilter, setStatusFilter] = useState(null);
   const [roleFilter, setRoleFilter] = useState(null);
@@ -41,8 +42,18 @@ function EmployeeManagement() {
     }
   };
 
+  const fetchDepartments = async () => {
+    try {
+      const res = await axios.get("/api/admin/getDepart");
+      setDepartments(res.data);
+    } catch (err) {
+      message.error("Failed to fetch departments");
+    }
+  };
+
   useEffect(() => {
     fetchEmployees();
+    fetchDepartments();
   }, []);
 
   const handleDelete = async (id) => {
@@ -59,6 +70,7 @@ function EmployeeManagement() {
     setEditingEmployee(employee);
     form.setFieldsValue({
       ...employee,
+      department: employee.department?._id || undefined,
     });
   };
 
@@ -146,7 +158,11 @@ function EmployeeManagement() {
         >
           Reset
         </Button>
-        <Button type="primary" onClick={() => setCreateModalVisible(true)}>
+        <Button
+          type="primary"
+          className="custom-add-button"
+          onClick={() => setCreateModalVisible(true)}
+        >
           Add Employee
         </Button>
       </div>
@@ -217,16 +233,11 @@ function EmployeeManagement() {
               {viewingEmployee.status}
             </Descriptions.Item>
             <Descriptions.Item label="Department">
-              {viewingEmployee.department || "—"}
+              {viewingEmployee?.department?.name || "—"}
             </Descriptions.Item>
+
             <Descriptions.Item label="Specialization">
               {viewingEmployee.specialization || "—"}
-            </Descriptions.Item>
-            <Descriptions.Item label="Services">
-              {viewingEmployee.services || "—"}
-            </Descriptions.Item>
-            <Descriptions.Item label="Schedule">
-              {viewingEmployee.schedule || "—"}
             </Descriptions.Item>
             <Descriptions.Item label="Phone">
               {viewingEmployee.phone || "—"}
@@ -271,8 +282,18 @@ function EmployeeManagement() {
               <Option value="inactive">Inactive</Option>
             </Select>
           </Form.Item>
-          <Form.Item label="Department" name="department">
-            <Input />
+          <Form.Item
+            label="Department"
+            name="department"
+            rules={[{ required: true }]}
+          >
+            <Select placeholder="Select department">
+              {departments.map((dept) => (
+                <Option key={dept._id} value={dept._id}>
+                  {dept.name}
+                </Option>
+              ))}
+            </Select>
           </Form.Item>
           <Form.Item label="Specialization" name="specialization">
             <Input />

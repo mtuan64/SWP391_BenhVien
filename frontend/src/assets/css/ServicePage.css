@@ -40,7 +40,8 @@
   font-size: 18px;
   letter-spacing: 2px;
   text-transform: uppercase;
-  color: #f59e0b; /* Assuming var(--secondary) is a vibrant color like amber */
+  color: #f59e0b;
+  /* Assuming var(--secondary) is a vibrant color like amber */
   margin-bottom: 10px;
 }
 
@@ -48,7 +49,8 @@
   font-size: 48px;
   font-weight: 700;
   margin-bottom: 20px;
-  color: #ffffff; /* Assuming var(--white) is white */
+  color: #ffffff;
+  /* Assuming var(--white) is white */
 }
 
 .carousel-caption .btn {
@@ -71,6 +73,7 @@
   .carousel-caption h5 {
     font-size: 14px;
   }
+
   .carousel-caption h1 {
     font-size: 30px;
   }
@@ -210,7 +213,7 @@
 }
 
 .service-search {
-  width: 897px;              
+  width: 897px;
   max-width: 100%;
   padding: 14px 20px;
   font-size: 1.15rem;
@@ -223,7 +226,7 @@
 }
 
 .service-search:focus {
-  border: 1.5px solid #009fd9;  
+  border: 1.5px solid #009fd9;
   background: #fff;
   box-shadow: 0 4px 18px #cdeafc2a;
 }
@@ -231,7 +234,7 @@
 .service-search-bar {
   display: flex;
   align-items: center;
-  gap: 50px; 
+  gap: 50px;
   margin-bottom: 24px;
 }
 

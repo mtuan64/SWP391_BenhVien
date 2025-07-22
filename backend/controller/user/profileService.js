@@ -3,7 +3,7 @@ const User = require("../../models/User");
 // Tạo hồ sơ bệnh nhân
 exports.createProfile = async (req, res) => {
     try {
-        const { name, dateOfBirth, gender } = req.body;
+        const { name, dateOfBirth, identityNumber, gender } = req.body;
         const userId = req.user.id;
 
         const birthDate = new Date(dateOfBirth);
@@ -12,8 +12,8 @@ exports.createProfile = async (req, res) => {
         if (birthDate > now) {
             return res.status(400).json({ message: 'Date of birth cannot be in the future' });
         }
-        
-        const newProfile = new Profile({ userId, name, dateOfBirth, gender });
+
+        const newProfile = new Profile({ userId, name, dateOfBirth, identityNumber, gender });
         await newProfile.save();
 
         await User.findByIdAndUpdate(userId, {
@@ -30,8 +30,14 @@ exports.createProfile = async (req, res) => {
 exports.getProfilesByUser = async (req, res) => {
     try {
         const userId = req.user.id;
-        const profiles = await Profile.find({ userId });
-
+        const profiles = await Profile.find({ userId })
+            .populate('medicine', 'name')  // Populate tên thuốc từ Medicine
+            .populate('service', 'name')   // Populate tên dịch vụ từ Services
+            .populate('doctorId', 'name') // Populate tên bác sĩ từ Employee
+            .populate({
+                path: 'labTestId',         // Populate LabTest
+                populate: { path: 'services', select: 'name' }  // Populate services trong LabTest
+            });
         res.status(200).json(profiles);
     } catch (err) {
         res.status(500).json({ message: 'Failed to fetch profiles', error: err.message });
@@ -41,7 +47,7 @@ exports.getProfilesByUser = async (req, res) => {
 // Cập nhật hồ sơ bệnh nhân
 exports.updateProfile = async (req, res) => {
     const { id } = req.params;
-    const { name, dateOfBirth, gender } = req.body;
+    const { name, dateOfBirth, identityNumber, gender } = req.body;
     const userId = req.user.id;
 
     try {
@@ -54,7 +60,7 @@ exports.updateProfile = async (req, res) => {
 
         const profile = await Profile.findOneAndUpdate(
             { _id: id, userId },
-            { name, dateOfBirth, gender },
+            { name, dateOfBirth, identityNumber, gender },
             { new: true }
         );
 

@@ -268,7 +268,7 @@ module.exports.delEmployees = async (req, res) => {
 module.exports.getAllDoctorsForApm = async (req, res) => {
     try {
         const doctors = await Employee.find({ role: 'Doctor', status: 'active' })
-            .select('name department expYear avatar'); // CHỈ lấy các trường cần thiết
+            .select('name department expYear avatar degree'); // CHỈ lấy các trường cần thiết
 
         res.status(200).json(doctors);
     } catch (err) {
