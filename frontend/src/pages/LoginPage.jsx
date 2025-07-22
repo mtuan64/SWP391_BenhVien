@@ -37,9 +37,9 @@ const LoginPage = () => {
             content: `Bạn cần cập nhật các trường sau: ${data.missingFields.join(
               ", "
             )}`,
-            onOk: () => {
-              navigate("/doctor/profile");
-            },
+            // onOk: () => {
+            //   navigate("/doctor/profile");
+            // },
           });
         }
 

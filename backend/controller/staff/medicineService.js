@@ -1,6 +1,6 @@
 const medicineRepo = require('../../repository/medicine.repository');
 const jwt = require('jsonwebtoken');
-
+require('dotenv').config();
 const createMedicine = async (req, res) => {
   try {
     const token = req.header('Authorization')?.replace('Bearer ', '');
