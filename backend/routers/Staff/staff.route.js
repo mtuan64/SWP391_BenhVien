@@ -27,16 +27,15 @@ staffRouter.get('/invoices', invoiceController.getAllInvoices);
 staffRouter.get('/services/:invoiceId', invoiceController.getServices);
 staffRouter.post('/invoices', invoiceController.CreateInvoices);
 staffRouter.post('/appointmentinvoices', invoiceController.CreateInvoices2);
-
+staffRouter.get("/services", invoiceController.getAllServices);
 staffRouter.put('/services/paid/:invoiceId', paymentController.paidServices);
 staffRouter.delete('/services/delete/:invoiceId', paymentController.deleteInvoice);
 staffRouter.get('/payments', paymentController.getPayments);
 staffRouter.get("/payments/summary", paymentController.getPaymentSummary);
-staffRouter.get("/services", invoiceController.getAllServices);
 staffRouter.get("/profiles/:userId", invoiceController.getProfilesByUserId)
 staffRouter.get('/doctors', doctorServices.getAllDoctors);
 staffRouter.get('/:userId/profiles', doctorServices.getProfilesByUserId);
-
+staffRouter.get("/abc/services", invoiceController.getAllServices);
 // Checkup
 staffRouter.post('/checkup', createCheckup);
 

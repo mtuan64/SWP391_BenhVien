@@ -22,7 +22,7 @@ const CreateInvoice2 = () => {
         const fetchServices = async () => {
             try {
                 const token = localStorage.getItem("token");
-                const res = await axios.get("http://localhost:9999/api/staff/services", {
+                const res = await axios.get("http://localhost:9999/api/staff/abc/services", {
                     headers: { Authorization: `Bearer ${token}` },
                 });
                 setServices(res.data.services || []);
@@ -77,7 +77,7 @@ const CreateInvoice2 = () => {
         }
 
         // Sort services
-        filtered.sort((a, b) => {
+filtered.sort((a, b) => {
             switch (sortBy) {
                 case "price-asc":
                     return a.price - b.price;
@@ -168,7 +168,7 @@ const CreateInvoice2 = () => {
     };
 
     return (
-        <div className="max-w-4xl mx-auto p-6 bg-white rounded-lg shadow-lg">
+<div className="max-w-4xl mx-auto p-6 bg-white rounded-lg shadow-lg">
             {/* Header */}
             <div className="mb-8">
                 <h2 className="text-3xl font-bold text-gray-800 mb-2">Tạo hóa đơn mới</h2>
@@ -222,8 +222,7 @@ const CreateInvoice2 = () => {
                         </div>
                     )}
                 </div>
-
-                {/* Services Section */}
+{/* Services Section */}
                 <div className="bg-gray-50 p-6 rounded-lg">
                     <div className="flex justify-between items-center mb-4">
                         <h3 className="text-xl font-semibold text-gray-800">Chọn dịch vụ</h3>
@@ -276,7 +275,7 @@ const CreateInvoice2 = () => {
                                     onChange={(e) => setShowSelectedOnly(e.target.checked)}
                                     className="mr-2"
                                 />
-                                <span className="text-sm text-gray-600">Chỉ hiện đã chọn</span>
+<span className="text-sm text-gray-600">Chỉ hiện đã chọn</span>
                             </label>
                         </div>
 
@@ -326,7 +325,7 @@ const CreateInvoice2 = () => {
                                             </p>
                                         </div>
                                         <input
-                                            type="checkbox"
+type="checkbox"
                                             checked={selectedServices.includes(service._id)}
                                             onChange={() => handleServiceToggle(service._id)}
                                             className="w-5 h-5 text-blue-600 rounded focus:ring-blue-500"

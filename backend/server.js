@@ -60,6 +60,7 @@ app.use("/api/admin", adminRouter);
 app.use("/api/auth", authRouter);
 app.use("/api/doctor", doctorRouter);
 app.use("/api/staff", staffRouter);
+
 // 15-7
 app.use("/api/food", foodrouter);
 app.use(
