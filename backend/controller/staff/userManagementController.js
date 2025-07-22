@@ -20,6 +20,7 @@ exports.getAllUsers = async (req, res) => {
 
     const totalUsers = await User.countDocuments(query);
     const users = await User.find(query, { _id: 1, name: 1, email: 1, phone: 1, status: 1, user_code: 1 }) // Include user_code
+      .sort({ _id: -1 })  // Sắp xếp theo _id giảm dần (người dùng mới nhất sẽ ở đầu)
       .skip((page - 1) * limit)
       .limit(parseInt(limit))
       .exec();
