@@ -16,5 +16,6 @@ router.get("/schedules/:doctorId", appointmentController.getDoctorSchedules);
 router.post("/profiles", appointmentController.createProfile);
 router.get('/profiles/:userId', appointmentController.getProfilesByUser);
 router.get("/profileByIdentity", appointmentController.getProfileByIdentity);
+router.get("/profile/detail/:profileId", appointmentController.getProfileDetail);
 
 module.exports = router;
