@@ -1,7 +1,7 @@
 // File: UserMedicalProfileDetail.js
 // --- BẮT ĐẦU CODE ---
 
-import { useState, useEffect } from "react"
+import { useState, useEffect } from "react";
 import {
   Form,
   Input,
@@ -15,11 +15,11 @@ import {
   Checkbox,
   Spin,
   DatePicker,
-} from "antd"
-import dayjs from "dayjs"
+} from "antd";
+import dayjs from "dayjs";
 
-const { Title, Text } = Typography
-const { Option } = Select
+const { Title, Text } = Typography;
+const { Option } = Select;
 
 // Component con để hiển thị danh sách lựa chọn trong Modal
 const ProfileSelectionList = ({ profiles, onSelect }) => (
@@ -32,7 +32,8 @@ const ProfileSelectionList = ({ profiles, onSelect }) => (
           <Button type="primary" onClick={() => onSelect(profile)}>
             Select
           </Button>,
-        ]}>
+        ]}
+      >
         <List.Item.Meta
           title={<Text strong>{profile.name}</Text>}
           description={`Date of Birth: ${dayjs(profile.dateOfBirth).format(
@@ -42,26 +43,26 @@ const ProfileSelectionList = ({ profiles, onSelect }) => (
       </List.Item>
     )}
   />
-)
+);
 
 const UserMedicalProfileDetail = () => {
-  const [modalForm] = Form.useForm()
+  const [modalForm] = Form.useForm();
 
   // State quản lý UI chính
-  const [identityToSearch, setIdentityToSearch] = useState("")
-  const [isSearching, setIsSearching] = useState(false)
+  const [identityToSearch, setIdentityToSearch] = useState("");
+  const [isSearching, setIsSearching] = useState(false);
 
   // State quản lý Modal
-  const [isModalOpen, setIsModalOpen] = useState(false)
-  const [modalView, setModalView] = useState("list") // 'list' hoặc 'edit'
-  const [foundProfiles, setFoundProfiles] = useState([])
-  const [selectedProfile, setSelectedProfile] = useState(null)
-  const [isUpdating, setIsUpdating] = useState(false)
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalView, setModalView] = useState("list"); // 'list' hoặc 'edit'
+  const [foundProfiles, setFoundProfiles] = useState([]);
+  const [selectedProfile, setSelectedProfile] = useState(null);
+  const [isUpdating, setIsUpdating] = useState(false);
 
   // State cho dữ liệu phụ (dịch vụ, thuốc)
-  const [services, setServices] = useState([])
-  const [medicines, setMedicines] = useState([])
-  const [isMedicineLoading, setIsMedicineLoading] = useState(false)
+  const [services, setServices] = useState([]);
+  const [medicines, setMedicines] = useState([]);
+  const [isMedicineLoading, setIsMedicineLoading] = useState(false);
 
   // --- I. HÀM GỌI API ---
 
@@ -69,72 +70,78 @@ const UserMedicalProfileDetail = () => {
   useEffect(() => {
     const fetchServices = async () => {
       try {
-        const response = await fetch("http://localhost:9999/api/services")
-        if (!response.ok) throw new Error("Failed to fetch services")
-        const data = await response.json()
-        setServices(data)
+        const response = await fetch("http://localhost:9999/api/services");
+        if (!response.ok) throw new Error("Failed to fetch services");
+        const data = await response.json();
+        setServices(data);
       } catch (error) {
-        message.error(error.message)
+        message.error(error.message);
       }
-    }
-    fetchServices()
-  }, [])
+    };
+    fetchServices();
+  }, []);
 
   // 2. Tìm kiếm hồ sơ và mở popup lựa chọn
   const handleSearchAndShowSelection = async () => {
     if (!identityToSearch.trim()) {
-      message.warn("Please enter an Identity Number.")
-      return
+      message.warn("Please enter an Identity Number.");
+      return;
     }
-    setIsSearching(true)
+    setIsSearching(true);
     try {
       const response = await fetch(
         `http://localhost:9999/api/doctor/by-identity/${identityToSearch}`
-      )
+      );
       if (!response.ok && response.status !== 404) {
-        throw new Error("An error occurred while searching for profiles.")
+        throw new Error("An error occurred while searching for profiles.");
       }
-      const result = await response.json()
-      const profilesData = result.data || []
+      const result = await response.json();
+      const profilesData = result.data || [];
 
       if (profilesData.length === 0) {
-        message.info("No profiles found for this identity number.")
+        message.info("No profiles found for this identity number.");
       } else {
-        setFoundProfiles(profilesData)
-        setModalView("list") // Đặt chế độ xem là danh sách
-        setIsModalOpen(true) // Mở Modal
+        setFoundProfiles(profilesData);
+        setModalView("list"); // Đặt chế độ xem là danh sách
+        setIsModalOpen(true); // Mở Modal
       }
     } catch (error) {
-      message.error(error.message)
+      message.error(error.message);
     } finally {
-      setIsSearching(false)
+      setIsSearching(false);
     }
-  }
+  };
 
   // 3. Tìm kiếm thuốc
   const handleMedicineSearch = async (searchText) => {
-    if (searchText && searchText.length > 1) {
-      setIsMedicineLoading(true)
+    if (searchText && searchText.length > 0) {
+      setIsMedicineLoading(true);
       try {
         const response = await fetch(
           `http://localhost:9999/api/medicines?search=${searchText}`
-        )
-        const data = await response.json()
-        setMedicines(data)
+        );
+        const data = await response.json();
+
+        // Lọc client-side để đảm bảo chỉ hiển thị thuốc bắt đầu bằng từ khóa
+        const filtered = data.filter((med) =>
+          med.name.toLowerCase().startsWith(searchText.toLowerCase())
+        );
+
+        setMedicines(filtered);
       } catch (error) {
-        console.log(error)
-        setMedicines([])
+        console.error(error);
+        setMedicines([]);
       } finally {
-        setIsMedicineLoading(false)
+        setIsMedicineLoading(false);
       }
     } else {
-      setMedicines([])
+      setMedicines([]);
     }
-  }
+  };
 
   // 4. Gửi dữ liệu cập nhật
   const handleUpdateProfile = async (values) => {
-    setIsUpdating(true)
+    setIsUpdating(true);
     try {
       const doctor = JSON.parse(localStorage.getItem("user"));
       const response = await fetch(
@@ -142,54 +149,60 @@ const UserMedicalProfileDetail = () => {
         {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({...values, doctorId: doctor._id}),
+          body: JSON.stringify({ ...values, doctorId: doctor._id }),
         }
       );
       if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.message || "Failed to update profile.")
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to update profile.");
       }
-      message.success("Profile updated successfully!")
-      handleCloseModal() // Đóng và reset mọi thứ
+      message.success("Profile updated successfully!");
+      handleCloseModal(); // Đóng và reset mọi thứ
     } catch (error) {
-      message.error(error.message)
+      message.error(error.message);
     } finally {
-      setIsUpdating(false)
+      setIsUpdating(false);
     }
-  }
+  };
 
   // --- II. HÀM XỬ LÝ GIAO DIỆN ---
 
   // Chuyển từ màn hình danh sách sang màn hình chỉnh sửa
   const handleProfileSelect = (profile) => {
-    setSelectedProfile(profile)
+    setSelectedProfile(profile);
     modalForm.setFieldsValue({
       service: profile.service || [],
       diagnose: profile.diagnose || "",
       note: profile.note || "",
       issues: profile.issues || "",
       medicine: profile.medicine || [],
-      dayTest: profile.labTestId != null && profile.labTestId.dayTest != null ? dayjs(profile.labTestId.dayTest) : dayjs(),
-      result: profile.labTestId != null && profile.labTestId.result != null ? profile.labTestId.result : ""
-    })
-    setModalView("edit") // Chuyển sang chế độ chỉnh sửa
-  }
+      dayTest:
+        profile.labTestId != null && profile.labTestId.dayTest != null
+          ? dayjs(profile.labTestId.dayTest)
+          : dayjs(),
+      result:
+        profile.labTestId != null && profile.labTestId.result != null
+          ? profile.labTestId.result
+          : "",
+    });
+    setModalView("edit"); // Chuyển sang chế độ chỉnh sửa
+  };
 
   // Quay lại màn hình danh sách từ màn hình chỉnh sửa
   const handleBackToList = () => {
-    setSelectedProfile(null)
-    modalForm.resetFields()
-    setModalView("list")
-  }
+    setSelectedProfile(null);
+    modalForm.resetFields();
+    setModalView("list");
+  };
 
   // Đóng và reset hoàn toàn modal
   const handleCloseModal = () => {
-    setIsModalOpen(false)
-    setFoundProfiles([])
-    setSelectedProfile(null)
-    modalForm.resetFields()
+    setIsModalOpen(false);
+    setFoundProfiles([]);
+    setSelectedProfile(null);
+    modalForm.resetFields();
     // Không reset identityToSearch để người dùng có thể thấy số họ vừa tìm
-  }
+  };
 
   // --- III. RENDER COMPONENT ---
 
@@ -207,7 +220,8 @@ const UserMedicalProfileDetail = () => {
         <Button
           type="primary"
           onClick={handleSearchAndShowSelection}
-          loading={isSearching}>
+          loading={isSearching}
+        >
           Find Profiles
         </Button>
       </Space.Compact>
@@ -239,11 +253,13 @@ const UserMedicalProfileDetail = () => {
                   key="submit"
                   type="primary"
                   loading={isUpdating}
-                  onClick={() => modalForm.submit()}>
+                  onClick={() => modalForm.submit()}
+                >
                   Update Profile
                 </Button>,
               ]
-        }>
+        }
+      >
         {modalView === "list" ? (
           <ProfileSelectionList
             profiles={foundProfiles}
@@ -253,7 +269,8 @@ const UserMedicalProfileDetail = () => {
           <Form
             form={modalForm}
             layout="vertical"
-            onFinish={handleUpdateProfile}>
+            onFinish={handleUpdateProfile}
+          >
             <Form.Item
               name="service"
               label="1. Services"
@@ -262,7 +279,8 @@ const UserMedicalProfileDetail = () => {
                   required: true,
                   message: "Please select at least one service.",
                 },
-              ]}>
+              ]}
+            >
               <Checkbox.Group>
                 <Space direction="vertical">
                   {services.map((s) => (
@@ -273,9 +291,7 @@ const UserMedicalProfileDetail = () => {
                 </Space>
               </Checkbox.Group>
             </Form.Item>
-            <Form.Item
-              name="diagnose"
-              label="2. Diagnose">
+            <Form.Item name="diagnose" label="2. Diagnose">
               <Input.TextArea
                 rows={4}
                 placeholder="Enter the diagnosis details..."
@@ -304,7 +320,8 @@ const UserMedicalProfileDetail = () => {
                 filterOption={false}
                 notFoundContent={
                   isMedicineLoading ? <Spin size="small" /> : null
-                }>
+                }
+              >
                 {medicines.map((med) => (
                   <Option key={med._id} value={med._id}>
                     {med.name}
@@ -320,14 +337,17 @@ const UserMedicalProfileDetail = () => {
               />
             </Form.Item>
             <Form.Item name="dayTest" label="5. Day Test">
-              <DatePicker defaultValue={dayjs('01/01/2015', 'DD/MM/YYYY')} disabled/>
+              <DatePicker
+                defaultValue={dayjs("01/01/2015", "DD/MM/YYYY")}
+                disabled
+              />
             </Form.Item>
           </Form>
         )}
       </Modal>
     </div>
-  )
-}
+  );
+};
 
-export default UserMedicalProfileDetail
+export default UserMedicalProfileDetail;
 // --- KẾT THÚC CODE ---
