@@ -14,6 +14,7 @@ import {
   Select,
   Checkbox,
   Spin,
+  DatePicker,
 } from "antd"
 import dayjs from "dayjs"
 
@@ -135,14 +136,15 @@ const UserMedicalProfileDetail = () => {
   const handleUpdateProfile = async (values) => {
     setIsUpdating(true)
     try {
+      const doctor = JSON.parse(localStorage.getItem("user"));
       const response = await fetch(
         `http://localhost:9999/api/doctor/${selectedProfile._id}`,
         {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(values),
+          body: JSON.stringify({...values, doctorId: doctor._id}),
         }
-      )
+      );
       if (!response.ok) {
         const errorData = await response.json()
         throw new Error(errorData.message || "Failed to update profile.")
@@ -167,6 +169,8 @@ const UserMedicalProfileDetail = () => {
       note: profile.note || "",
       issues: profile.issues || "",
       medicine: profile.medicine || [],
+      dayTest: profile.labTestId != null && profile.labTestId.dayTest != null ? dayjs(profile.labTestId.dayTest) : dayjs(),
+      result: profile.labTestId != null && profile.labTestId.result != null ? profile.labTestId.result : ""
     })
     setModalView("edit") // Chuyển sang chế độ chỉnh sửa
   }
@@ -275,7 +279,6 @@ const UserMedicalProfileDetail = () => {
               <Input.TextArea
                 rows={4}
                 placeholder="Enter the diagnosis details..."
-                disabled
               />
             </Form.Item>
             <Form.Item name="note" label="3. Doctor's Note">
@@ -288,7 +291,6 @@ const UserMedicalProfileDetail = () => {
               <Input.TextArea
                 rows={2}
                 placeholder="Describe the issues reported by the patient..."
-                disabled
               />
             </Form.Item>
             <Form.Item name="medicine" label="5. Prescribe Medicine">
@@ -300,7 +302,6 @@ const UserMedicalProfileDetail = () => {
                 onSearch={handleMedicineSearch}
                 loading={isMedicineLoading}
                 filterOption={false}
-                disabled
                 notFoundContent={
                   isMedicineLoading ? <Spin size="small" /> : null
                 }>
@@ -310,6 +311,16 @@ const UserMedicalProfileDetail = () => {
                   </Option>
                 ))}
               </Select>
+            </Form.Item>
+            <Form.Item name="result" label="4. Result">
+              <Input.TextArea
+                rows={2}
+                placeholder="Enter any additional notes..."
+                disabled
+              />
+            </Form.Item>
+            <Form.Item name="dayTest" label="5. Day Test">
+              <DatePicker defaultValue={dayjs('01/01/2015', 'DD/MM/YYYY')} disabled/>
             </Form.Item>
           </Form>
         )}

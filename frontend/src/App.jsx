@@ -29,7 +29,6 @@ import Changepass from "./pages/ChangePassword";
 import ResetPassword from "./pages/ResetPassword";
 import ForgotPassword from "./pages/ForgotPassword";
 import SendQAForm from "./pages/sendQA";
-
 import AdminLayout from "./components/admin/AdminLayout";
 import Dashboard from "./pages/admin/Dashboard";
 import AccountManagement from "./pages/admin/AccountManagement";
@@ -92,6 +91,9 @@ import NutritionAdvice from "./pages/NutritionAdvice.jsx";
 import AppointmentSuccess from "./components/AppointmentSuccess.jsx";
 import MedicinePage from "./pages/MedicinePage.jsx";
 import LabTestPage from "./pages/LabTestPage.jsx";
+import DoctorAppointments from "./pages/DoctorAppointment.jsx";
+import CreateInvoice2 from "./components/staff/CreateInvoiceTest.jsx";
+import AttendanceManagement from "./pages/admin/AttendanceManagement.jsx";
 
 const DRAWER_WIDTH = 240;
 
@@ -179,7 +181,7 @@ const AppRoutes = () => {
             <Route path="medicine" element={<MedicinePage />} />
             <Route
               path="appointments"
-              element={<AppointmentPage/>}
+              element={<DoctorAppointments/>}
             />
             <Route
               path="notifications"
@@ -203,6 +205,7 @@ const AppRoutes = () => {
             <Route index element={<Dashboard />} />
             <Route path="accounts" element={<AccountManagement />} />
             <Route path="employees" element={<EmployeeManagement />} />
+            <Route path="attendance" element={<AttendanceManagement />} />
           </Route>
 
           {/* Staff */}
@@ -216,7 +219,7 @@ const AppRoutes = () => {
           >
             <Route index element={<BlogManagement />} />
             <Route path="blogs" element={<BlogManagement />} />
-            <Route path="invoices/create" element={<CreateInvoice />}></Route>
+            <Route path="invoices/create" element={<CreateInvoice2/>}></Route>
             <Route path="services" element={<ServiceManagement />} />
             <Route path="services/create" element={<CreateServicePage />} />
             <Route path="services/edit/:id" element={<EditServicePage />} />

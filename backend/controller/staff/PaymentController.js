@@ -535,4 +535,3 @@ exports.createPaymentLinkEmbeddedForBookAppointment = async (req, res) => {
 };
 
 
-

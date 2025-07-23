@@ -14,6 +14,7 @@ import {
   Select,
   Checkbox,
   Spin,
+  DatePicker,
 } from "antd"
 import dayjs from "dayjs"
 
@@ -135,12 +136,13 @@ const UserMedicalProfileDetail = () => {
   const handleUpdateProfile = async (values) => {
     setIsUpdating(true)
     try {
+      const doctor = JSON.parse(localStorage.getItem("user"));
       const response = await fetch(
         `http://localhost:9999/api/doctor/${selectedProfile._id}`,
         {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(values),
+          body: JSON.stringify({ ...values, doctorId: doctor._id }),
         }
       )
       if (!response.ok) {
@@ -162,12 +164,16 @@ const UserMedicalProfileDetail = () => {
   const handleProfileSelect = (profile) => {
     setSelectedProfile(profile)
     modalForm.setFieldsValue({
+      doctorName: profile?.doctorId?.name || "",
       service: profile.service || [],
       diagnose: profile.diagnose || "",
       note: profile.note || "",
       issues: profile.issues || "",
       medicine: profile.medicine || [],
+      dayTest: profile.labTestId?.dayTest ? dayjs(profile.labTestId.dayTest) : null,
+      result: profile.labTestId?.result || ""
     })
+
     setModalView("edit") // Chuyển sang chế độ chỉnh sửa
   }
 
@@ -220,25 +226,25 @@ const UserMedicalProfileDetail = () => {
         footer={
           modalView === "list"
             ? [
-                <Button key="cancelList" onClick={handleCloseModal}>
-                  Cancel
-                </Button>,
-              ]
+              <Button key="cancelList" onClick={handleCloseModal}>
+                Cancel
+              </Button>,
+            ]
             : [
-                <Button key="back" onClick={handleBackToList}>
-                  Back to List
-                </Button>,
-                <Button key="cancelEdit" onClick={handleCloseModal}>
-                  Cancel
-                </Button>,
-                <Button
-                  key="submit"
-                  type="primary"
-                  loading={isUpdating}
-                  onClick={() => modalForm.submit()}>
-                  Update Profile
-                </Button>,
-              ]
+              <Button key="back" onClick={handleBackToList}>
+                Back to List
+              </Button>,
+              <Button key="cancelEdit" onClick={handleCloseModal}>
+                Cancel
+              </Button>,
+              <Button
+                key="submit"
+                type="primary"
+                loading={isUpdating}
+                onClick={() => modalForm.submit()}>
+                Update Profile
+              </Button>,
+            ]
         }>
         {modalView === "list" ? (
           <ProfileSelectionList
@@ -250,6 +256,12 @@ const UserMedicalProfileDetail = () => {
             form={modalForm}
             layout="vertical"
             onFinish={handleUpdateProfile}>
+            <Form.Item name="doctorName" label="Doctor">
+              <Input.TextArea
+                rows={1}
+                disabled
+              />
+            </Form.Item>
             <Form.Item
               name="service"
               label="1. Services"
@@ -263,7 +275,7 @@ const UserMedicalProfileDetail = () => {
                 <Space direction="vertical">
                   {services.map((s) => (
                     <Checkbox key={s._id} value={s._id}
-                              disabled={true}
+                      disabled={true}
                     >
                       {s.name} - ${s.price}
                     </Checkbox>
@@ -271,49 +283,16 @@ const UserMedicalProfileDetail = () => {
                 </Space>
               </Checkbox.Group>
             </Form.Item>
-            <Form.Item
-              name="diagnose"
-              label="2. Diagnose"
-              rules={[
-                { required: true, message: "Diagnose cannot be empty." },
-              ]}>
-              <Input.TextArea
-                rows={4}
-                placeholder="Enter the diagnosis details..."
-              />
-            </Form.Item>
-            <Form.Item name="note" label="3. Doctor's Note">
+            <Form.Item name="result" label="2. Result">
               <Input.TextArea
                 rows={2}
                 placeholder="Enter any additional notes..."
-                disabled
               />
             </Form.Item>
-            <Form.Item name="issues" label="4. Patient's Reported Issues">
-              <Input.TextArea
-                rows={2}
-                placeholder="Describe the issues reported by the patient..."
-              />
+            <Form.Item name="dayTest" label="3. Day Test">
+              <DatePicker defaultValue={dayjs('01/01/2015', 'DD/MM/YYYY')} />
             </Form.Item>
-            <Form.Item name="medicine" label="5. Prescribe Medicine">
-              <Select
-                mode="multiple"
-                allowClear
-                showSearch
-                placeholder="Search and select medicines..."
-                onSearch={handleMedicineSearch}
-                loading={isMedicineLoading}
-                filterOption={false}
-                notFoundContent={
-                  isMedicineLoading ? <Spin size="small" /> : null
-                }>
-                {medicines.map((med) => (
-                  <Option key={med._id} value={med._id}>
-                    {med.name}
-                  </Option>
-                ))}
-              </Select>
-            </Form.Item>
+
           </Form>
         )}
       </Modal>
