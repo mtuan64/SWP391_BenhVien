@@ -1,6 +1,7 @@
 // Load environment variables early
 require("dotenv").config();
-
+const cron = require("node-cron");
+const autoMarkAbsent = require('./utils/autoMarkAbsentJob');
 // Import packages
 const express = require("express");
 const morgan = require("morgan");
@@ -39,6 +40,7 @@ app.use("/api/staff/blog", require("./routers/Staff/blog.route"));
 app.use("/api/staff/news", require("./routers/Staff/news.route"));
 app.use("/api/staff/medical-record", require("./routers/Staff/medicalrecord.route"));
 app.use("/api/attendance", require("./routers/Doctor/attendance.routes"));
+app.use("/api/attendance", require("./routers/Staff/attendance.route"));
 
 // Routers import
 const userRouter = require("./routers/User/user.route");
@@ -78,13 +80,17 @@ app.use("/api/services", require("./routers/Service/service.route"));
 app.use("/api", require("./routers/medicine/medicine.route"));
 app.use("/api", require("./routers/appointment/appointment.routes"));
 
-// Start server after DB connected
 const PORT = process.env.PORT || 9999;
 
 connectDb()
   .then(() => {
     app.listen(PORT, () => {
       console.log(`✅ Server is running on port ${PORT}`);
+    });
+
+    cron.schedule("5 8 * * *", () => {
+      console.log("🔔 Running autoMarkAbsent...");
+      autoMarkAbsent();
     });
   })
   .catch((err) => {

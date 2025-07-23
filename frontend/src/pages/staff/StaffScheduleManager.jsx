@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import {
   Table, Button, Input, DatePicker, Select, TimePicker,
-  Space, Form, message, Typography, Divider, Modal, Popconfirm
+  Space, Form, message, Typography, Divider, Modal, Popconfirm, Tag
 } from 'antd';
 import dayjs from 'dayjs';
 import { PlusOutlined } from '@ant-design/icons';
@@ -147,6 +147,12 @@ function StaffScheduleManager() {
     setFilterDate(null);
   };
 
+  // Disable past dates in DatePicker
+  const disabledDate = (current) => {
+    // Can not select days before today
+    return current && current < dayjs().startOf('day');
+  };
+
   const columns = [
     {
       title: 'Doctor',
@@ -173,11 +179,32 @@ function StaffScheduleManager() {
         <ul style={{ marginBottom: 0 }}>
           {slots.map((s, idx) => (
             <li key={idx}>
-              {dayjs(s.startTime).format('HH:mm')} - {dayjs(s.endTime).format('HH:mm')} ({s.status})
+              {dayjs(s.startTime).format('HH:mm')} - {dayjs(s.endTime).format('HH:mm')}
             </li>
           ))}
         </ul>
       )
+    },
+    {
+      title: 'Status',
+      dataIndex: 'timeSlots',
+      render: slots => {
+        const statuses = slots.map(slot => slot.status);
+        const uniqueStatuses = [...new Set(statuses)];
+        if (uniqueStatuses.length === 1) {
+          const status = uniqueStatuses[0];
+          return <Tag color={status === 'Available' ? 'green' : status === 'Booked' ? 'volcano' : status === 'Unavailable' ? 'red' : 'default'}>{status}</Tag>;
+        }
+        return (
+          <span>
+            {uniqueStatuses.map(status => (
+              <Tag key={status} color={status === 'Available' ? 'green' : status === 'Booked' ? 'volcano' : status === 'Unavailable' ? 'red' : 'default'}>
+                {status}
+              </Tag>
+            ))}
+          </span>
+        );
+      }
     },
     {
       title: 'Actions',
@@ -202,44 +229,44 @@ function StaffScheduleManager() {
       <Title level={3}>Doctor Schedule Management</Title>
 
       <Space style={{ marginBottom: 16 }}>
-  <Search
-    placeholder="Search by doctor name"
-    onSearch={value => setSearchText(value)}
-    onChange={e => setSearchText(e.target.value)}
-    style={{ width: 200 }}
-    value={searchText}
-  />
-  <Select
-    placeholder="Filter by department"
-    allowClear
-    style={{ width: 200 }}
-    onChange={value => setFilterDepartment(value)}
-    value={filterDepartment}
-  >
-    {departments.map(dep => (
-      <Option key={dep._id} value={dep._id}>{dep.name}</Option>
-    ))}
-  </Select>
-  <DatePicker
-    placeholder="Filter by date"
-    onChange={value => setFilterDate(value)}
-    style={{ width: 200 }}
-    value={filterDate}
-  />
-  <Button onClick={clearFilters}>Clear</Button>
+        <Search
+          placeholder="Search by doctor name"
+          onSearch={value => setSearchText(value)}
+          onChange={e => setSearchText(e.target.value)}
+          style={{ width: 200 }}
+          value={searchText}
+        />
+        <Select
+          placeholder="Filter by department"
+          allowClear
+          style={{ width: 200 }}
+          onChange={value => setFilterDepartment(value)}
+          value={filterDepartment}
+        >
+          {departments.map(dep => (
+            <Option key={dep._id} value={dep._id}>{dep.name}</Option>
+          ))}
+        </Select>
+        <DatePicker
+          placeholder="Filter by date"
+          onChange={value => setFilterDate(value)}
+          style={{ width: 200 }}
+          value={filterDate}
+        />
+        <Button onClick={clearFilters}>Clear</Button>
 
-  <Button
-    type="primary"
-    icon={<PlusOutlined />}
-    onClick={() => {
-      form.resetFields();
-      setEditingId(null);
-      setIsModalVisible(true);
-    }}
-  >
-    Add Schedule
-  </Button>
-</Space>
+        <Button
+          type="primary"
+          icon={<PlusOutlined />}
+          onClick={() => {
+            form.resetFields();
+            setEditingId(null);
+            setIsModalVisible(true);
+          }}
+        >
+          Add Schedule
+        </Button>
+      </Space>
 
       <Divider />
 
@@ -286,7 +313,7 @@ function StaffScheduleManager() {
             name="date"
             rules={[{ required: true, message: 'Please select a date' }]}
           >
-            <DatePicker style={{ width: '100%' }} />
+            <DatePicker style={{ width: '100%' }} disabledDate={disabledDate} />
           </Form.Item>
 
           <Form.List name="timeSlots" initialValue={[{ timeRange: [], status: 'Available' }]}>
@@ -309,7 +336,6 @@ function StaffScheduleManager() {
                       <Select style={{ width: 120 }}>
                         <Option value="Available">Available</Option>
                         <Option value="Booked">Booked</Option>
-                        <Option value="Unavailable">Unavailable</Option>
                       </Select>
                     </Form.Item>
                     <Button danger onClick={() => remove(name)}>-</Button>

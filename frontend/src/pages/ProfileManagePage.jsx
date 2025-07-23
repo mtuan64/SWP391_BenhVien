@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useAuth } from "../context/authContext";
-import { Button, Modal, Form, Row, Col, Collapse } from "react-bootstrap"; // NEW: Import Collapse
+import { Button, Modal, Form, Row, Col } from "react-bootstrap";
 
 const ProfileManagerPage = () => {
     const [profiles, setProfiles] = useState([]);
@@ -14,7 +14,12 @@ const ProfileManagerPage = () => {
         identityNumber: ""
     });
     const { token } = useAuth();
-    const [showMedicalDetails, setShowMedicalDetails] = useState({}); // NEW: State to toggle medical details per profile
+    const [showMedicalDetails, setShowMedicalDetails] = useState({});
+
+    // State cho lọc và sắp xếp
+    const [searchTerm, setSearchTerm] = useState("");
+    const [genderFilter, setGenderFilter] = useState("All");
+    const [sortBy, setSortBy] = useState("name_asc");
 
     // Load profiles
     const fetchProfiles = async () => {
@@ -94,13 +99,35 @@ const ProfileManagerPage = () => {
         setShowModal(true);
     };
 
-    // NEW: Toggle medical details
+    // Toggle medical details
     const toggleMedicalDetails = (profileId) => {
         setShowMedicalDetails(prev => ({
             ...prev,
             [profileId]: !prev[profileId]
         }));
     };
+
+    // Lọc và sắp xếp profiles
+    const filteredAndSortedProfiles = [...profiles]
+        // Lọc
+        .filter(profile => {
+            const matchesSearch = profile.name.toLowerCase().includes(searchTerm.toLowerCase());
+            const matchesGender = genderFilter === "All" || profile.gender === genderFilter;
+            return matchesSearch && matchesGender;
+        })
+        // Sắp xếp
+        .sort((a, b) => {
+            if (sortBy === "name_asc") {
+                return a.name.localeCompare(b.name);
+            } else if (sortBy === "name_desc") {
+                return b.name.localeCompare(a.name);
+            } else if (sortBy === "dob_asc") {
+                return new Date(a.dateOfBirth) - new Date(b.dateOfBirth);
+            } else if (sortBy === "dob_desc") {
+                return new Date(b.dateOfBirth) - new Date(a.dateOfBirth);
+            }
+            return 0;
+        });
 
     return (
         <div className="container py-4">
@@ -109,12 +136,46 @@ const ProfileManagerPage = () => {
                 + Thêm hồ sơ mới
             </Button>
 
+            {/* UI lọc và sắp xếp */}
+            <Row className="mt-4 mb-3">
+                <Col md={4}>
+                    <Form.Control
+                        type="text"
+                        placeholder="Tìm kiếm theo tên..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                </Col>
+                <Col md={4}>
+                    <Form.Select
+                        value={genderFilter}
+                        onChange={(e) => setGenderFilter(e.target.value)}
+                    >
+                        <option value="All">Tất cả giới tính</option>
+                        <option value="Male">Nam</option>
+                        <option value="Female">Nữ</option>
+                        <option value="Other">Khác</option>
+                    </Form.Select>
+                </Col>
+                <Col md={4}>
+                    <Form.Select
+                        value={sortBy}
+                        onChange={(e) => setSortBy(e.target.value)}
+                    >
+                        <option value="name_asc">Tên (A-Z)</option>
+                        <option value="name_desc">Tên (Z-A)</option>
+                        <option value="dob_asc">Ngày sinh (Cũ nhất)</option>
+                        <option value="dob_desc">Ngày sinh (Mới nhất)</option>
+                    </Form.Select>
+                </Col>
+            </Row>
+
             <div className="mt-4">
-                {profiles.length === 0 ? (
-                    <p>Không có hồ sơ nào.</p>
+                {filteredAndSortedProfiles.length === 0 ? (
+                    <p>Không có hồ sơ nào phù hợp.</p>
                 ) : (
                     <Row>
-                        {profiles.map((profile) => (
+                        {filteredAndSortedProfiles.map((profile) => (
                             <Col key={profile._id} md={4} className="mb-3">
                                 <div className="border rounded p-3 h-100">
                                     <h5>{profile.name}</h5>
@@ -126,9 +187,12 @@ const ProfileManagerPage = () => {
                                             <p>Chẩn đoán: {profile.diagnose || "Chưa có"}</p>
                                             <p>Ghi chú: {profile.note || "Chưa có"}</p>
                                             <p>Vấn đề: {profile.issues || "Chưa có"}</p>
-                                            <p>Thuốc: {profile.medicine?.name || "Chưa có"}</p>
+                                            <p>Thuốc: {profile.medicine && profile.medicine.length > 0 ? profile.medicine.map(m => m.name || m).join(", ") : "Chưa có"}</p>
                                             <p>Bác sĩ: {profile.doctorId?.name || "Chưa có"}</p>
-                                            <p>Dịch vụ: {profile.service?.name || "Chưa có"}</p>
+                                            <p>Dịch vụ: {profile.service && profile.service.length > 0 ? profile.service.map(s => s.name || s).join(", ") : "Chưa có"}</p>
+                                            <p>Kết quả xét nghiệm: {profile.labTestId?.result || "Chưa có"}</p>
+                                            <p>Ngày xét nghiệm: {profile.labTestId?.dayTest ? new Date(profile.labTestId.dayTest).toLocaleDateString() : "Chưa có"}</p>
+                                            <p>Dịch vụ xét nghiệm: {profile.labTestId?.services && profile.labTestId.services.length > 0 ? profile.labTestId.services.map(s => s.name || s).join(", ") : "Chưa có"}</p>
                                         </div>
                                     )}
                                     <div className="d-flex gap-2 mt-2">

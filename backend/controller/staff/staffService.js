@@ -90,7 +90,8 @@ const getAllQA = async (req, res) => {
       success: false,
       message: "Đã xảy ra lỗi, vui lòng thử lại sau."
     });
-  }}
+  }
+}
 
 // them ham xu li moi cho FAQ
 const getAllFAQ = async (req, res) => {
@@ -171,7 +172,7 @@ const markAsFAQ = async (req, res) => {
 };
 //
 
-  
+
 const Schedule = require('../../models/Schedule');
 
 const createSchedule = async (req, res) => {
@@ -250,7 +251,6 @@ const deleteSchedule = async (req, res) => {
   }
 };
 
-
 const getFeedbacksForStaff = async (req, res) => {
   try {
     const feedbacks = await Feedback.find()
@@ -266,6 +266,43 @@ const getFeedbacksForStaff = async (req, res) => {
   }
 };
 
+const approveCancellation = async (req, res) => {
+  const { id } = req.params; // appointmentId
+  const staffId = req.user.id;
+
+  // Kiểm tra role
+  if (req.user.role !== 'Staff' && req.user.role !== 'Admin') {
+    return res.status(403).json({ message: "Bạn không có quyền duyệt" });
+  }
+
+  try {
+    const appointment = await Appointment.findById(id);
+    if (!appointment) {
+      return res.status(404).json({ message: "Lịch hẹn không tồn tại" });
+    }
+
+    if (appointment.status !== 'PendingCancel') {
+      return res.status(400).json({ message: "Lịch hẹn không ở trạng thái chờ duyệt" });
+    }
+
+    // Cập nhật trạng thái thành Canceled
+    appointment.status = 'Canceled';
+    await appointment.save();
+
+    // Tạo notification cho user
+    const userNotification = new Notification({
+      title: "Lịch hẹn đã được hủy",
+      content: `Lịch hẹn ID: ${id} của bạn đã được hủy thành công bởi staff.`,
+      isUrgent: false,
+      receiver: appointment.userId, // Gửi cho user cụ thể
+    });
+    await userNotification.save();
+
+    res.status(200).json({ message: "Hủy lịch hẹn thành công", appointment });
+  } catch (err) {
+    res.status(500).json({ message: "Duyệt hủy thất bại", error: err.message });
+  }
+};
 module.exports = {
   createCheckup,
   replyQA,
@@ -277,4 +314,5 @@ module.exports = {
   getFeedbacksForStaff,
   getAllFAQ,
   markAsFAQ,
+  approveCancellation,
 };

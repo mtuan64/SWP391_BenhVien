@@ -12,13 +12,13 @@ const DoctorSidebar = () => {
   const navigate = useNavigate();
 
   const links = [
-    { to: "/doctor/medical-profile", label: "User Medical Profile", icon: <UserOutlined /> },
-    { to: "/doctor/labtest", label: "Lab Test", icon: <ScheduleOutlined /> },
-    { to: "/doctor/medicine", label: "View Medicine", icon: <MedicineBoxOutlined /> },
-    { to: "/doctor/appointments", label: "View Appointment", icon: <CalendarOutlined /> },
-    { to: "/doctor/work-schedule", label: "View Work Schedule", icon: <ScheduleOutlined /> },
-    { to: "/doctor/profile", label: "View profile", icon: <ScheduleOutlined /> },
-    { to: "/doctor/attendance", label: "Attendance", icon: <ScheduleOutlined /> },
+    { to: "/doctor/medical-profile", label: "Hồ Sơ Y Tế Người Dùng", icon: <UserOutlined /> },
+    { to: "/doctor/labtest", label: "Xét Nghiệm", icon: <ScheduleOutlined /> },
+    { to: "/doctor/medicine", label: "Xem Thuốc", icon: <MedicineBoxOutlined /> },
+    { to: "/doctor/appointments", label: "Xem Lịch Hẹn", icon: <CalendarOutlined /> },
+    { to: "/doctor/work-schedule", label: "Xem Lịch Làm Việc", icon: <ScheduleOutlined /> },
+    { to: "/doctor/profile", label: "Xem Hồ Sơ Cá Nhân", icon: <ScheduleOutlined /> },
+    { to: "/doctor/attendance", label: "Điểm Danh", icon: <ScheduleOutlined /> },
   ];
 
   const handleLogout = () => {
@@ -28,7 +28,7 @@ const DoctorSidebar = () => {
 
   return (
     <div style={styles.sidebar}>
-      <h2 style={styles.title}>Doctor</h2>
+      <h2 style={styles.title}>Bác Sĩ</h2>
 
       {links.map(({ to, label, icon }) => (
         <NavLink
@@ -55,7 +55,7 @@ const DoctorSidebar = () => {
         }}
       >
         <span style={styles.icon}><LogoutOutlined /></span>
-        Logout
+        Đăng Xuất
       </div>
     </div>
   );

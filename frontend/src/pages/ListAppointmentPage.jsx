@@ -1,76 +1,146 @@
 import React, { useEffect, useState } from "react";
-import axios from "../../axiosInstance"; // import đúng axiosInstance (tự động đính kèm token)
-import "../assets/css/ListAppointmentPage.css";
+import axios from "axios";
+import { useAuth } from "../context/authContext";
+import { Table, Button, Spinner, Alert, Form, Modal } from "react-bootstrap";
 
 const ListAppointmentPage = () => {
+    const { token } = useAuth();
     const [appointments, setAppointments] = useState([]);
     const [loading, setLoading] = useState(true);
     const [totalAppointments, setTotalAppointments] = useState(0);
     const [currentPage, setCurrentPage] = useState(1);
-    const [appointmentsPerPage] = useState(10); // Mặc định là 10 lịch hẹn mỗi trang
+    const [appointmentsPerPage] = useState(10);
+    const [filterStatus, setFilterStatus] = useState("booked");
 
-    useEffect(() => {
-        const fetchAppointments = async () => {
-            try {
-                const res = await axios.get(`/api/user/user?page=${currentPage}&limit=${appointmentsPerPage}`);
-                setAppointments(res.data.appointments || []);
-                setTotalAppointments(res.data.totalAppointments || 0); // Lưu tổng số cuộc hẹn
-            } catch (error) {
-                setAppointments([]);
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchAppointments();
-    }, [currentPage]);
+    const [showFeedbackModal, setShowFeedbackModal] = useState(false);
+    const [selectedAppointmentId, setSelectedAppointmentId] = useState(null);
+    const [feedbackData, setFeedbackData] = useState({ content: "", rating: 5 });
 
-    // Tính toán tổng số trang
-    const totalPages = Math.ceil(totalAppointments / appointmentsPerPage);
+    const fetchAppointments = async () => {
+        try {
+            const res = await axios.get(
+                `/api/user/user?page=${currentPage}&limit=${appointmentsPerPage}`,
+                {
+                    headers: { Authorization: `Bearer ${token}` },
+                }
+            );
 
-    // Handle chuyển trang
-    const handlePageChange = (page) => {
-        if (page >= 1 && page <= totalPages) {
-            setCurrentPage(page);
+            const data = res.data;
+            const appointmentsData = Array.isArray(data)
+                ? data
+                : data.appointments || [];
+
+            setAppointments(appointmentsData);
+            setTotalAppointments(data.totalAppointments || appointmentsData.length);
+        } catch (err) {
+            console.error("Lỗi lấy dữ liệu lịch hẹn:", err);
+            setAppointments([]);
+            setTotalAppointments(0);
+        } finally {
+            setLoading(false);
         }
     };
 
+    useEffect(() => {
+        setLoading(true);
+        fetchAppointments();
+    }, [currentPage]);
+
+    const handleCancel = async (id) => {
+        if (!window.confirm("Bạn có chắc muốn hủy lịch hẹn này?")) return;
+        try {
+            await axios.post(
+                `http://localhost:9999/api/user/cancel/${id}`,
+                {},
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+            setAppointments((prev) =>
+                prev.map((a) => (a._id === id ? { ...a, status: "Canceled" } : a))
+            );
+        } catch (err) {
+            console.error("Cancel failed", err);
+            alert("Hủy lịch hẹn thất bại. Vui lòng thử lại.");
+        }
+    };
+
+    const openFeedbackModal = (appointmentId) => {
+        setSelectedAppointmentId(appointmentId);
+        setShowFeedbackModal(true);
+    };
+
+    const handleSendFeedback = async () => {
+        try {
+            await axios.post(
+                "/api/user/createFeedback",
+                {
+                    content: feedbackData.content,
+                    rating: feedbackData.rating,
+                    appointmentId: selectedAppointmentId,
+                },
+                {
+                    headers: { Authorization: `Bearer ${token}` },
+                }
+            );
+            setShowFeedbackModal(false);
+            alert("Gửi phản hồi thành công!");
+        } catch (err) {
+            console.error("Gửi feedback thất bại:", err);
+            alert("Gửi phản hồi thất bại.");
+        }
+    };
+
+    const filteredAppointments =
+        filterStatus === "booked"
+            ? appointments.filter((a) => a.status === "Booked")
+            : appointments;
+
+    const totalPages = Math.ceil(totalAppointments / appointmentsPerPage);
+
     return (
         <div className="container py-4">
-            <h2 className="mb-4" style={{ color: "#3c92e9", fontWeight: 700 }}>
-                Lịch hẹn của tôi
-            </h2>
+            <div className="d-flex justify-content-between align-items-center mb-3">
+                <h2 className="text-primary fw-bold">Lịch hẹn của bạn</h2>
+                <Form.Select
+                    value={filterStatus}
+                    onChange={(e) => setFilterStatus(e.target.value)}
+                    style={{ width: 200 }}
+                >
+                    <option value="all">Tất cả lịch hẹn</option>
+                    <option value="booked">Lịch đã đặt</option>
+                </Form.Select>
+            </div>
+
             {loading ? (
-                <div>Đang tải dữ liệu...</div>
-            ) : appointments.length === 0 ? (
-                <div className="alert alert-info">Bạn chưa có lịch hẹn nào.</div>
+                <Spinner animation="border" variant="primary" />
+            ) : filteredAppointments.length === 0 ? (
+                <Alert variant="info">Không có lịch hẹn nào phù hợp.</Alert>
             ) : (
-                <div className="table-responsive appointment-table">
-                    <table className="table table-bordered table-hover align-middle">
+                <div className="table-responsive">
+                    <Table bordered hover className="align-middle">
                         <thead>
                             <tr>
                                 <th>Bác sĩ</th>
                                 <th>Chuyên khoa</th>
                                 <th>Hồ sơ bệnh nhân</th>
-                                <th>Ngày khám</th>
-                                <th>Hình thức</th>
+                                <th>Ngày</th>
+                                <th>Loại</th>
                                 <th>Trạng thái</th>
+                                <th>Hành động</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {appointments.map(app => (
+                            {filteredAppointments.map((app) => (
                                 <tr key={app._id}>
-                                    <td>{app.doctorId?.name || ""}</td>
-                                    <td>{app.doctorId?.department || ""}</td>
-                                    <td>{app.profileId?.name || ""}</td>
+                                    <td>{app.doctorId?.name || "(Không rõ)"}</td>
+                                    <td>{app.department?.name || app.doctorId?.department || ""}</td>
+                                    <td>{app.profileId?.name || "(Không rõ)"}</td>
                                     <td>
                                         {app.appointmentDate
-                                            ? new Date(app.appointmentDate).toLocaleString("vi-VN", {
-                                                hour: "2-digit",
-                                                minute: "2-digit",
-                                                day: "2-digit",
-                                                month: "2-digit",
-                                                year: "numeric",
-                                            })
+                                            ? new Date(app.appointmentDate).toLocaleString("vi-VN")
                                             : ""}
                                     </td>
                                     <td>{app.type === "Online" ? "Online" : "Tại viện"}</td>
@@ -96,38 +166,101 @@ const ListAppointmentPage = () => {
                                                         : app.status}
                                         </span>
                                     </td>
+                                    <td>
+                                        {app.status === "Booked" ? (
+                                            <Button
+                                                variant="danger"
+                                                size="sm"
+                                                onClick={() => handleCancel(app._id)}
+                                            >
+                                                Hủy
+                                            </Button>
+                                        ) : app.status === "Completed" ? (
+                                            <Button
+                                                variant="info"
+                                                size="sm"
+                                                onClick={() => openFeedbackModal(app._id)}
+                                            >
+                                                Gửi Feedback
+                                            </Button>
+                                        ) : (
+                                            "-"
+                                        )}
+                                    </td>
                                 </tr>
                             ))}
                         </tbody>
-                    </table>
+                    </Table>
                 </div>
             )}
 
-            {/* Pagination Section */}
-            <div className="d-flex justify-content-center py-4">
-                <h5 className="text-muted">Tổng số đơn: {totalAppointments}</h5>
+            {/* Pagination */}
+            <div className="d-flex justify-content-between align-items-center mt-3">
+                <h6 className="text-muted">Tổng số lịch hẹn: {totalAppointments}</h6>
+                <div>
+                    <Button
+                        variant="secondary"
+                        onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
+                        disabled={currentPage === 1}
+                        className="me-2"
+                    >
+                        Trước
+                    </Button>
+                    <span>{`Trang ${currentPage} / ${totalPages}`}</span>
+                    <Button
+                        variant="secondary"
+                        onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
+                        disabled={currentPage === totalPages}
+                        className="ms-2"
+                    >
+                        Sau
+                    </Button>
+                </div>
             </div>
 
-            <div className="d-flex justify-content-center py-4 align-items-center">
-                <button
-                    className="btn btn-secondary me-2"
-                    onClick={() => handlePageChange(currentPage - 1)}
-                    disabled={currentPage === 1}
-                >
-                    Trước
-                </button>
-
-                {/* Chữ trang được căn giữa */}
-                <span className="mx-3">{`Trang ${currentPage} / ${totalPages}`}</span>
-
-                <button
-                    className="btn btn-secondary ms-2"
-                    onClick={() => handlePageChange(currentPage + 1)}
-                    disabled={currentPage === totalPages}
-                >
-                    Sau
-                </button>
-            </div>
+            {/* Feedback Modal */}
+            <Modal show={showFeedbackModal} onHide={() => setShowFeedbackModal(false)}>
+                <Modal.Header closeButton>
+                    <Modal.Title>Gửi Feedback</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <Form>
+                        <Form.Group>
+                            <Form.Label>Nội dung</Form.Label>
+                            <Form.Control
+                                as="textarea"
+                                value={feedbackData.content}
+                                onChange={(e) =>
+                                    setFeedbackData({ ...feedbackData, content: e.target.value })
+                                }
+                            />
+                        </Form.Group>
+                        <Form.Group className="mt-3">
+                            <Form.Label>Đánh giá</Form.Label>
+                            <Form.Select
+                                value={feedbackData.rating}
+                                onChange={(e) =>
+                                    setFeedbackData({ ...feedbackData, rating: Number(e.target.value) })
+                                }
+                            >
+                                {[1, 2, 3, 4, 5].map((n) => (
+                                    <option key={n} value={n}>
+                                        {n} sao
+                                    </option>
+                                ))}
+                            </Form.Select>
+                        </Form.Group>
+                    </Form>
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="secondary" onClick={() => setShowFeedbackModal(false)}>
+                        Hủy
+                    </Button>
+                    <Button variant="primary" onClick={handleSendFeedback}>
+                        Gửi
+                    </Button>
+                </Modal.Footer>
+            </Modal>
         </div>
     );
 };

@@ -36,6 +36,7 @@ import EmployeeManagement from "./pages/admin/EmployessManagement";
 import StaffLayout from "./components/staff/StaffLayout";
 import InvoiceUser from "./pages/InvoiceManagement";
 import BlogManagement from "./pages/staff/BlogManagement";
+import CategoryManagement from "./pages/staff/CategoryBlogManagement";
 import ServiceManagement from "./pages/staff/ServiceManagement";
 import DepartmentManagement from "./pages/staff/DepartmentManagement";
 import SpecialtyManagement from "./pages/staff/SpecialtyManagement";
@@ -76,6 +77,7 @@ import BlogDetail from "./pages/BlogDetail";
 import ViewMedicalRecord from "./pages/ViewMedicalRecord";
 import NotFoundPage from "./pages/NotFoundPage";
 import DoctorAttendance from './components/staff/DoctorAttendance';
+import StaffAttendance from './pages/staff/attendanceStaff.jsx';
 import MedicineListPage from "./pages/MedicineListPage.jsx";
 import MedicineDetail from "./pages/MedicineDetail";
 import ServiceDetail from "./pages/ServiceDetail.jsx";
@@ -92,6 +94,7 @@ import MedicinePage from "./pages/MedicinePage.jsx";
 import LabTestPage from "./pages/LabTestPage.jsx";
 import DoctorAppointments from "./pages/DoctorAppointment.jsx";
 import CreateInvoice2 from "./components/staff/CreateInvoiceTest.jsx";
+import AttendanceManagement from "./pages/admin/AttendanceManagement.jsx";
 
 const DRAWER_WIDTH = 240;
 
@@ -203,6 +206,7 @@ const AppRoutes = () => {
             <Route index element={<Dashboard />} />
             <Route path="accounts" element={<AccountManagement />} />
             <Route path="employees" element={<EmployeeManagement />} />
+            <Route path="attendance" element={<AttendanceManagement />} />
           </Route>
 
           {/* Staff */}
@@ -216,6 +220,7 @@ const AppRoutes = () => {
           >
             <Route index element={<BlogManagement />} />
             <Route path="blogs" element={<BlogManagement />} />
+            <Route path="category-management" element={<CategoryManagement />} />
             <Route path="invoices/create" element={<CreateInvoice2/>}></Route>
             <Route path="services" element={<ServiceManagement />} />
             <Route path="services/create" element={<CreateServicePage />} />
@@ -243,7 +248,7 @@ const AppRoutes = () => {
             <Route path="medicines" element={<MedicineManagement />} />
             <Route path="schedule" element={<StaffScheduleManager />} />
             <Route path="profile" element={<ProfileStaff />} />
-
+            <Route path="attendance" element={<StaffAttendance />} /> {/* Add Staff Attendance route */}
           </Route>
 
 

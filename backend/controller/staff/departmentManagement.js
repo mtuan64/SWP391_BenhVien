@@ -46,11 +46,13 @@ exports.getAllDepartments = async (req, res) => {
   try {
     const { page = 1, limit = 5, search = "" } = req.query;
 
+    // Kiểm tra tham số đầu vào
     const validationError = validateQueryParams(page, limit, search);
     if (validationError) {
       return res.status(400).json({ message: `Dữ liệu không hợp lệ: ${validationError}` });
     }
 
+    // Tạo truy vấn tìm kiếm
     const query = {
       $or: [
         { name: { $regex: search, $options: "i" } },
@@ -58,12 +60,17 @@ exports.getAllDepartments = async (req, res) => {
       ],
     };
 
+    // Tính tổng số lượng khoa
     const total = await Department.countDocuments(query);
+
+    // Lấy các khoa và sắp xếp theo `createdAt` giảm dần (mới nhất lên đầu)
     const departments = await Department.find(query)
       .skip((page - 1) * limit)
       .limit(parseInt(limit))
+      .sort({ createdAt: -1 })  // Sắp xếp theo thời gian tạo, bản ghi mới nhất lên đầu
       .lean();
 
+    // Trả về kết quả
     res.status(200).json({
       departments,
       totalPages: Math.ceil(total / limit),
@@ -74,6 +81,7 @@ exports.getAllDepartments = async (req, res) => {
     res.status(500).json({ message: "Lỗi server", error: error.message });
   }
 };
+
 
 // Lấy khoa theo ID
 exports.getDepartmentById = async (req, res) => {

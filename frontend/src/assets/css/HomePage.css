@@ -123,19 +123,6 @@ p {
     z-index: 99999;
 }
 
-/********** Topbar **********/
-.bg-light {
-    background-color: var(--light) !important;
-    padding: 0.5rem 2rem;
-    font-size: 14px;
-    color: var(--dark);
-}
-
-.bg-light i {
-    color: var(--primary);
-    margin-right: 8px;
-}
-
 /********** Hero Carousel **********/
 #heroCarousel {
     position: relative;
