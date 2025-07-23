@@ -10,6 +10,8 @@ const bodyParser = require("body-parser");
 // App initialization
 const app = express();
 const connectDb = require("./config/db");
+const path = require("path");
+const fs = require("fs");
 
 // CORS configuration
 const corsOptions = {
@@ -78,7 +80,8 @@ app.use('/api/staff', scheduleRouter);
 app.use("/api/services", require("./routers/Service/service.route"));
 app.use("/api", require("./routers/medicine/medicine.route"));
 app.use("/api", require("./routers/appointment/appointment.routes"));
-
+// app.use("/uploads", express.static("uploads")); // Public ảnh
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 // Start server after DB connected
 const PORT = process.env.PORT || 9999;
 

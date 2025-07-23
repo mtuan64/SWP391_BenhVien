@@ -10,6 +10,7 @@ const userSchema = new mongoose.Schema({
   profiles: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Profile' }],
   emailVerificationCode: { type: String, default: null },
   verificationExpires: { type: Date, default: null },
+  profilePicture: { type: String, default: null },
   user_code: { type: String, unique: true, index: true }, // Tự động sinh
 }, { timestamps: true });
 

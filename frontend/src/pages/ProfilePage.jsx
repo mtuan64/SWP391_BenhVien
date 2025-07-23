@@ -11,7 +11,19 @@ const ProfilePage = () => {
     fullname: user?.name || "",
     phone: user?.phone || "",
   });
-  const [profilePicture, setProfilePicture] = useState(user?.profilePicture || null);
+
+        let test = JSON.parse(localStorage.getItem("user"));
+
+const [profilePicture, setProfilePicture] = useState(null);
+
+useEffect(() => {
+  if (test?.profilePicture) {
+    setProfilePicture(`http://localhost:9999/${test.profilePicture}`);
+  }
+}, [test]);
+
+
+
   const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -44,12 +56,12 @@ const ProfilePage = () => {
 
     try {
       let updatedProfilePicture = profilePicture;
-
+      let uId = JSON.parse(localStorage.getItem("user"));
       if (file) {
         const uploadFormData = new FormData();
         uploadFormData.append("profilePicture", file);
 
-        const uploadRes = await fetch("http://localhost:9999/api/user/upload-profile-picture", {
+        const uploadRes = await fetch(`http://localhost:9999/api/user/upload-profile-picture/${uId._id}`, {
           method: "POST",
           headers: {
             Authorization: `Bearer ${user.token}`,
@@ -115,6 +127,27 @@ const ProfilePage = () => {
               style={{ width: "150px", height: "150px", objectFit: "cover" }}
             />
             <div></div>
+          </div>
+
+          <div>
+          <div>
+              <label htmlFor="profilePicInput" className="btn btn-outline-primary btn-sm">
+                Chọn ảnh mới
+              </label>
+              <input
+                type="file"
+                id="profilePicInput"
+                accept="image/*"
+                style={{ display: "none" }}
+                onChange={(e) => {
+                  const selectedFile = e.target.files[0];
+                  if (selectedFile) {
+                    setFile(selectedFile);
+                    setProfilePicture(URL.createObjectURL(selectedFile));
+                  }
+                }}
+              />
+            </div>
           </div>
 
           <form onSubmit={handleSubmit}>
