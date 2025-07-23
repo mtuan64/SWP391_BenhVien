@@ -16,6 +16,7 @@ import { FaEdit, FaTrash, FaSearch, FaRedo } from "react-icons/fa";
 import FooterComponent from "../../components/FooterComponent";
 import axios from "axios";
 import "../../assets/css/AppointmentScheduleManagement.css";
+import { message } from 'antd';
 
 const AppointmentScheduleManagement = () => {
   const [appointments, setAppointments] = useState([]);
@@ -42,6 +43,10 @@ const AppointmentScheduleManagement = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
 
+  const [selectedProfile, setSelectedProfile] = useState(null);
+  const [openProfileDialog, setOpenProfileDialog] = useState(false);
+
+
   const [showModal, setShowModal] = useState(false);
   const [form, setForm] = useState({
   appointmentDate: "",
@@ -58,6 +63,24 @@ const AppointmentScheduleManagement = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteAppointmentId, setDeleteAppointmentId] = useState(null);
 
+const handleViewProfile = async (profileId) => {
+  try {
+    const token = localStorage.getItem("token");
+    const id = typeof profileId === "object" ? profileId._id : profileId;
+    
+    const response = await axios.get(`http://localhost:9999/api/appointmentScheduleManagement/profile/detail/${id}`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+
+    setSelectedProfile(response.data.data);
+    setOpenProfileDialog(true);
+  } catch (error) {
+    console.error("Error fetching profile detail:", error);
+  }
+};
+
+
+
   useEffect(() => {
     fetchAppointments();
     fetchDepartments();
@@ -73,23 +96,48 @@ const AppointmentScheduleManagement = () => {
 
 
   useEffect(() => {
-    if (form.appointmentDate && form.department) {
-      fetchAvailableDoctors(form.appointmentDate, form.department);
-    } else {
-      setAvailableDoctors([]);
-      setForm((prev) => ({ ...prev, doctorId: "", timeSlot: "" }));
-      setSchedules([]);
-    }
-  }, [form.appointmentDate, form.department]);
+  if (form.appointmentDate && form.department) {
+    fetchAvailableDoctors(form.appointmentDate, form.department);
+    
+    // ❗ Reset doctor + timeSlot mỗi khi ngày hoặc department thay đổi
+    setForm((prev) => ({
+      ...prev,
+      doctorId: "",
+      timeSlot: "",
+    }));
+    setSchedules([]);
+  } else {
+    setAvailableDoctors([]);
+    setForm((prev) => ({
+      ...prev,
+      doctorId: "",
+      timeSlot: "",
+    }));
+    setSchedules([]);
+  }
+}, [form.appointmentDate, form.department]);
+
+
+useEffect(() => {
+  if (form.doctorId) {
+    fetchSchedules(form.doctorId, form.appointmentDate);
+    
+    // ✅ reset timeSlot vì lịch đã đổi
+    setForm((prev) => ({ ...prev, timeSlot: "" }));
+  }
+}, [form.doctorId]);
 
   useEffect(() => {
-    if (form.doctorId && form.appointmentDate) {
-      fetchSchedules(form.doctorId, form.appointmentDate);
-    } else {
-      setSchedules([]);
-      setForm((prev) => ({ ...prev, timeSlot: "" }));
-    }
-  }, [form.doctorId, form.appointmentDate]);
+  if (form.doctorId && form.appointmentDate) {
+    fetchSchedules(form.doctorId, form.appointmentDate);
+    setForm((prev) => ({
+      ...prev,
+      timeSlot: "", // ✅ reset lại slot mỗi lần chọn bác sĩ
+    }));
+  }
+}, [form.doctorId, form.appointmentDate]);
+
+
   const [resolvedProfile, setResolvedProfile] = useState(null);
 
   useEffect(() => {
@@ -118,7 +166,7 @@ const fetchProfilesByIdentity = async (identityNumber) => {
     if (Array.isArray(res.data)) {
       if (res.data.length === 0) {
         // Chỉ hiển thị thông báo khi tìm xong mà không có profile
-        alert("No profiles found with this identity number.");
+        message.error("No profiles found with this identity number.");
         setResolvedProfiles([]);
         setSelectedProfileId("");
       } else {
@@ -127,11 +175,10 @@ const fetchProfilesByIdentity = async (identityNumber) => {
       }
     } else {
       console.error("Unexpected response format:", res.data);
-      alert("Unexpected response from server.");
+      message.error("Unexpected response from server.");
     }
   } catch (err) {
     console.error("Error fetching profiles by identity:", err);
-    // ❌ Không alert ở đây nữa
     setResolvedProfiles([]);
     setSelectedProfileId("");
   }
@@ -223,24 +270,40 @@ const fetchDepartments = async () => {
 
 
   const fetchSchedules = async (doctorId, date) => {
-    try {
-      setIsFormLoading(true);
-      const formattedDate = new Date(date).toISOString().split("T")[0];
-      const res = await axios.get(
-        `http://localhost:9999/api/appointmentScheduleManagement/schedules/${doctorId}`,
-        {
-          params: { date: formattedDate },
-        }
-      );
-      setSchedules(res.data || []);
-    } catch (err) {
-      console.error("Failed to fetch schedules:", err);
-      setSchedules([]);
-      setError("Failed to fetch schedules.");
-    } finally {
-      setIsFormLoading(false);
-    }
-  };
+  try {
+    const res = await axios.get(
+      `http://localhost:9999/api/appointmentScheduleManagement/schedules/${doctorId}`,
+      {
+        params: { date: new Date(date).toISOString().split("T")[0] }, // ⚠️ dùng yyyy-mm-dd
+      }
+    );
+
+    //console.log("📥 Raw fetched schedules:", res.data);
+
+const matchingSchedule = res.data.find(
+  (s) =>
+    new Date(s.date).toISOString().slice(0, 10) ===
+    new Date(date).toISOString().slice(0, 10)
+);
+
+if (matchingSchedule) {
+  //console.log("✅ Found matching schedule:", matchingSchedule);
+  //console.log("⏱ Extracted timeSlots:", matchingSchedule.timeSlots);
+  setSchedules(matchingSchedule.timeSlots || []);
+} else {
+  console.warn("⚠️ No matching schedule found for selected date:", date);
+  setSchedules([]);
+}
+
+  } catch (error) {
+    console.error("❌ Failed to fetch schedules:", error);
+    setSchedules([]);
+  }
+};
+
+
+
+
 
   const fetchProfilesByUser = async (userId) => {
     try {
@@ -269,6 +332,13 @@ const fetchDepartments = async () => {
       minute: "2-digit",
     });
   };
+const formatYYYYMMDD = (dateStr) => {
+  const d = new Date(dateStr);
+  const offset = d.getTimezoneOffset();
+  const localDate = new Date(d.getTime() - offset * 60000);
+  return localDate.toISOString().slice(0, 10); // yyyy-MM-dd
+};
+
 
 const validateForm = () => {
   const errors = {};
@@ -366,21 +436,54 @@ function handleResetForm() {
     setCurrentPage(1);
   }
 
-  async function handleSubmit() {
+async function handleSubmit() {
   if (!validateForm()) return;
 
-  const selectedProfile = resolvedProfiles.find(p => p._id === form.profileId);
-if (!selectedProfile) {
-  alert("Profile not resolved. Please check the identity number.");
-  return;
-}
+  //console.log("🧪 Time slot selected:", form.timeSlot);
+  //console.log("🧪 Form date selected:", form.appointmentDate);
+  //console.log("🧪 Schedule date available:", schedules);
 
+  const selectedProfile = resolvedProfiles.find((p) => p._id === form.profileId);
+  if (!selectedProfile) {
+    message.error("Profile not resolved. Please check the identity number.");
+    return;
+  }
 
   try {
     setIsFormLoading(true);
 
+    if (!form.timeSlot) {
+      message.error("Time slot is missing.");
+      return;
+    }
+
+    const selectedSlot = schedules.find(slot => slot.startTime === form.timeSlot);
+    if (!selectedSlot) {
+      message.error("Selected time slot not found in current schedule.");
+      return;
+    }
+
+    // ✅ Ghép ngày hẹn với giờ từ timeSlot
+    const appointmentDate = new Date(form.appointmentDate);
+    const slotTime = new Date(selectedSlot.startTime);
+
+    const combinedDate = new Date(appointmentDate);
+    combinedDate.setHours(slotTime.getHours());
+    combinedDate.setMinutes(slotTime.getMinutes());
+    combinedDate.setSeconds(0);
+    combinedDate.setMilliseconds(0);
+
+const finalDate = combinedDate.toISOString(); 
+
+
+    // ✅ Log thông tin trước khi submit
+    //console.log("✅ Combined final appointmentDate =", finalDate);
+    //console.log("form.department =", form.department);
+    //console.log("form.doctorId =", form.doctorId);
+    //console.log("form.profileId =", form.profileId);
+
     const payload = {
-      appointmentDate: new Date(form.timeSlot).toISOString(),
+      appointmentDate: finalDate,
       department: form.department,
       doctorId: form.doctorId,
       type: form.type,
@@ -390,29 +493,35 @@ if (!selectedProfile) {
       userId: selectedProfile.userId,
     };
 
+    //console.log("📦 Payload to be submitted:", payload);
+
     if (currentAppointment) {
       await axios.put(
         `http://localhost:9999/api/appointmentScheduleManagement/${currentAppointment._id}`,
         payload
       );
-      alert("Appointment updated successfully!");
+      message.success("Appointment updated successfully!");
     } else {
       await axios.post(
         "http://localhost:9999/api/appointmentScheduleManagement",
         payload
       );
-      alert("Appointment created successfully!");
+      message.success("Appointment created successfully!");
     }
 
     setShowModal(false);
     fetchAppointments();
   } catch (error) {
-    console.error("Error submitting appointment:", error);
-    alert("Error: " + (error.response?.data?.message || error.message));
+    console.error("❌ Error submitting appointment:", error);
+    message.error("Error: " + (error.response?.data?.message || error.message));
   } finally {
     setIsFormLoading(false);
   }
 }
+
+
+
+
 
 
   function handleDeleteClick(appointmentId) {
@@ -428,9 +537,9 @@ if (!selectedProfile) {
       setShowDeleteModal(false);
       setDeleteAppointmentId(null);
       fetchAppointments();
-      alert("Appointment deleted successfully!");
+      message.success("Appointment deleted successfully!");
     } catch (error) {
-      alert(
+      message.error(
         "Delete failed: " + (error.response?.data?.message || error.message)
       );
     }
@@ -474,7 +583,7 @@ if (!selectedProfile) {
                   <FaSearch />
                 </InputGroup.Text>
                 <FormControl
-                  placeholder="Search by doctor, user, user code, department, or status..."
+                  placeholder="Search by doctor, user, or status..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   aria-label="Search appointments"
@@ -563,14 +672,24 @@ if (!selectedProfile) {
           </Col>
         </Row>
 
-        <Button
-          variant="success"
-          className="mb-4"
-          onClick={handleAddNew}
-          aria-label="Add new appointment"
-        >
-          Add Appointment
-        </Button>
+        <div className="d-flex gap-2 mb-4">
+  <Button
+    variant="success"
+    onClick={handleAddNew}
+    aria-label="Add new appointment"
+  >
+    Add Appointment
+  </Button>
+
+  <Button
+    variant="info"
+    onClick={() => window.location.href = "http://localhost:5173/staff/medicalrecord"}
+    aria-label="Add patient record"
+  >
+    Add Patient Record
+  </Button>
+</div>
+
 
         {loading ? (
           <div className="loading-container">
@@ -603,7 +722,7 @@ if (!selectedProfile) {
         <th>Type</th>
         <th>User</th>
         <th>Phone</th>
-        <th>Profile Name</th>
+        <th>Patient Record</th>
         <th>Status</th>
         <th>Reminder</th>
         <th>Actions</th>
@@ -624,8 +743,27 @@ if (!selectedProfile) {
           <td>{appointment.type}</td>
           <td>{appointment.userName || "N/A"}</td>
           <td>{appointment.userPhone || "N/A"}</td>
-          <td>{appointment.profileName || "N/A"}</td>
-          <td>{appointment.status}</td>
+          <td>
+  {appointment.profileName ? (
+    <Button
+      variant="link"
+      className="p-0 text-primary"
+      style={{ textDecoration: "underline", cursor: "pointer" }}
+      onClick={() => handleViewProfile(appointment.profileId?._id || appointment.profileId)}
+    >
+      {appointment.profileName}
+    </Button>
+  ) : (
+    "N/A"
+  )}
+</td>
+
+          <td>
+  <span className={`badge-status status-${appointment.status.replace(" ", "-")}`}>
+    {appointment.status}
+  </span>
+</td>
+
           <td>{appointment.reminderSent ? "Yes" : "No"}</td>
           <td>
             <div className="d-flex gap-2">
@@ -688,303 +826,218 @@ if (!selectedProfile) {
       </Container>
 
       <Modal show={showModal} onHide={() => setShowModal(false)} centered>
-        <Modal.Header closeButton className="bg-primary text-white">
-          <Modal.Title>
-            {currentAppointment ? "Update Appointment" : "Add New Appointment"}
-          </Modal.Title>
-        </Modal.Header>
-        <Modal.Body className="p-4">
-          <Form>
-            <div className="mb-4">
-              <h5 className="fw-bold text-primary mb-3">Appointment Details</h5>
-              <Form.Group className="mb-3" controlId="appointmentDate">
-                <Form.Label className="fw-medium">
-                  Appointment Date <span className="text-danger">*</span>
-                </Form.Label>
-                <Form.Control
-                  type="date"
-                  name="appointmentDate"
-                  value={
-                    form.appointmentDate
-                      ? form.appointmentDate.split("T")[0]
-                      : ""
-                  }
-                  onChange={handleChange}
-                  required
-                  className={formErrors.appointmentDate ? "border-danger" : ""}
-                  aria-label="Select appointment date"
-                />
-                {formErrors.appointmentDate && (
-                  <div className="text-danger small mt-1">
-                    {formErrors.appointmentDate}
-                  </div>
-                )}
-              </Form.Group>
+  <Modal.Header closeButton className="bg-primary text-white">
+    <Modal.Title>{currentAppointment ? "Edit Appointment" : "Add New Appointment"}</Modal.Title>
+  </Modal.Header>
+  <Modal.Body className="p-4 appointment-modal-body">
+    <Form>
+      {/* Appointment Info */}
+      <h5 className="section-title">🗓 Appointment Info</h5>
+      <Row>
+        <Col md={6}>
+          <Form.Group className="mb-3" controlId="appointmentDate">
+            <Form.Label>
+              Appointment Date <span className="text-danger">*</span>
+            </Form.Label>
+            <Form.Control
+              type="date"
+              name="appointmentDate"
+              value={form.appointmentDate}
+              onChange={(e) => {
+                const value = e.target.value;
+                setForm((prev) => ({
+                  ...prev,
+                  appointmentDate: value,
+                  doctorId: "",
+                  timeSlot: "",
+                }));
+                setAvailableDoctors([]);
+                setSchedules([]);
+              }}
+            />
+            {formErrors.appointmentDate && (
+              <Form.Text className="text-danger">{formErrors.appointmentDate}</Form.Text>
+            )}
+          </Form.Group>
+        </Col>
+        <Col md={6}>
+          <Form.Group className="mb-3" controlId="department">
+            <Form.Label>
+              Department <span className="text-danger">*</span>
+            </Form.Label>
+            <Form.Select
+              name="department"
+              value={form.department}
+              onChange={handleChange}
+              disabled={!form.appointmentDate}
+            >
+              <option value="">Select department</option>
+              {departments.map((dept) => (
+                <option key={dept._id} value={dept._id}>
+                  {dept.name}
+                </option>
+              ))}
+            </Form.Select>
+            {formErrors.department && (
+              <Form.Text className="text-danger">{formErrors.department}</Form.Text>
+            )}
+          </Form.Group>
+        </Col>
+      </Row>
 
-              <Form.Group className="mb-3" controlId="department">
-                <Form.Label className="fw-medium">
-                  Department <span className="text-danger">*</span>
-                </Form.Label>
-                <Form.Select
-                  name="department"
-                  value={form.department}
-                  onChange={handleChange}
-                  required
-                  disabled={!form.appointmentDate}
-                  className={formErrors.department ? "border-danger" : ""}
-                  aria-label="Select department"
-                >
-                  <option value="">Select department</option>
-                  {Array.isArray(departments) &&
-                    departments.map((dept) => (
-                      <option key={dept._id} value={dept._id}>
-                        {dept.name}
-                      </option>
-                    ))}
-                </Form.Select>
+      <>
+  <h6 className="text-muted mt-3">Available Doctors</h6>
+  <Row>
+    <Col md={6}>
+      <Form.Group className="mb-3" controlId="doctorId">
+        <Form.Label>Doctor <span className="text-danger">*</span></Form.Label>
+        <Form.Select
+          name="doctorId"
+          value={form.doctorId}
+          onChange={handleChange}
+        >
+          <option value="">Select doctor</option>
+          {availableDoctors.map((doc) => (
+            <option key={doc._id} value={doc._id}>{doc.name}</option>
+          ))}
+        </Form.Select>
+        {formErrors.doctorId && (
+          <Form.Text className="text-danger">{formErrors.doctorId}</Form.Text>
+        )}
+        {availableDoctors.length === 0 && (
+          <Form.Text className="text-muted">No doctors available</Form.Text>
+        )}
+      </Form.Group>
+    </Col>
+    <Col md={6}>
+      <Form.Group className="mb-3" controlId="timeSlot">
+        <Form.Label>Time Slot <span className="text-danger">*</span></Form.Label>
+        <Form.Select
+          name="timeSlot"
+          value={form.timeSlot}
+          onChange={handleChange}
+        >
+          <option value="">Select time slot</option>
+          {schedules
+            .filter(slot => slot.status === "Available")
+            .map((slot, i) => (
+              <option key={i} value={slot.startTime}>
+                {new Date(slot.startTime).toLocaleTimeString("en-GB")} - {new Date(slot.endTime).toLocaleTimeString("en-GB")}
+              </option>
+            ))}
+        </Form.Select>
+        {formErrors.timeSlot && (
+          <Form.Text className="text-danger">{formErrors.timeSlot}</Form.Text>
+        )}
+      </Form.Group>
+    </Col>
+  </Row>
+</>
 
-                {formErrors.department && (
-                  <div className="text-danger small mt-1">
-                    {formErrors.department}
-                  </div>
-                )}
-              </Form.Group>
 
-              {isFormLoading && (
-                <div className="text-center mb-3">
-                  <Spinner animation="border" size="sm" variant="primary" />
-                  <span className="ms-2 text-muted">Loading...</span>
-                </div>
-              )}
+      <hr />
 
-              {availableDoctors.length > 0 ? (
-                <>
-                  <Form.Group className="mb-3" controlId="doctorSearch">
-                    <Form.Label className="fw-medium">Search Doctor</Form.Label>
-                    <InputGroup>
-                      <InputGroup.Text>
-                        <FaSearch />
-                      </InputGroup.Text>
-                      <FormControl
-                        placeholder="Search by doctor name..."
-                        value={doctorSearchTerm}
-                        onChange={(e) => setDoctorSearchTerm(e.target.value)}
-                        aria-label="Search doctors"
-                      />
-                    </InputGroup>
-                  </Form.Group>
+      {/* Patient Info */}
+      <h5 className="section-title">🧍 Patient Info</h5>
+      <Form.Group className="mb-3" controlId="identityNumber">
+        <Form.Label>Identity Number <span className="text-danger">*</span></Form.Label>
+        <InputGroup>
+          <Form.Control
+            type="text"
+            name="identityNumber"
+            placeholder="Enter identity number"
+            value={form.identityNumber}
+            onChange={(e) => {
+              handleChange(e);
+              setResolvedProfiles([]);
+              setSelectedProfileId("");
+            }}
+          />
+          <Button variant="outline-primary" onClick={() => fetchProfilesByIdentity(form.identityNumber)}>
+            Search
+          </Button>
+        </InputGroup>
+        <Form.Text className="text-muted">
+          Search to select patient profile linked with identity number.
+        </Form.Text>
+        {formErrors.identityNumber && (
+          <Form.Text className="text-danger">{formErrors.identityNumber}</Form.Text>
+        )}
+      </Form.Group>
 
-                  <Form.Group className="mb-3" controlId="doctorId">
-                    <Form.Label className="fw-medium">
-                      Doctor <span className="text-danger">*</span>
-                    </Form.Label>
-                    <Form.Select
-                      name="doctorId"
-                      value={form.doctorId}
-                      onChange={handleChange}
-                      required
-                      className={formErrors.doctorId ? "border-danger" : ""}
-                      aria-label="Select doctor"
-                    >
-                      <option value="">Select doctor</option>
-                      {filteredDoctors.map((doc) => (
-                        <option key={doc._id} value={doc._id}>
-                          {doc.name}
-                        </option>
-                      ))}
-                    </Form.Select>
-                    {formErrors.doctorId && (
-                      <div className="text-danger small mt-1">
-                        {formErrors.doctorId}
-                      </div>
-                    )}
-                    {doctorSearchTerm && filteredDoctors.length === 0 && (
-                      <div className="text-muted small mt-1">
-                        No doctors found matching your search.
-                      </div>
-                    )}
-                  </Form.Group>
-
-                  <Form.Group className="mb-3" controlId="timeSlot">
-                    <Form.Label className="fw-medium">
-                      Time Slot <span className="text-danger">*</span>
-                    </Form.Label>
-                    <Form.Select
-                      name="timeSlot"
-                      value={form.timeSlot}
-                      onChange={handleChange}
-                      required
-                      disabled={!form.doctorId || schedules.length === 0}
-                      className={formErrors.timeSlot ? "border-danger" : ""}
-                      aria-label="Select time slot"
-                    >
-                      <option value="">Select a time slot</option>
-                      {schedules.map((s) =>
-                        s.timeSlots
-                          .filter((slot) => slot.status === "Available")
-                          .map((slot, i) => (
-                            <option key={i} value={slot.startTime}>
-                              {new Date(slot.startTime).toLocaleTimeString(
-                                "en-GB"
-                              )}{" "}
-                              -{" "}
-                              {new Date(slot.endTime).toLocaleTimeString(
-                                "en-GB"
-                              )}
-                            </option>
-                          ))
-                      )}
-                    </Form.Select>
-                    {formErrors.timeSlot && (
-                      <div className="text-danger small mt-1">
-                        {formErrors.timeSlot}
-                      </div>
-                    )}
-                    {form.doctorId && schedules.length === 0 && (
-                      <div className="text-muted small mt-1">
-                        No available time slots for this doctor.
-                      </div>
-                    )}
-                  </Form.Group>
-                </>
-              ) : form.appointmentDate && form.department ? (
-                <div className="text-danger small mb-3">
-                  No doctors available for this department on the selected date.
-                </div>
-              ) : null}
-            </div>
-
-            <hr />
-
-            <div className="mb-4">
-  <h5 className="fw-bold text-primary mb-3">Patient Identity</h5>
-
-<Form.Group className="mb-3" controlId="identityNumber">
-  <Form.Label className="fw-medium">
-    Identity Number <span className="text-danger">*</span>
-  </Form.Label>
-  <InputGroup>
-    <Form.Control
-      type="text"
-      name="identityNumber"
-      value={form.identityNumber}
-      onChange={(e) => {
-        handleChange(e); // cập nhật form state
-        setResolvedProfiles([]); // xóa danh sách trước
-        setSelectedProfileId(""); // reset profile chọn
-      }}
-      placeholder="Enter identity number..."
-      required
-    />
-    <Button
-      variant="outline-primary"
-      onClick={() => fetchProfilesByIdentity(form.identityNumber)}
-      aria-label="Search Identity Number"
-    >
-      Search
-    </Button>
-  </InputGroup>
-  <div className="text-muted small mt-1">
-    Enter and search Identity Number to load patient profile(s).
-  </div>
+      <Form.Group controlId="selectedProfile" className="mb-3">
+  <Form.Label>Select Profile</Form.Label>
+  <Form.Select
+    value={selectedProfileId}
+    onChange={(e) => setSelectedProfileId(e.target.value)}
+    disabled={resolvedProfiles.length === 0}
+  >
+    <option value="">
+      {resolvedProfiles.length === 0 ? "No profiles found" : "Select a profile"}
+    </option>
+    {resolvedProfiles.map((profile) => (
+      <option key={profile._id} value={profile._id}>
+        {profile.name} - {new Date(profile.dateOfBirth).toLocaleDateString()} ({profile.gender})
+      </option>
+    ))}
+  </Form.Select>
+  <Form.Text className="text-muted">
+    Patient profile associated with identity number.
+  </Form.Text>
 </Form.Group>
 
-{resolvedProfiles.length > 0 && (
-  <Form.Group className="mb-3" controlId="selectedProfile">
-    <Form.Label className="fw-medium">Select Profile</Form.Label>
-    <Form.Select
-      value={selectedProfileId}
-      onChange={(e) => setSelectedProfileId(e.target.value)}
-      required
-    >
-      <option value="">Select a profile</option>
-      {resolvedProfiles.map((profile) => (
-        <option key={profile._id} value={profile._id}>
-          {profile.name} - {new Date(profile.dateOfBirth).toLocaleDateString()} ({profile.gender})
-        </option>
-      ))}
-    </Form.Select>
-  </Form.Group>
-)}
-
-</div>
 
 
-            <hr />
+      <hr />
 
-            <div>
-              <h5 className="fw-bold text-primary mb-3">Additional Details</h5>
-              <Form.Group className="mb-3" controlId="type">
-                <Form.Label className="fw-medium">Type</Form.Label>
-                <Form.Select
-                  name="type"
-                  value={form.type}
-                  onChange={handleChange}
-                  aria-label="Select appointment type"
-                >
-                  <option value="Online">Online</option>
-                  <option value="Offline">Offline</option>
-                </Form.Select>
-              </Form.Group>
+      {/* Other Info */}
+      <h5 className="section-title">📋 Additional Info</h5>
+      <Row>
+        <Col md={6}>
+          <Form.Group className="mb-3" controlId="type">
+            <Form.Label>Type</Form.Label>
+            <Form.Select name="type" value={form.type} onChange={handleChange}>
+              <option value="Online">Online</option>
+              <option value="Offline">Offline</option>
+            </Form.Select>
+          </Form.Group>
+        </Col>
+        <Col md={6}>
+          <Form.Group className="mb-3" controlId="status">
+            <Form.Label>Status</Form.Label>
+            <Form.Select name="status" value={form.status} onChange={handleChange}>
+              <option value="Booked">Booked</option>
+              <option value="In-Progress">In-Progress</option>
+              <option value="Completed">Completed</option>
+              <option value="Canceled">Canceled</option>
+            </Form.Select>
+          </Form.Group>
+        </Col>
+      </Row>
+      <Form.Check
+        className="mb-3"
+        type="checkbox"
+        label="Reminder Sent"
+        name="reminderSent"
+        checked={form.reminderSent}
+        onChange={handleChange}
+      />
+    </Form>
+  </Modal.Body>
+  <Modal.Footer>
+    <Button variant="secondary" onClick={handleResetForm}>
+      <i className="bi bi-arrow-clockwise me-1" /> Reset
+    </Button>
+    <Button variant="danger" onClick={() => setShowModal(false)}>
+      Cancel
+    </Button>
+    <Button variant="primary" onClick={handleSubmit} disabled={isFormLoading || !form.timeSlot}>
+      {isFormLoading ? <Spinner size="sm" animation="border" className="me-2" /> : null}
+      {currentAppointment ? "Save" : "Add"}
+    </Button>
+  </Modal.Footer>
+</Modal>
 
-              <Form.Group className="mb-3" controlId="status">
-                <Form.Label className="fw-medium">Status</Form.Label>
-                <Form.Select
-                  name="status"
-                  value={form.status}
-                  onChange={handleChange}
-                  aria-label="Select appointment status"
-                >
-                  <option value="Booked">Booked</option>
-                  <option value="In-Progress">In-Progress</option>
-                  <option value="Completed">Completed</option>
-                  <option value="Canceled">Canceled</option>
-                </Form.Select>
-              </Form.Group>
-
-              <Form.Group className="mb-3" controlId="reminderSent">
-                <Form.Check
-                  type="checkbox"
-                  label="Reminder Sent"
-                  name="reminderSent"
-                  checked={form.reminderSent}
-                  onChange={handleChange}
-                  aria-label="Toggle reminder sent"
-                />
-              </Form.Group>
-            </div>
-          </Form>
-        </Modal.Body>
-        <Modal.Footer className="border-top-0">
-          <Button
-            variant="secondary"
-            onClick={handleResetForm}
-            aria-label="Reset form"
-          >
-            <FaRedo className="me-1" /> Reset
-          </Button>
-          <Button
-            variant="danger"
-            onClick={() => setShowModal(false)}
-            aria-label="Cancel"
-          >
-            Cancel
-          </Button>
-          <Button
-            variant="primary"
-            onClick={handleSubmit}
-            disabled={isFormLoading || !form.timeSlot}
-            aria-label={
-              currentAppointment ? "Save appointment" : "Add appointment"
-            }
-          >
-            {isFormLoading ? (
-              <Spinner animation="border" size="sm" className="me-2" />
-            ) : null}
-            {currentAppointment ? "Save" : "Add"}
-          </Button>
-        </Modal.Footer>
-      </Modal>
 
       <Modal show={showDeleteModal} onHide={cancelDelete} centered>
         <Modal.Header closeButton className="bg-danger text-white">
@@ -1010,6 +1063,61 @@ if (!selectedProfile) {
           </Button>
         </Modal.Footer>
       </Modal>
+      <Modal
+  show={openProfileDialog}
+  onHide={() => setOpenProfileDialog(false)}
+  centered
+>
+  <Modal.Header closeButton className="bg-info text-white">
+    <Modal.Title>Patient Record Detail</Modal.Title>
+  </Modal.Header>
+  <Modal.Body>
+  {selectedProfile ? (
+    <>
+      <p><strong>Profile Name:</strong> {selectedProfile.name}</p>
+      <p><strong>Identity Number:</strong> {selectedProfile.identityNumber}</p>
+      <p><strong>Date of Birth:</strong> {new Date(selectedProfile.dateOfBirth).toLocaleDateString()}</p>
+      <p><strong>Gender:</strong> {selectedProfile.gender}</p>
+      <p><strong>Diagnosis:</strong> {selectedProfile.diagnose || "N/A"}</p>
+      <p><strong>Note:</strong> {selectedProfile.note || "None"}</p>
+      <p><strong>Issues:</strong> {selectedProfile.issues || "None"}</p>
+      <p><strong>Doctor:</strong> {selectedProfile.doctorId?.name || "N/A"}</p>
+
+      <p><strong>Medicine:</strong></p>
+      <ul>
+        {Array.isArray(selectedProfile.medicine) && selectedProfile.medicine.length > 0 ? (
+          selectedProfile.medicine.map((m, i) => (
+            <li key={i}>{m.name || m}</li> // nếu medicine là object thì lấy m.name, nếu là ObjectId thì hiện m
+          ))
+        ) : (
+          <li>No medicine recorded</li>
+        )}
+      </ul>
+
+      <p><strong>Service:</strong></p>
+      <ul>
+        {Array.isArray(selectedProfile.service) && selectedProfile.service.length > 0 ? (
+          selectedProfile.service.map((s, i) => (
+            <li key={i}>{s.name || s}</li>
+          ))
+        ) : (
+          <li>No service recorded</li>
+        )}
+      </ul>
+    </>
+  ) : (
+    <p className="text-muted">No profile data loaded.</p>
+  )}
+</Modal.Body>
+
+
+  <Modal.Footer>
+    <Button variant="secondary" onClick={() => setOpenProfileDialog(false)}>
+      Close
+    </Button>
+  </Modal.Footer>
+</Modal>
+
     </>
   );
 };
