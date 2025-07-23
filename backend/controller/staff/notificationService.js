@@ -1,7 +1,6 @@
 const Notification = require("../../models/Notification");
 const User = require("../../models/User");
 
-// 📌 Create notification (staff)
 exports.createNotification = async (req, res) => {
   try {
     const { title, content, isUrgent, receiverEmail } = req.body;
@@ -28,7 +27,6 @@ exports.createNotification = async (req, res) => {
   }
 };
 
-// 📌 Get notifications (with filter for staff)
 exports.getNotifications = async (req, res) => {
   try {
     const { title, receiver, fromDate, toDate } = req.query;
@@ -52,7 +50,6 @@ exports.getNotifications = async (req, res) => {
   }
 };
 
-// 📌 Delete notification (staff)
 exports.deleteNotification = async (req, res) => {
   try {
     await Notification.findByIdAndDelete(req.params.id);
@@ -62,8 +59,6 @@ exports.deleteNotification = async (req, res) => {
   }
 };
 
-// 📌 Mark as urgent (staff)
-// ✅ New improved markUrgent backend — toggle urgent state, not just force true
 exports.markUrgent = async (req, res) => {
   try {
     const notify = await Notification.findById(req.params.id);
@@ -71,7 +66,6 @@ exports.markUrgent = async (req, res) => {
       return res.status(404).json({ message: "Notification not found" });
     }
 
-    // Toggle logic
     notify.isUrgent = !notify.isUrgent;
     await notify.save();
 
@@ -81,7 +75,6 @@ exports.markUrgent = async (req, res) => {
   }
 };
 
-// 📌 User: Get notifications (polling)
 exports.getUserNotifications = async (req, res) => {
   try {
     const userId = req.user.id;
@@ -99,7 +92,6 @@ exports.getUserNotifications = async (req, res) => {
   }
 };
 
-// 📌 User: Mark as read
 exports.markAsRead = async (req, res) => {
   try {
     const { id } = req.params;
