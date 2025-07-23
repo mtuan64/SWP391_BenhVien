@@ -4,13 +4,23 @@ const User = require("../../models/User");
 // 📌 Create notification (staff)
 exports.createNotification = async (req, res) => {
   try {
-    const { title, content, isUrgent, receiver } = req.body;
+    const { title, content, isUrgent, receiverEmail } = req.body;
+
+    let receiverUser = null;
+    if (receiverEmail) {
+      receiverUser = await User.findOne({ email: receiverEmail });
+      if (!receiverUser) {
+        return res.status(400).json({ message: "Người dùng không tồn tại" });
+      }
+    }
+
     const notify = new Notification({
       title,
       content,
       isUrgent,
-      receiver: receiver || null,
+      receiver: receiverUser ? receiverUser._id : null,
     });
+
     await notify.save();
     res.status(201).json(notify);
   } catch (err) {

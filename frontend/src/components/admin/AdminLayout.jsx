@@ -40,19 +40,19 @@ const AdminLayout = () => {
         </div>
         <Menu theme="dark" mode="inline" defaultSelectedKeys={["1"]}>
           <Menu.Item key="1" icon={<DashboardOutlined />}>
-            <Link to="/admin">Dashboard</Link>
+            <Link to="/admin">Bảng Điều Khiển</Link>
           </Menu.Item>
           <Menu.Item key="2" icon={<UserOutlined />}>
-            <Link to="/admin/accounts">User Management</Link>
+            <Link to="/admin/accounts">Quản Lý Người Dùng</Link>
           </Menu.Item>
           <Menu.Item key="3" icon={<TeamOutlined />}>
-            <Link to="/admin/employees">Employee Management</Link>
+            <Link to="/admin/employees">Quản Lý Nhân Viên</Link>
           </Menu.Item>
           <Menu.Item key="4" icon={<TeamOutlined />}>
-            <Link to="/admin/attendance">Attendance Management</Link>
+            <Link to="/admin/attendance">Quản Lý Điểm Danh</Link>
           </Menu.Item>
           <Menu.Item key="5" icon={<LogoutOutlined />} onClick={handleLogout}>
-            Logout
+            Đăng Xuất
           </Menu.Item>
         </Menu>
       </Sider>
