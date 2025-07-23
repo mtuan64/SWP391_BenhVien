@@ -36,6 +36,7 @@ import EmployeeManagement from "./pages/admin/EmployessManagement";
 import StaffLayout from "./components/staff/StaffLayout";
 import InvoiceUser from "./pages/InvoiceManagement";
 import BlogManagement from "./pages/staff/BlogManagement";
+import CategoryManagement from "./pages/staff/CategoryBlogManagement";
 import ServiceManagement from "./pages/staff/ServiceManagement";
 import DepartmentManagement from "./pages/staff/DepartmentManagement";
 import SpecialtyManagement from "./pages/staff/SpecialtyManagement";
@@ -219,6 +220,7 @@ const AppRoutes = () => {
           >
             <Route index element={<BlogManagement />} />
             <Route path="blogs" element={<BlogManagement />} />
+            <Route path="category-management" element={<CategoryManagement />} />
             <Route path="invoices/create" element={<CreateInvoice2/>}></Route>
             <Route path="services" element={<ServiceManagement />} />
             <Route path="services/create" element={<CreateServicePage />} />

@@ -80,7 +80,6 @@ app.use("/api/services", require("./routers/Service/service.route"));
 app.use("/api", require("./routers/medicine/medicine.route"));
 app.use("/api", require("./routers/appointment/appointment.routes"));
 
-// Start server after DB connected
 const PORT = process.env.PORT || 9999;
 
 connectDb()
@@ -89,7 +88,6 @@ connectDb()
       console.log(`✅ Server is running on port ${PORT}`);
     });
 
-    // ✅ Tự động chạy lúc 08:05 mỗi sáng
     cron.schedule("5 8 * * *", () => {
       console.log("🔔 Running autoMarkAbsent...");
       autoMarkAbsent();

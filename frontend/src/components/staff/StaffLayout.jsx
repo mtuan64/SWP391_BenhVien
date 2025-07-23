@@ -49,62 +49,60 @@ const StaffLayout = () => {
         </div>
         <Menu theme="dark" mode="inline" defaultSelectedKeys={["1"]}>
           <Menu.Item key="1" icon={<FileTextOutlined />}>
-            <Link to="/staff/blogs">Manage Blogs</Link>
+            <Link to="/staff/blogs">Quản Lý Bài Viết</Link>
           </Menu.Item>
           <Menu.Item key="2" icon={<AppstoreOutlined />}>
-            <Link to="/staff/services">Manage Service</Link>
+            <Link to="/staff/services">Quản Lý Dịch Vụ</Link>
           </Menu.Item>
           <Menu.Item key="3" icon={<AppstoreOutlined />}>
-            <Link to="/staff/departments">Manage Department</Link>
+            <Link to="/staff/departments">Quản Lý Khoa Phòng</Link>
           </Menu.Item>
-          <Menu.Item key="4" icon={<AppstoreOutlined />}>
-            <Link to="/staff/view/medicalrecords">Manage Records</Link>
-          </Menu.Item>
+          
           <Menu.Item key="6" icon={<CalendarOutlined />}>
-            <Link to="/staff/appointments">Appointment Schedule</Link>
+            <Link to="/staff/appointments">Lịch Hẹn</Link>
           </Menu.Item>
           <Menu.Item key="7" icon={<BellOutlined />}>
-            <Link to="/staff/notifications">Manage Notifications</Link>
+            <Link to="/staff/notifications">Quản Lý Thông Báo</Link>
           </Menu.Item>
           <Menu.Item key="8" icon={<UserOutlined />}>
-            <Link to="/staff/users">Manage Users</Link>
+            <Link to="/staff/users">Quản Lý Người Dùng</Link>
           </Menu.Item>
           <Menu.Item key="9" icon={<FileTextOutlined />}>
-            <Link to="/staff/medicalrecord">Medical Record</Link>
+            <Link to="/staff/medicalrecord">Hồ Sơ Y Tế</Link>
           </Menu.Item>
           <Menu.Item key="10" icon={<PlusCircleOutlined />}>
-            <Link to="/staff/medicines">Manage Medicines</Link>
+            <Link to="/staff/medicines">Quản Lý Thuốc</Link>
           </Menu.Item>
           <Menu.Item key="11" icon={<DollarOutlined />}>
-            <Link to="/staff/invoices">Manage Invoices</Link>
+            <Link to="/staff/invoices">Quản Lý Hóa Đơn</Link>
           </Menu.Item>
           <Menu.Item key="12" icon={<DollarOutlined />}>
-            <Link to="/staff/payments">View Payment</Link>
+            <Link to="/staff/payments">Quản Lý Thanh Toán</Link>
           </Menu.Item>
           <Menu.Item key="13" icon={<NotificationOutlined />}>
-            <Link to="/staff/news">Manage News</Link>
+            <Link to="/staff/news">Quản Lý Tin Tức</Link>
           </Menu.Item>
           <Menu.Item key="14" icon={<CommentOutlined />}>
-            <Link to="/staff/feedback">Manage Feedback</Link>
+            <Link to="/staff/feedback">Quản Lý Feedback</Link>
           </Menu.Item>
           <Menu.Item key="15" icon={<QuestionCircleOutlined />}>
-            <Link to="/staff/qna">View Q&A</Link>
-          </Menu.Item>
-
-          <Menu.Item key="18" icon={<QuestionCircleOutlined />}>
-            <Link to="/staff/profile">Profile</Link>
+            <Link to="/staff/qna">Q/A</Link>
           </Menu.Item>
 
           <Menu.Item key="16" icon={<QuestionCircleOutlined />}>
-            <Link to="/staff/schedule">Manage Schedule</Link>
+            <Link to="/staff/schedule">Quản Lý Lịch Trình</Link>
           </Menu.Item>
 
           <Menu.Item key="19" icon={<CheckCircleOutlined />}>
-            <Link to="/staff/attendance">Attendance</Link>
+            <Link to="/staff/attendance">Điểm Danh</Link>
+          </Menu.Item>
+
+          <Menu.Item key="18" icon={<QuestionCircleOutlined />}>
+            <Link to="/staff/profile">Hồ Sơ Cá Nhân</Link>
           </Menu.Item>
 
           <Menu.Item key="17" icon={<LogoutOutlined />} onClick={handleLogout}>
-            Logout
+            Đăng Xuất
           </Menu.Item>
         </Menu>
       </Sider>
