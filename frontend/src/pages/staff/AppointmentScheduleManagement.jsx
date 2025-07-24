@@ -445,12 +445,18 @@ function handleResetForm() {
 async function handleSubmit() {
   if (!validateForm()) return;
 
-  //console.log("🧪 Time slot selected:", form.timeSlot);
-  //console.log("🧪 Form date selected:", form.appointmentDate);
-  //console.log("🧪 Schedule date available:", schedules);
+  console.log("📋 === BẮT ĐẦU GỬI LỊCH HẸN ===");
+  console.log("🆔 identityNumber:", form.identityNumber);
+  console.log("📅 form.appointmentDate:", form.appointmentDate);
+  console.log("🏥 form.department:", form.department);
+  console.log("👨‍⚕️ form.doctorId:", form.doctorId);
+  console.log("⏰ form.timeSlot:", form.timeSlot);
+  console.log("🧾 selectedProfileId:", selectedProfileId);
+  console.log("📂 resolvedProfiles:", resolvedProfiles);
 
-  const selectedProfile = resolvedProfiles.find((p) => p._id === form.profileId);
+  const selectedProfile = resolvedProfiles.find((p) => p._id === selectedProfileId);
   if (!selectedProfile) {
+    console.warn("⚠️ Không tìm thấy hồ sơ tương ứng.");
     message.error("Hồ sơ chưa được giải quyết. Vui lòng kiểm tra số nhận dạng.");
     return;
   }
@@ -459,12 +465,14 @@ async function handleSubmit() {
     setIsFormLoading(true);
 
     if (!form.timeSlot) {
+      console.warn("⚠️ Thiếu timeSlot.");
       message.error("Thiếu khoảng thời gian.");
       return;
     }
 
     const selectedSlot = schedules.find(slot => slot.startTime === form.timeSlot);
     if (!selectedSlot) {
+      console.warn("⚠️ Không tìm thấy slot trong lịch trình:", form.timeSlot);
       message.error("Không tìm thấy khoảng thời gian đã chọn trong lịch trình hiện tại.");
       return;
     }
@@ -479,14 +487,14 @@ async function handleSubmit() {
     combinedDate.setSeconds(0);
     combinedDate.setMilliseconds(0);
 
-const finalDate = combinedDate.toISOString(); 
+    const finalDate = combinedDate.toISOString();
 
-
-    // ✅ Log thông tin trước khi submit
-    //console.log("✅ Combined final appointmentDate =", finalDate);
-    //console.log("form.department =", form.department);
-    //console.log("form.doctorId =", form.doctorId);
-    //console.log("form.profileId =", form.profileId);
+    console.log("📆 Final combined appointmentDate:", finalDate);
+    console.log("⏱ Slot được chọn:", {
+      startTime: selectedSlot.startTime,
+      endTime: selectedSlot.endTime,
+      status: selectedSlot.status
+    });
 
     const payload = {
       appointmentDate: finalDate,
@@ -497,17 +505,24 @@ const finalDate = combinedDate.toISOString();
       reminderSent: form.reminderSent,
       profileId: selectedProfile._id,
       userId: selectedProfile.userId,
+      timeSlot: {
+        startTime: selectedSlot.startTime,
+        endTime: selectedSlot.endTime,
+        status: selectedSlot.status, 
+      },
     };
 
-    //console.log("📦 Payload to be submitted:", payload);
+    console.log("📦 Payload sẽ gửi:", payload);
 
     if (currentAppointment) {
+      console.log("✏️ Đang cập nhật lịch hẹn ID:", currentAppointment._id);
       await axios.put(
         `http://localhost:9999/api/appointmentScheduleManagement/${currentAppointment._id}`,
         payload
       );
       message.success("Đã cập nhật cuộc hẹn thành công!");
     } else {
+      console.log("🆕 Đang tạo lịch hẹn mới...");
       await axios.post(
         "http://localhost:9999/api/appointmentScheduleManagement",
         payload
@@ -519,11 +534,14 @@ const finalDate = combinedDate.toISOString();
     fetchAppointments();
   } catch (error) {
     console.error("❌ Lỗi khi gửi cuộc hẹn:", error);
+    console.log("💥 Chi tiết phản hồi lỗi:", error.response?.data || error);
     message.error("Error: " + (error.response?.data?.message || error.message));
   } finally {
     setIsFormLoading(false);
+    console.log("📋 === KẾT THÚC GỬI LỊCH HẸN ===");
   }
 }
+
 
 
 
@@ -536,20 +554,51 @@ const finalDate = combinedDate.toISOString();
   }
 
   async function confirmDelete() {
-    try {
-      await axios.delete(
-        `http://localhost:9999/api/appointmentScheduleManagement/${deleteAppointmentId}`
-      );
-      setShowDeleteModal(false);
-      setDeleteAppointmentId(null);
-      fetchAppointments();
-      message.success("Đã xóa cuộc hẹn thành công!");
-    } catch (error) {
-      message.error(
-        "Xóa không thành công: " + (error.response?.data?.message || error.message)
-      );
+  try {
+    const appointmentToDelete = appointments.find((a) => a._id === deleteAppointmentId);
+    if (!appointmentToDelete) {
+      message.error("Không tìm thấy thông tin cuộc hẹn.");
+      return;
     }
+
+    // ✅ Kiểm tra slot có tồn tại không
+    if (!appointmentToDelete.timeSlot || !appointmentToDelete.timeSlot.startTime || !appointmentToDelete.timeSlot.endTime) {
+      message.error("Không có thông tin khung giờ để xóa.");
+      return;
+    }
+
+    const payload = {
+      doctorId: appointmentToDelete.doctorId,
+      appointmentDate: appointmentToDelete.appointmentDate,
+      timeSlot: appointmentToDelete.timeSlot, // ✅ CẦN PHẢI GỬI CẢ SLOT
+    };
+
+    console.log("📦 Payload gửi khi DELETE:", payload);
+
+    await axios.delete(
+      `http://localhost:9999/api/appointmentScheduleManagement/${deleteAppointmentId}`,
+      {
+        data: payload,
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    setShowDeleteModal(false);
+    setDeleteAppointmentId(null);
+    fetchAppointments();
+    message.success("Đã xóa cuộc hẹn thành công!");
+  } catch (error) {
+    console.error("❌ Lỗi khi xoá:", error);
+    message.error(
+      "Xóa không thành công: " + (error.response?.data?.message || error.message)
+    );
   }
+}
+
+
+
 
   function cancelDelete() {
     setShowDeleteModal(false);
@@ -991,7 +1040,7 @@ const finalDate = combinedDate.toISOString();
         <Modal.Body>
           {selectedProfile ? (
             <>
-              <p><strong>Tên hồ sơ:</strong> {selectedProfile.name}</p>
+              <p><strong>Tên:</strong> {selectedProfile.name}</p>
               <p><strong>Số định danh:</strong> {selectedProfile.identityNumber}</p>
               <p><strong>Ngày sinh:</strong> {new Date(selectedProfile.dateOfBirth).toLocaleDateString()}</p>
               <p><strong>Giới tính:</strong> {selectedProfile.gender}</p>
