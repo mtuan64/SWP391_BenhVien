@@ -41,7 +41,7 @@ function MedicalRecord() {
     }
     const identityNumberRegex = /^[0-9]{12}$/;
     if (!identityNumberRegex.test(value)) {
-      return Promise.reject(new Error("Số CMND/CCCD phải là 6 ký tự số, không chứa chữ, không khoảng trắng và không ký tự đặc biệt!"));
+      return Promise.reject(new Error("Số CMND/CCCD phải là 12 ký tự số, không chứa chữ, không khoảng trắng và không ký tự đặc biệt!"));
     }
     return Promise.resolve();
   };
