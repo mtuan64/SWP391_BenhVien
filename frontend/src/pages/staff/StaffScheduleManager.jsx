@@ -4,12 +4,15 @@ import {
   Table, Button, Input, DatePicker, Select, TimePicker,
   Space, Form, message, Typography, Divider, Modal, Popconfirm, Tag
 } from 'antd';
-import dayjs from 'dayjs';
 import { PlusOutlined } from '@ant-design/icons';
+import dayjs from 'dayjs';
+import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
+dayjs.extend(isSameOrBefore);
 
 const { Title } = Typography;
 const { Option } = Select;
 const { Search } = Input;
+
 
 function StaffScheduleManager() {
   const [schedules, setSchedules] = useState([]);
@@ -22,7 +25,8 @@ function StaffScheduleManager() {
   const [searchText, setSearchText] = useState('');
   const [filterDepartment, setFilterDepartment] = useState(null);
   const [filterDate, setFilterDate] = useState(null);
-
+  const [autoModalVisible, setAutoModalVisible] = useState(false);
+  const [autoForm] = Form.useForm();
   useEffect(() => {
     fetchSchedules();
     fetchDepartments();
@@ -84,6 +88,72 @@ function StaffScheduleManager() {
     form.setFieldValue('employeeId', undefined);
     fetchEmployeesByDepartment(value);
   };
+const handleAutoGenerateSchedule = async (values) => {
+  const { department, employeeId, workingShifts, dateRange } = values;
+  const [startDateRaw, endDateRaw] = dateRange;
+
+  if (!startDateRaw || !endDateRaw) {
+    message.error('Vui lòng chọn khoảng ngày hợp lệ');
+    return;
+  }
+
+  const startDate = dayjs(startDateRaw).startOf('day');
+  const finalDate = dayjs(endDateRaw).startOf('day');
+  let current = dayjs(startDate); // ✅ chỉ khai báo 1 lần
+
+  const shiftMap = {
+    morning: { start: "08:00", end: "11:00" },
+    afternoon: { start: "13:00", end: "17:00" },
+    night: { start: "22:00", end: "06:00" },
+  };
+
+  try {
+    while (current.isSameOrBefore(finalDate, 'day')) {
+      const timeSlots = [];
+
+      workingShifts.forEach(({ shift, status }) => {
+        const { start, end } = shiftMap[shift];
+        const [startHour, startMinute] = start.split(':');
+        const [endHour, endMinute] = end.split(':');
+
+        const startTime = current.hour(startHour).minute(startMinute);
+        let endTime = current.hour(endHour).minute(endMinute);
+
+        if (shift === "night") {
+          endTime = endTime.add(1, 'day');
+        }
+
+        timeSlots.push({
+          startTime: startTime.toISOString(),
+          endTime: endTime.toISOString(),
+          status: status || "Available"
+        });
+      });
+
+      const payload = {
+        department,
+        employeeId,
+        date: current.format('YYYY-MM-DD'),
+        timeSlots
+      };
+
+      await axios.post('/api/staff/schedule', payload);
+      current = current.add(1, 'day');
+    }
+
+    const totalDays = finalDate.diff(startDate, 'day') + 1;
+    message.success(`Tạo lịch tự động thành công cho ${totalDays} ngày`);
+    setAutoModalVisible(false);
+    autoForm.resetFields();
+    fetchSchedules();
+  } catch (error) {
+    console.error("❌ Lỗi tạo lịch:", error);
+    message.error("Không thể tạo lịch tự động");
+  }
+};
+
+
+
 
   const handleDelete = async (id) => {
     try {
@@ -256,7 +326,9 @@ function StaffScheduleManager() {
           value={filterDate}
         />
         <Button onClick={clearFilters}>Xóa Filter</Button>
-
+        <Button type="default" onClick={() => setAutoModalVisible(true)}>
+          Tạo lịch tự động
+        </Button>
         <Button
           type="primary"
           icon={<PlusOutlined />}
@@ -380,8 +452,119 @@ function StaffScheduleManager() {
 
         </Form>
       </Modal>
+      <Modal
+  title="Tạo lịch tự động"
+  open={autoModalVisible}
+  onCancel={() => {
+    setAutoModalVisible(false);
+    autoForm.resetFields();
+  }}
+  onOk={() => autoForm.submit()}
+  okText="Tạo"
+>
+  <Form form={autoForm} layout="vertical" onFinish={handleAutoGenerateSchedule}>
+    <Form.Item
+      name="department"
+      label="Khoa"
+      rules={[{ required: true, message: 'Chọn khoa' }]}
+    >
+      <Select onChange={fetchEmployeesByDepartment} placeholder="Chọn khoa">
+        {departments.map(dep => (
+          <Option key={dep._id} value={dep._id}>{dep.name}</Option>
+        ))}
+      </Select>
+    </Form.Item>
+
+    <Form.Item
+      name="employeeId"
+      label="Bác sĩ"
+      rules={[{ required: true, message: 'Chọn bác sĩ' }]}
+    >
+      <Select placeholder="Chọn bác sĩ">
+        {employees.map(emp => (
+          <Option key={emp._id} value={emp._id}>{emp.name}</Option>
+        ))}
+      </Select>
+    </Form.Item>
+
+<Form.List name="workingShifts" initialValue={[{ shift: 'morning', status: 'Available' }]}>
+  {(fields, { add, remove }) => (
+    <>
+      {fields.map(({ key, name, ...restField }, index) => (
+        <Space key={key} style={{ display: 'flex', marginBottom: 8 }} align="start">
+          <Form.Item
+            {...restField}
+            name={[name, 'shift']}
+            rules={[
+              { required: true, message: 'Chọn ca làm' },
+              {
+                validator: (_, value) => {
+                  const allShifts = autoForm.getFieldValue('workingShifts') || [];
+                  const duplicateCount = allShifts.filter((item, idx) =>
+                    idx !== index && item?.shift === value
+                  ).length;
+
+                  if (duplicateCount > 0) {
+                    return Promise.reject(new Error('Ca làm bị trùng'));
+                  }
+                  return Promise.resolve();
+                }
+              }
+            ]}
+          >
+            <Select placeholder="Ca làm việc">
+              <Option value="morning">Ca sáng (08:00 - 11:00)</Option>
+              <Option value="afternoon">Ca chiều (13:00 - 17:00)</Option>
+              <Option value="night">Trực đêm (22:00 - 06:00)</Option>
+            </Select>
+          </Form.Item>
+
+          <Form.Item
+            {...restField}
+            name={[name, 'status']}
+            rules={[{ required: true, message: 'Chọn trạng thái' }]}
+          >
+            <Select placeholder="Trạng thái" style={{ width: 120 }}>
+              <Option value="Available">Available</Option>
+              <Option value="Booked">Booked</Option>
+              <Option value="Unavailable">Unavailable</Option>
+            </Select>
+          </Form.Item>
+
+          <Button danger onClick={() => remove(name)}>X</Button>
+        </Space>
+      ))}
+      <Button
+        type="dashed"
+        onClick={() => add()}
+        icon={<PlusOutlined />}
+        disabled={fields.length >= 3}
+      >
+        Thêm ca
+      </Button>
+      {fields.length >= 3 && (
+        <div style={{ color: 'red' }}>Chỉ được chọn tối đa 3 ca làm việc.</div>
+      )}
+    </>
+  )}
+</Form.List>
+
+
+    <Form.Item
+      name="dateRange"
+      label="Chọn khoảng ngày"
+      rules={[{ required: true, message: 'Chọn khoảng ngày' }]}
+    >
+      <DatePicker.RangePicker disabledDate={disabledDate} style={{ width: '100%' }} />
+    </Form.Item>
+
+  </Form>
+</Modal>
+
     </div>
+    
   );
 }
+
 
 export default StaffScheduleManager;
