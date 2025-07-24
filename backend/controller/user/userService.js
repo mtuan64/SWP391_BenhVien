@@ -125,7 +125,66 @@ const createAppointment = async (req, res) => {
   const { profileId, doctorId, department, appointmentDate, type } = req.body;
   const userId = req.user.id;
 
+  const session = await mongoose.startSession(); // Bắt đầu transaction
+  session.startTransaction();
+
   try {
+    const apptDate = new Date(appointmentDate);
+
+    // Kiểm tra existing appointment cho doctor tại thời gian chính xác
+    const existingAppointment = await Appointment.findOne({
+      doctorId,
+      appointmentDate: apptDate,
+      status: { $ne: "Canceled" },
+    }).session(session);
+
+    if (existingAppointment) {
+      await session.abortTransaction();
+      return res.status(409).json({
+        message: "Lịch này đã được đặt bởi người khác. Vui lòng chọn thời gian khác.",
+      });
+    }
+
+    // Tìm schedule của bác sĩ cho ngày tương ứng
+    const schedule = await Schedule.findOne({
+      employeeId: doctorId,
+      date: {
+        $gte: new Date(apptDate.getFullYear(), apptDate.getMonth(), apptDate.getDate()),
+        $lt: new Date(apptDate.getFullYear(), apptDate.getMonth(), apptDate.getDate() + 1),
+      },
+    }).session(session);
+
+    if (!schedule) {
+      await session.abortTransaction();
+      return res.status(404).json({
+        message: "Không tìm thấy lịch làm việc của bác sĩ cho ngày này.",
+      });
+    }
+
+    // Kiểm tra slot chứa appointmentDate có 'Available' không
+    let slotAvailable = false;
+    let slotIndex = -1;
+    for (let i = 0; i < schedule.timeSlots.length; i++) {
+      const slot = schedule.timeSlots[i];
+      if (
+        new Date(slot.startTime) <= apptDate &&
+        new Date(slot.endTime) > apptDate &&
+        slot.status === 'Available'
+      ) {
+        slotAvailable = true;
+        slotIndex = i;
+        break;
+      }
+    }
+
+    if (!slotAvailable) {
+      await session.abortTransaction();
+      return res.status(409).json({
+        message: "Slot thời gian này đã được đặt hoặc không available. Vui lòng chọn thời gian khác.",
+      });
+    }
+
+    // Nếu OK, tạo appointment
     const newAppointment = new Appointment({
       userId,
       profileId,
@@ -136,34 +195,14 @@ const createAppointment = async (req, res) => {
       status: "Booked",
     });
 
-    await newAppointment.save();
+    await newAppointment.save({ session });
 
-    // BỔ SUNG: Cập nhật trạng thái time slot trong Schedule
-    const appointmentDateObj = new Date(appointmentDate);
-    // Tìm schedule của bác sĩ cho ngày tương ứng
-    const schedule = await Schedule.findOne({
-      employeeId: doctorId,
-      date: {
-        $gte: new Date(appointmentDateObj.getFullYear(), appointmentDateObj.getMonth(), appointmentDateObj.getDate()),
-        $lt: new Date(appointmentDateObj.getFullYear(), appointmentDateObj.getMonth(), appointmentDateObj.getDate() + 1),
-      },
-    });
+    // Cập nhật status slot thành 'Booked'
+    schedule.timeSlots[slotIndex].status = 'Booked';
+    await schedule.save({ session });
 
-    if (schedule) {
-      // Duyệt và cập nhật status của slot phù hợp
-      const updatedTimeSlots = schedule.timeSlots.map((slot) => {
-        if (new Date(slot.startTime) <= appointmentDateObj && new Date(slot.endTime) > appointmentDateObj) {
-          return { ...slot.toObject(), status: 'Booked' };
-        }
-        return slot;
-      });
-
-      schedule.timeSlots = updatedTimeSlots;
-      await schedule.save();
-    } else {
-      // Nếu không tìm thấy schedule
-      console.warn(`Không tìm thấy lịch làm việc cho bác sĩ ${doctorId} vào ngày ${appointmentDate}`);
-    }
+    // Commit transaction
+    await session.commitTransaction();
 
     // Tiếp tục gửi email xác nhận
     const [user, profile, doctor] = await Promise.all([
@@ -185,10 +224,14 @@ const createAppointment = async (req, res) => {
       appointment: newAppointment,
     });
   } catch (error) {
+    await session.abortTransaction();
+    console.error("Error creating appointment:", error);
     res.status(500).json({
       message: "Failed to create appointment.",
       error: error.message,
     });
+  } finally {
+    session.endSession();
   }
 };
 

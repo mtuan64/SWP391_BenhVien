@@ -16,6 +16,9 @@ const ProfileManagerPage = () => {
     const { token } = useAuth();
     const [showMedicalDetails, setShowMedicalDetails] = useState({});
     const [cccdSearch, setCccdSearch] = useState(""); // State cho tìm kiếm CCCD
+    const [showAllProfiles, setShowAllProfiles] = useState(false); // State để hiển thị toàn bộ
+    const [searchTriggered, setSearchTriggered] = useState(false); // State mới: Đã bấm tìm kiếm chưa
+    const [isCccdValid, setIsCccdValid] = useState(false); // State mới: CCCD có hợp lệ không
 
     // Load profiles
     const fetchProfiles = async () => {
@@ -41,33 +44,28 @@ const ProfileManagerPage = () => {
         setFormData(prev => ({ ...prev, [name]: value }));
     };
 
-    // NEW: Hàm validate name (không chứa số)
+    // Hàm validate name (không chứa số)
     const validateName = (name) => {
-        const regex = /^[a-zA-Z\sàáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹđĐ\s]+$/; // Chỉ cho phép chữ cái, dấu tiếng Việt, và khoảng trắng
+        const regex = /^[a-zA-Z\sàáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹđĐ\s]+$/;
         return regex.test(name);
     };
 
-    // NEW: Hàm validate identityNumber
+    // Hàm validate identityNumber (CCCD: 12 số)
     const validateIdentityNumber = (identityNumber) => {
-        const regex = /^\d{12}$/; // Chỉ 12 ký tự số, không khoảng trắng/chữ/ký tự đặc biệt
+        const regex = /^\d{12}$/;
         return regex.test(identityNumber);
     };
 
     // Add or update
     const handleSubmit = async () => {
-
-        // NEW: Validate name (không chứa số)
         if (!validateName(formData.name)) {
             alert("Tên không được chứa số, chỉ chấp nhận chữ cái và khoảng trắng.");
             return;
         }
-
-        // NEW: Validate identityNumber
         if (!validateIdentityNumber(formData.identityNumber)) {
             alert("CMND/CCCD phải là 12 ký tự số, không khoảng trắng, chữ hoặc ký tự đặc biệt.");
             return;
         }
-
         try {
             if (editingProfile) {
                 await axios.put(`http://localhost:9999/api/profile/update/${editingProfile._id}`, formData, {
@@ -128,8 +126,31 @@ const ProfileManagerPage = () => {
         }));
     };
 
-    // Lọc profiles theo CCCD
-    const filteredProfiles = cccdSearch ? profiles.filter(profile => profile.identityNumber === cccdSearch) : [];
+    // Lọc profiles theo CCCD hoặc hiển thị tất cả
+    const displayedProfiles = showAllProfiles
+        ? profiles
+        : (searchTriggered && cccdSearch ? profiles.filter(profile => profile.identityNumber === cccdSearch) : []);
+
+    // Hàm để quay lại chế độ tìm kiếm
+    const resetToSearchMode = () => {
+        setShowAllProfiles(false);
+        setSearchTriggered(false); // Reset tìm kiếm
+        setCccdSearch("");
+    };
+
+    // Xử lý thay đổi CCCD: Validate realtime và reset searchTriggered
+    const handleCccdChange = (e) => {
+        const value = e.target.value;
+        setCccdSearch(value);
+        setIsCccdValid(validateIdentityNumber(value)); // Kiểm tra validate
+        setSearchTriggered(false); // Reset để yêu cầu bấm nút lại
+    };
+
+    // Xử lý bấm nút tìm kiếm
+    const handleSearch = () => {
+        setSearchTriggered(true);
+        setShowAllProfiles(false); // Tắt hiển thị tất cả
+    };
 
     return (
         <div className="container py-4">
@@ -138,26 +159,59 @@ const ProfileManagerPage = () => {
                 + Thêm hồ sơ mới
             </Button>
 
-            {/* Thanh tìm kiếm CCCD */}
+            {/* Thanh tìm kiếm CCCD, nút tìm kiếm và nút hiển thị tất cả */}
             <Row className="mt-4 mb-3">
                 <Col md={4}>
                     <Form.Control
                         type="text"
                         placeholder="Tìm kiếm theo CCCD..."
                         value={cccdSearch}
-                        onChange={(e) => setCccdSearch(e.target.value)}
+                        onChange={handleCccdChange}
+                        disabled={showAllProfiles} // Vô hiệu hóa khi hiển thị tất cả
                     />
                 </Col>
+                <Col md={2}>
+                    <Button
+                        variant="info"
+                        onClick={handleSearch}
+                        disabled={!isCccdValid || cccdSearch === "" || showAllProfiles} // Chỉ enable nếu hợp lệ và không rỗng
+                    >
+                        Tìm kiếm
+                    </Button>
+                </Col>
+                <Col md={2}>
+                    <Button
+                        variant="success"
+                        onClick={() => {
+                            setShowAllProfiles(true);
+                            setCccdSearch(""); // Reset CCCD
+                            setSearchTriggered(false); // Reset tìm kiếm
+                        }}
+                        disabled={cccdSearch !== ""} // Vô hiệu hóa nếu có CCCD đang nhập
+                    >
+                        Hiển thị tất cả hồ sơ
+                    </Button>
+                </Col>
+                {showAllProfiles && (
+                    <Col md={2}>
+                        <Button
+                            variant="warning"
+                            onClick={resetToSearchMode}
+                        >
+                            Quay lại tìm kiếm
+                        </Button>
+                    </Col>
+                )}
             </Row>
 
             <div className="mt-4">
-                {cccdSearch === "" ? (
-                    <p>Vui lòng nhập CCCD để tìm kiếm hồ sơ.</p>
-                ) : filteredProfiles.length === 0 ? (
-                    <p>Không tìm thấy hồ sơ nào với CCCD này.</p>
+                {displayedProfiles.length === 0 && cccdSearch === "" && !showAllProfiles && !searchTriggered ? (
+                    <p>Vui lòng nhập CCCD và bấm "Tìm kiếm" hoặc nhấn "Hiển thị tất cả hồ sơ".</p>
+                ) : searchTriggered && cccdSearch && displayedProfiles.length === 0 ? (
+                    <p>Không tìm thấy hồ sơ nào.</p>
                 ) : (
                     <Row>
-                        {filteredProfiles.map((profile) => (
+                        {displayedProfiles.map((profile) => (
                             <Col key={profile._id} md={4} className="mb-3">
                                 <div className="border rounded p-3 h-100">
                                     <h5>{profile.name}</h5>
