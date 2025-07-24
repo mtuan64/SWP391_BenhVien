@@ -24,8 +24,8 @@ const { Header, Sider, Content } = Layout;
 const StaffLayout = () => {
   const [collapsed, setCollapsed] = useState(false);
   const navigate = useNavigate();
-  const location = useLocation(); // Get the current route
-  const [selectedKey, setSelectedKey] = useState("1"); // Default selected key
+  const location = useLocation();
+  const [selectedKey, setSelectedKey] = useState("1");
 
   // Map routes to menu keys
   const menuItems = [
@@ -53,6 +53,7 @@ const StaffLayout = () => {
     localStorage.removeItem("user");
     localStorage.removeItem("token");
     navigate("/login");
+    window.location.reload(); // Force reload to update Header
   };
 
   // Update selected key based on current route
