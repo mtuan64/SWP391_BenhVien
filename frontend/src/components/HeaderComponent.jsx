@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../context/authContext";
 import { Badge, Button, Dropdown } from "antd";
 import {
   MenuOutlined,
@@ -20,13 +19,26 @@ import {
 } from "@ant-design/icons";
 import "../assets/css/Header.css";
 import MenuComponent from "./MenuComponent";
-import axios from "axios"; // Ensure axios is imported
+import axios from "axios";
 
 const Header = ({ onMenuClick, menuOpen }) => {
-  const { user, token, logout } = useAuth();
-  const navigate = useNavigate();
+  const [user, setUser] = useState(JSON.parse(localStorage.getItem("user")));
+  const [token, setToken] = useState(localStorage.getItem("token"));
   const [unreadCount, setUnreadCount] = useState(0);
+  const navigate = useNavigate();
 
+  // Monitor localStorage changes
+  useEffect(() => {
+    const handleStorageChange = () => {
+      setUser(JSON.parse(localStorage.getItem("user")));
+      setToken(localStorage.getItem("token"));
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
+  }, []);
+
+  // Fetch unread notifications
   useEffect(() => {
     if (!token || !user) return;
 
@@ -45,7 +57,10 @@ const Header = ({ onMenuClick, menuOpen }) => {
   }, [token, user]);
 
   const handleLogout = () => {
-    logout();
+    localStorage.removeItem("user");
+    localStorage.removeItem("token");
+    setUser(null);
+    setToken(null);
     navigate("/login");
   };
 
