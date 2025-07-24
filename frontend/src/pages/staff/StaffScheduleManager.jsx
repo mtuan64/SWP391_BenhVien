@@ -188,23 +188,25 @@ function StaffScheduleManager() {
     {
       title: 'Trạng thái',
       dataIndex: 'timeSlots',
-      render: slots => {
-        const statuses = slots.map(slot => slot.status);
-        const uniqueStatuses = [...new Set(statuses)];
-        if (uniqueStatuses.length === 1) {
-          const status = uniqueStatuses[0];
-          return <Tag color={status === 'Available' ? 'green' : status === 'Booked' ? 'volcano' : status === 'Unavailable' ? 'red' : 'default'}>{status}</Tag>;
-        }
-        return (
-          <span>
-            {uniqueStatuses.map(status => (
-              <Tag key={status} color={status === 'Available' ? 'green' : status === 'Booked' ? 'volcano' : status === 'Unavailable' ? 'red' : 'default'}>
-                {status}
+      render: slots => (
+        <ul style={{ marginBottom: 0 }}>
+          {slots.map((slot, idx) => (
+            <li key={idx}>
+              <Tag color={
+                slot.status === 'Available'
+                  ? 'green'
+                  : slot.status === 'Booked'
+                  ? 'volcano'
+                  : slot.status === 'Unavailable'
+                  ? 'red'
+                  : 'default'
+              }>
+                {slot.status}
               </Tag>
-            ))}
-          </span>
-        );
-      }
+            </li>
+          ))}
+        </ul>
+      )
     },
     {
       title: 'Hành động',
@@ -315,36 +317,67 @@ function StaffScheduleManager() {
           >
             <DatePicker style={{ width: '100%' }} disabledDate={disabledDate} />
           </Form.Item>
-
           <Form.List name="timeSlots" initialValue={[{ timeRange: [], status: 'Available' }]}>
-            {(fields, { add, remove }) => (
-              <>
-                {fields.map(({ key, name, ...restField }) => (
-                  <Space key={key} align="baseline" style={{ display: 'flex', marginBottom: 8 }}>
-                    <Form.Item
-                      {...restField}
-                      name={[name, 'timeRange']}
-                      rules={[{ required: true, message: 'Chọn khoảng thời gian' }]}
-                    >
-                      <TimePicker.RangePicker format="HH:mm" />
-                    </Form.Item>
-                    <Form.Item
-                      {...restField}
-                      name={[name, 'Trạng thái']}
-                      rules={[{ required: true, message: 'Chọn trạng thái' }]}
-                    >
-                      <Select style={{ width: 120 }}>
-                        <Option value="Available">Available</Option>
-                        <Option value="Booked">Booked</Option>
-                      </Select>
-                    </Form.Item>
-                    <Button danger onClick={() => remove(name)}>-</Button>
-                  </Space>
-                ))}
-                <Button type="dashed" onClick={() => add()} icon={<PlusOutlined />}>Thêm chỗ</Button>
-              </>
-            )}
-          </Form.List>
+  {(fields, { add, remove }) => (
+    <>
+      {fields.map(({ key, name, ...restField }, index) => (
+        <Space key={key} align="baseline" style={{ display: 'flex', marginBottom: 8 }}>
+          <Form.Item
+            {...restField}
+            name={[name, 'timeRange']}
+            rules={[
+              { required: true, message: 'Chọn khoảng thời gian' },
+              {
+                validator: async (_, value) => {
+                  if (!value || value.length !== 2) return;
+
+                  const allSlots = form.getFieldValue('timeSlots');
+                  const currentStart = value[0];
+                  const currentEnd = value[1];
+
+                  if (!currentStart || !currentEnd) return;
+
+                  const hasOverlap = allSlots.some((slot, idx) => {
+                    if (idx === index) return false; // skip current
+                    const [start, end] = slot.timeRange || [];
+                    if (!start || !end) return false;
+                    return (
+                      currentStart.isBefore(end) &&
+                      currentEnd.isAfter(start)
+                    );
+                  });
+
+                  if (hasOverlap) {
+                    throw new Error('Khung giờ bị trùng với khoảng khác');
+                  }
+                }
+              }
+            ]}
+          >
+            <TimePicker.RangePicker format="HH:mm" />
+          </Form.Item>
+
+          <Form.Item
+            {...restField}
+            name={[name, 'status']}
+            rules={[{ required: true, message: 'Chọn trạng thái' }]}
+          >
+            <Select style={{ width: 120 }}>
+              <Option value="Available">Available</Option>
+              <Option value="Booked">Booked</Option>
+            </Select>
+          </Form.Item>
+
+          <Button danger onClick={() => remove(name)}>X</Button>
+        </Space>
+      ))}
+      <Button type="dashed" onClick={() => add()} icon={<PlusOutlined />}>
+        Thêm khung giờ
+      </Button>
+    </>
+  )}
+</Form.List>
+
         </Form>
       </Modal>
     </div>
