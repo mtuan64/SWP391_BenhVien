@@ -55,15 +55,13 @@ const validateQueryParams = (page, limit, search) => {
 // Lấy tất cả khoa có hỗ trợ tìm kiếm và phân trang
 exports.getAllDepartments = async (req, res) => {
   try {
-    const { page = 1, limit = 5, search = "" } = req.query;
+    const { page = 1, limit = 10, search = "" } = req.query;
 
-    // Kiểm tra tham số đầu vào
     const validationError = validateQueryParams(page, limit, search);
     if (validationError) {
       return res.status(400).json({ message: `Dữ liệu không hợp lệ: ${validationError}` });
     }
 
-    // Tạo truy vấn tìm kiếm
     const query = {
       $or: [
         { name: { $regex: search, $options: "i" } },
@@ -71,24 +69,25 @@ exports.getAllDepartments = async (req, res) => {
       ],
     };
 
-    // Tính tổng số lượng khoa
     const total = await Department.countDocuments(query);
 
-    // Lấy các khoa và sắp xếp theo `createdAt` giảm dần (mới nhất lên đầu)
     const departments = await Department.find(query)
-      .skip((page - 1) * limit)
+      .sort({ createdAt: -1 })
+      .skip((parseInt(page) - 1) * parseInt(limit))
       .limit(parseInt(limit))
-      .sort({ createdAt: -1 })  // Sắp xếp theo thời gian tạo, bản ghi mới nhất lên đầu
       .lean();
 
-    // Trả về kết quả
     res.status(200).json({
       departments,
-      totalPages: Math.ceil(total / limit),
-      currentPage: parseInt(page),
-      totalDepartments: total,
+      pagination: {
+        total,
+        page: parseInt(page),
+        limit: parseInt(limit),
+        totalPages: Math.ceil(total / parseInt(limit)),
+      },
     });
   } catch (error) {
+    console.error("❌ Lỗi khi lấy danh sách phòng ban:", error);
     res.status(500).json({ message: "Lỗi server", error: error.message });
   }
 };
