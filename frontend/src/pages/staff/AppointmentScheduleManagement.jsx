@@ -75,7 +75,7 @@ const handleViewProfile = async (profileId) => {
     setSelectedProfile(response.data.data);
     setOpenProfileDialog(true);
   } catch (error) {
-    console.error("Error fetching profile detail:", error);
+    console.error("Lỗi khi tìm kiếm thông tin chi tiết hồ sơ:", error);
   }
 };
 
@@ -174,11 +174,11 @@ const fetchProfilesByIdentity = async (identityNumber) => {
         setSelectedProfileId(res.data[0]._id); // hoặc để người dùng chọn nếu có nhiều
       }
     } else {
-      console.error("Unexpected response format:", res.data);
-      message.error("Unexpected response from server.");
+      console.error("Định dạng phản hồi không mong đợi:", res.data);
+      message.error("Phản hồi không mong muốn từ máy chủ.");
     }
   } catch (err) {
-    console.error("Error fetching profiles by identity:", err);
+    console.error("Lỗi khi tìm kiếm hồ sơ theo danh tính:", err);
     setResolvedProfiles([]);
     setSelectedProfileId("");
   }
@@ -217,7 +217,7 @@ useEffect(() => {
       setLoading(false);
     } catch (err) {
       console.error(err);
-      setError("Failed to load appointments. Please try again.");
+      setError("Không tải được lịch hẹn. Vui lòng thử lại.");
       setLoading(false);
     }
   };
@@ -227,8 +227,8 @@ const fetchDepartments = async () => {
     const res = await axios.get("http://localhost:9999/api/appointmentScheduleManagement/departments");
     setDepartments(Array.isArray(res.data) ? res.data : []);
   } catch (error) {
-    console.error("Failed to fetch departments: ", error);
-    setError("Failed to load departments.");
+    console.error("Không thể tìm được các phòng ban: ", error);
+    setError("Không tải được phòng ban.");
   }
 };
 
@@ -240,8 +240,8 @@ const fetchDepartments = async () => {
       );
       setUsers(res.data);
     } catch (err) {
-      console.error("Failed to fetch users:", err);
-      setError("Failed to load users.");
+      console.error("Không thể tìm nạp người dùng:", err);
+      setError("Không tải được người dùng.");
     }
   };
 
@@ -260,9 +260,9 @@ const fetchDepartments = async () => {
 
       setAvailableDoctors(res.data || []);
     } catch (error) {
-      console.error("Failed to fetch doctors:", error);
+      console.error("Không thể tìm được bác sĩ:", error);
       setAvailableDoctors([]);
-      setError("Failed to fetch available doctors.");
+      setError("Không tìm được bác sĩ phù hợp.");
     } finally {
       setIsFormLoading(false);
     }
@@ -291,12 +291,12 @@ if (matchingSchedule) {
   //console.log("⏱ Extracted timeSlots:", matchingSchedule.timeSlots);
   setSchedules(matchingSchedule.timeSlots || []);
 } else {
-  console.warn("⚠️ No matching schedule found for selected date:", date);
+  console.warn("⚠️ Không tìm thấy lịch trình phù hợp cho ngày đã chọn:", date);
   setSchedules([]);
 }
 
   } catch (error) {
-    console.error("❌ Failed to fetch schedules:", error);
+    console.error("❌ Không thể lấy lịch trình:", error);
     setSchedules([]);
   }
 };
@@ -308,7 +308,7 @@ if (matchingSchedule) {
   const fetchProfilesByUser = async (userId) => {
     try {
       if (!/^[0-9a-fA-F]{24}$/.test(userId)) {
-        console.error("Invalid userId format:", userId);
+        console.error("Định dạng userId không hợp lệ:", userId);
         return;
       }
       const res = await axios.get(
@@ -316,7 +316,7 @@ if (matchingSchedule) {
       );
       setProfiles(res.data);
     } catch (err) {
-      console.error("Failed to fetch profiles:", err);
+      console.error("Không thể tải hồ sơ:", err);
       setProfiles([]);
     }
   };
@@ -343,14 +343,14 @@ const formatYYYYMMDD = (dateStr) => {
 const validateForm = () => {
   const errors = {};
   if (!form.appointmentDate)
-    errors.appointmentDate = "Please select an appointment date.";
-  if (!form.department) errors.department = "Please select a department.";
+    errors.appointmentDate = "Vui lòng chọn ngày hẹn.";
+  if (!form.department) errors.department = "Vui lòng chọn một khoa.";
   if (availableDoctors.length > 0 && !form.doctorId)
-    errors.doctorId = "Please select a doctor.";
+    errors.doctorId = "Vui lòng chọn bác sĩ.";
   if (form.doctorId && schedules.length > 0 && !form.timeSlot)
-    errors.timeSlot = "Please select a time slot.";
+    errors.timeSlot = "Vui lòng chọn khung thời gian.";
   if (!form.identityNumber)
-    errors.identityNumber = "Please enter identity number.";
+    errors.identityNumber = "Vui lòng nhập số nhận dạng.";
   
   setFormErrors(errors);
   return Object.keys(errors).length === 0;
@@ -445,7 +445,7 @@ async function handleSubmit() {
 
   const selectedProfile = resolvedProfiles.find((p) => p._id === form.profileId);
   if (!selectedProfile) {
-    message.error("Profile not resolved. Please check the identity number.");
+    message.error("Hồ sơ chưa được giải quyết. Vui lòng kiểm tra số nhận dạng.");
     return;
   }
 
@@ -453,13 +453,13 @@ async function handleSubmit() {
     setIsFormLoading(true);
 
     if (!form.timeSlot) {
-      message.error("Time slot is missing.");
+      message.error("Thiếu khoảng thời gian.");
       return;
     }
 
     const selectedSlot = schedules.find(slot => slot.startTime === form.timeSlot);
     if (!selectedSlot) {
-      message.error("Selected time slot not found in current schedule.");
+      message.error("Không tìm thấy khoảng thời gian đã chọn trong lịch trình hiện tại.");
       return;
     }
 
@@ -500,19 +500,19 @@ const finalDate = combinedDate.toISOString();
         `http://localhost:9999/api/appointmentScheduleManagement/${currentAppointment._id}`,
         payload
       );
-      message.success("Appointment updated successfully!");
+      message.success("Đã cập nhật cuộc hẹn thành công!");
     } else {
       await axios.post(
         "http://localhost:9999/api/appointmentScheduleManagement",
         payload
       );
-      message.success("Appointment created successfully!");
+      message.success("Đã tạo cuộc hẹn thành công!");
     }
 
     setShowModal(false);
     fetchAppointments();
   } catch (error) {
-    console.error("❌ Error submitting appointment:", error);
+    console.error("❌ Lỗi khi gửi cuộc hẹn:", error);
     message.error("Error: " + (error.response?.data?.message || error.message));
   } finally {
     setIsFormLoading(false);
@@ -537,10 +537,10 @@ const finalDate = combinedDate.toISOString();
       setShowDeleteModal(false);
       setDeleteAppointmentId(null);
       fetchAppointments();
-      message.success("Appointment deleted successfully!");
+      message.success("Đã xóa cuộc hẹn thành công!");
     } catch (error) {
       message.error(
-        "Delete failed: " + (error.response?.data?.message || error.message)
+        "Xóa không thành công: " + (error.response?.data?.message || error.message)
       );
     }
   }
@@ -571,70 +571,69 @@ const finalDate = combinedDate.toISOString();
     <>
       <Container className="py-5">
         <h2 className="mb-4 text-primary fw-bold">
-          Appointment Schedule Management
+          Quản lý lịch hẹn
         </h2>
 
         <Row className="mb-4 align-items-end filter-card">
           <Col md={3} sm={12} className="mb-3">
-            <Form.Group>
-              <Form.Label>Search</Form.Label>
-              <InputGroup>
-                <InputGroup.Text>
-                  <FaSearch />
-                </InputGroup.Text>
-                <FormControl
-                  placeholder="Search by doctor, user, or status..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  aria-label="Search appointments"
-                />
-              </InputGroup>
-            </Form.Group>
-          </Col>
-          <Col md={2} sm={6} className="mb-3">
-            <Form.Group>
-              <Form.Label>Status</Form.Label>
-              <Form.Select
-                value={statusFilter}
-                onChange={(e) => {
-                  setStatusFilter(e.target.value);
-                  setCurrentPage(1);
-                }}
-                aria-label="Filter by status"
-              >
-                <option value="all">All Statuses</option>
-                <option value="Booked">Booked</option>
-                <option value="In-Progress">In-Progress</option>
-                <option value="Completed">Completed</option>
-                <option value="Canceled">Canceled</option>
-              </Form.Select>
-            </Form.Group>
-          </Col>
-          <Col md={2} sm={6} className="mb-3">
-            <Form.Group>
-  <Form.Label>Department</Form.Label>
-  <Form.Select
-    value={departmentFilter}
-    onChange={(e) => {
-      setDepartmentFilter(e.target.value);
-      setCurrentPage(1);
-    }}
-    aria-label="Filter by department"
-  >
-    <option value="all">Tất cả các khoa</option>
-    {Array.isArray(departments) &&
-      departments.map((dept) => (
-        <option key={dept._id} value={dept._id}>
-          {dept.name}
-        </option>
-      ))}
-  </Form.Select>
+           <Form.Group>
+  <Form.Label>Tìm kiếm</Form.Label>
+  <InputGroup>
+    <InputGroup.Text>
+      <FaSearch />
+    </InputGroup.Text>
+    <FormControl
+      placeholder="Tìm theo bác sĩ, người dùng hoặc trạng thái..."
+      value={searchTerm}
+      onChange={(e) => setSearchTerm(e.target.value)}
+      aria-label="Tìm kiếm lịch hẹn"
+    />
+  </InputGroup>
 </Form.Group>
-
+</Col>
+<Col md={2} sm={6} className="mb-3">
+  <Form.Group>
+    <Form.Label>Trạng thái</Form.Label>
+    <Form.Select
+      value={statusFilter}
+      onChange={(e) => {
+        setStatusFilter(e.target.value);
+        setCurrentPage(1);
+      }}
+      aria-label="Lọc theo trạng thái"
+    >
+      <option value="all">Tất cả trạng thái</option>
+      <option value="Booked">Đã đặt</option>
+      <option value="In-Progress">Đang diễn ra</option>
+      <option value="Completed">Hoàn thành</option>
+      <option value="Canceled">Đã hủy</option>
+    </Form.Select>
+        </Form.Group>
+      </Col>
+      <Col md={2} sm={6} className="mb-3">
+        <Form.Group>
+          <Form.Label>Khoa</Form.Label>
+          <Form.Select
+            value={departmentFilter}
+            onChange={(e) => {
+              setDepartmentFilter(e.target.value);
+              setCurrentPage(1);
+            }}
+            aria-label="Lọc theo khoa"
+          >
+            <option value="all">Tất cả các khoa</option>
+            {Array.isArray(departments) &&
+              departments.map((dept) => (
+                <option key={dept._id} value={dept._id}>
+                  {dept.name}
+                </option>
+              ))}
+          </Form.Select>
+        </Form.Group>
           </Col>
           <Col md={2} sm={6} className="mb-3">
             <Form.Group>
-              <Form.Label>Start Date</Form.Label>
+              <Form.Label>Ngày bắt đầu</Form.Label>
               <Form.Control
                 type="date"
                 value={startDate}
@@ -642,13 +641,13 @@ const finalDate = combinedDate.toISOString();
                   setStartDate(e.target.value);
                   setCurrentPage(1);
                 }}
-                aria-label="Filter by start date"
+                aria-label="Lọc theo ngày bắt đầu"
               />
             </Form.Group>
           </Col>
           <Col md={2} sm={6} className="mb-3">
             <Form.Group>
-              <Form.Label>End Date</Form.Label>
+              <Form.Label>Ngày kết thúc</Form.Label>
               <Form.Control
                 type="date"
                 value={endDate}
@@ -656,7 +655,7 @@ const finalDate = combinedDate.toISOString();
                   setEndDate(e.target.value);
                   setCurrentPage(1);
                 }}
-                aria-label="Filter by end date"
+                aria-label="Lọc theo ngày kết thúc"
               />
             </Form.Group>
           </Col>
@@ -665,9 +664,9 @@ const finalDate = combinedDate.toISOString();
               variant="outline-primary"
               onClick={handleClearFilters}
               className="w-100"
-              aria-label="Clear filters"
+              aria-label="Xóa bộ lọc"
             >
-              Clear
+              Xóa
             </Button>
           </Col>
         </Row>
@@ -678,7 +677,7 @@ const finalDate = combinedDate.toISOString();
     onClick={handleAddNew}
     aria-label="Add new appointment"
   >
-    Add Appointment
+    Thêm lịch hẹn
   </Button>
 
   <Button
@@ -686,7 +685,7 @@ const finalDate = combinedDate.toISOString();
     onClick={() => window.location.href = "http://localhost:5173/staff/medicalrecord"}
     aria-label="Add patient record"
   >
-    Add Patient Record
+    Thêm hồ sơ bệnh nhân
   </Button>
 </div>
 
@@ -712,94 +711,115 @@ const finalDate = combinedDate.toISOString();
         ) : (
           <>
             <div className="table-responsive">
-  <Table striped hover>
-    <thead className="table-dark">
-      <tr>
-        <th>No</th>
-        <th>Appointment Date</th>
-        <th>Doctor</th>
-        <th>Department</th>
-        <th>Type</th>
-        <th>User</th>
-        <th>Phone</th>
-        <th>Patient Record</th>
-        <th>Status</th>
-        <th>Reminder</th>
-        <th>Actions</th>
+  <Table striped bordered hover responsive className="align-middle text-center">
+  <thead className="table-primary">
+    <tr>
+      <th>STT</th>
+      <th>Ngày hẹn</th>
+      <th>Bác sĩ</th>
+      <th>Khoa</th>
+      <th>Loại</th>
+      <th>Người dùng</th>
+      <th>SĐT</th>
+      <th>Hồ sơ</th>
+      <th>Trạng thái</th>
+      <th>Nhắc nhở</th>
+      <th>Thao tác</th>
+    </tr>
+  </thead>
+  <tbody>
+    {filteredAppointments.map((appointment, index) => (
+      <tr key={appointment._id}>
+        <td>{(currentPage - 1) * itemsPerPage + index + 1}</td>
+        <td>{formatDateTime(appointment.appointmentDate)}</td>
+        <td>{appointment.doctorName || "Chưa có"}</td>
+        <td>
+          {
+            departments.find((d) => d._id.toString() === appointment.department?.toString())?.name ||
+            "Không rõ"
+          }
+        </td>
+        <td>{appointment.type === "Online" ? "Trực tuyến" : "Trực tiếp"}</td>
+        <td>{appointment.userName || "Chưa có"}</td>
+        <td>{appointment.userPhone || "Chưa có"}</td>
+        <td>
+          {appointment.profileName ? (
+            <Button
+              variant="link"
+              className="p-0 text-decoration-underline text-primary"
+              onClick={() =>
+                handleViewProfile(appointment.profileId?._id || appointment.profileId)
+              }
+            >
+              {appointment.profileName}
+            </Button>
+          ) : (
+            "Không có"
+          )}
+        </td>
+        <td>
+          <span
+            className={`badge text-bg-${
+              appointment.status === "Booked"
+                ? "warning"
+                : appointment.status === "In-Progress"
+                ? "info"
+                : appointment.status === "Completed"
+                ? "success"
+                : "secondary"
+            }`}
+          >
+            {appointment.status === "Booked"
+              ? "Đã đặt"
+              : appointment.status === "In-Progress"
+              ? "Đang khám"
+              : appointment.status === "Completed"
+              ? "Hoàn thành"
+              : "Đã hủy"}
+          </span>
+        </td>
+        <td>
+          {appointment.reminderSent ? (
+            <span className="badge bg-success">Đã gửi</span>
+          ) : (
+            <span className="badge bg-secondary">Chưa gửi</span>
+          )}
+        </td>
+        <td>
+          <div className="d-flex justify-content-center gap-2">
+            <Button
+              variant="outline-primary"
+              size="sm"
+              title="Chỉnh sửa"
+              onClick={() => handleEdit(appointment)}
+            >
+              <FaEdit />
+            </Button>
+            <Button
+              variant="outline-danger"
+              size="sm"
+              title="Xóa lịch hẹn"
+              onClick={() => handleDeleteClick(appointment._id)}
+            >
+              <FaTrash />
+            </Button>
+          </div>
+        </td>
       </tr>
-    </thead>
-    <tbody>
-      {filteredAppointments.map((appointment, index) => (
-        <tr key={appointment._id}>
-          <td>{(currentPage - 1) * itemsPerPage + index + 1}</td>
-          <td>{formatDateTime(appointment.appointmentDate)}</td>
-          <td>{appointment.doctorName || "N/A"}</td>
-          <td>
-            {
-              departments.find((d) => d._id.toString() === appointment.department?.toString())?.name ||
-              "Unknown"
-            }
-          </td>
-          <td>{appointment.type}</td>
-          <td>{appointment.userName || "N/A"}</td>
-          <td>{appointment.userPhone || "N/A"}</td>
-          <td>
-  {appointment.profileName ? (
-    <Button
-      variant="link"
-      className="p-0 text-primary"
-      style={{ textDecoration: "underline", cursor: "pointer" }}
-      onClick={() => handleViewProfile(appointment.profileId?._id || appointment.profileId)}
-    >
-      {appointment.profileName}
-    </Button>
-  ) : (
-    "N/A"
-  )}
-</td>
+    ))}
+  </tbody>
+</Table>
 
-          <td>
-  <span className={`badge-status status-${appointment.status.replace(" ", "-")}`}>
-    {appointment.status}
-  </span>
-</td>
-
-          <td>{appointment.reminderSent ? "Yes" : "No"}</td>
-          <td>
-            <div className="d-flex gap-2">
-              <Button
-                variant="primary"
-                size="sm"
-                onClick={() => handleEdit(appointment)}
-                title="Edit Appointment"
-                aria-label="Edit appointment"
-              >
-                <FaEdit />
-              </Button>
-              <Button
-                variant="danger"
-                size="sm"
-                onClick={() => handleDeleteClick(appointment._id)}
-                title="Delete Appointment"
-                aria-label="Delete appointment"
-              >
-                <FaTrash />
-              </Button>
-            </div>
-          </td>
-        </tr>
-      ))}
-    </tbody>
-  </Table>
 </div>
 
 
             <div className="d-flex justify-content-between align-items-center mt-4">
-              <div className="text-muted">
-                Showing {(currentPage - 1) * itemsPerPage + 1} to{" "}
-                {Math.min(currentPage * itemsPerPage, totalItems)} of{" "}
-                {totalItems} appointments
-              </div>
+                <div className="text-muted">
+                  Hiển thị từ {(currentPage - 1) * itemsPerPage + 1} đến{" "}
+                  {Math.min(currentPage * itemsPerPage, totalItems)} trên tổng số{" "}
+                  {totalItems} lịch hẹn
+                </div>
+
               <Pagination>
                 <Pagination.Prev
                   onClick={() => handlePageChange(currentPage - 1)}
@@ -827,17 +847,17 @@ const finalDate = combinedDate.toISOString();
 
       <Modal show={showModal} onHide={() => setShowModal(false)} centered>
   <Modal.Header closeButton className="bg-primary text-white">
-    <Modal.Title>{currentAppointment ? "Edit Appointment" : "Add New Appointment"}</Modal.Title>
+    <Modal.Title>{currentAppointment ? "Chỉnh sửa lịch hẹn" : "Thêm lịch hẹn mới"}</Modal.Title>
   </Modal.Header>
   <Modal.Body className="p-4 appointment-modal-body">
     <Form>
       {/* Appointment Info */}
-      <h5 className="section-title">🗓 Appointment Info</h5>
+      <h5 className="section-title">🗓 Thông tin lịch hẹn</h5>
       <Row>
         <Col md={6}>
           <Form.Group className="mb-3" controlId="appointmentDate">
             <Form.Label>
-              Appointment Date <span className="text-danger">*</span>
+              Ngày hẹn <span className="text-danger">*</span>
             </Form.Label>
             <Form.Control
               type="date"
@@ -861,42 +881,43 @@ const finalDate = combinedDate.toISOString();
           </Form.Group>
         </Col>
         <Col md={6}>
-          <Form.Group className="mb-3" controlId="department">
-            <Form.Label>
-              Department <span className="text-danger">*</span>
-            </Form.Label>
-            <Form.Select
-              name="department"
-              value={form.department}
-              onChange={handleChange}
-              disabled={!form.appointmentDate}
-            >
-              <option value="">Select department</option>
-              {departments.map((dept) => (
-                <option key={dept._id} value={dept._id}>
-                  {dept.name}
-                </option>
-              ))}
-            </Form.Select>
-            {formErrors.department && (
-              <Form.Text className="text-danger">{formErrors.department}</Form.Text>
-            )}
-          </Form.Group>
-        </Col>
+            <Form.Group className="mb-3" controlId="department">
+              <Form.Label>
+                Khoa <span className="text-danger">*</span>
+              </Form.Label>
+              <Form.Select
+                name="department"
+                value={form.department}
+                onChange={handleChange}
+                disabled={!form.appointmentDate}
+              >
+                <option value="">Chọn khoa</option>
+                {departments.map((dept) => (
+                  <option key={dept._id} value={dept._id}>
+                    {dept.name}
+                  </option>
+                ))}
+              </Form.Select>
+              {formErrors.department && (
+                <Form.Text className="text-danger">{formErrors.department}</Form.Text>
+              )}
+            </Form.Group>
+          </Col>
+
       </Row>
 
       <>
-  <h6 className="text-muted mt-3">Available Doctors</h6>
+  <h6 className="text-muted mt-3">Bác sĩ có sẵn</h6>
   <Row>
     <Col md={6}>
       <Form.Group className="mb-3" controlId="doctorId">
-        <Form.Label>Doctor <span className="text-danger">*</span></Form.Label>
+        <Form.Label>Bác sĩ <span className="text-danger">*</span></Form.Label>
         <Form.Select
           name="doctorId"
           value={form.doctorId}
           onChange={handleChange}
         >
-          <option value="">Select doctor</option>
+          <option value="">Chọn bác sĩ</option>
           {availableDoctors.map((doc) => (
             <option key={doc._id} value={doc._id}>{doc.name}</option>
           ))}
@@ -905,19 +926,19 @@ const finalDate = combinedDate.toISOString();
           <Form.Text className="text-danger">{formErrors.doctorId}</Form.Text>
         )}
         {availableDoctors.length === 0 && (
-          <Form.Text className="text-muted">No doctors available</Form.Text>
+          <Form.Text className="text-muted">Không có bác sĩ nào có sẵn</Form.Text>
         )}
       </Form.Group>
     </Col>
     <Col md={6}>
       <Form.Group className="mb-3" controlId="timeSlot">
-        <Form.Label>Time Slot <span className="text-danger">*</span></Form.Label>
+        <Form.Label>Thời gian <span className="text-danger">*</span></Form.Label>
         <Form.Select
           name="timeSlot"
           value={form.timeSlot}
           onChange={handleChange}
         >
-          <option value="">Select time slot</option>
+          <option value="">Chọn thời gian</option>
           {schedules
             .filter(slot => slot.status === "Available")
             .map((slot, i) => (
@@ -938,14 +959,14 @@ const finalDate = combinedDate.toISOString();
       <hr />
 
       {/* Patient Info */}
-      <h5 className="section-title">🧍 Patient Info</h5>
+      <h5 className="section-title">🧍 Thông tin bệnh nhân</h5>
       <Form.Group className="mb-3" controlId="identityNumber">
-        <Form.Label>Identity Number <span className="text-danger">*</span></Form.Label>
+        <Form.Label>Số nhận dạng <span className="text-danger">*</span></Form.Label>
         <InputGroup>
           <Form.Control
             type="text"
             name="identityNumber"
-            placeholder="Enter identity number"
+            placeholder="Nhập số nhận dạng"
             value={form.identityNumber}
             onChange={(e) => {
               handleChange(e);
@@ -954,11 +975,11 @@ const finalDate = combinedDate.toISOString();
             }}
           />
           <Button variant="outline-primary" onClick={() => fetchProfilesByIdentity(form.identityNumber)}>
-            Search
+            Tìm kiếm
           </Button>
         </InputGroup>
         <Form.Text className="text-muted">
-          Search to select patient profile linked with identity number.
+          Tìm kiếm để chọn hồ sơ bệnh nhân được liên kết với số nhận dạng.
         </Form.Text>
         {formErrors.identityNumber && (
           <Form.Text className="text-danger">{formErrors.identityNumber}</Form.Text>
@@ -966,7 +987,7 @@ const finalDate = combinedDate.toISOString();
       </Form.Group>
 
       <Form.Group controlId="selectedProfile" className="mb-3">
-  <Form.Label>Select Profile</Form.Label>
+  <Form.Label>Chọn Hồ sơ</Form.Label>
   <Form.Select
     value={selectedProfileId}
     onChange={(e) => setSelectedProfileId(e.target.value)}
@@ -982,7 +1003,7 @@ const finalDate = combinedDate.toISOString();
     ))}
   </Form.Select>
   <Form.Text className="text-muted">
-    Patient profile associated with identity number.
+    Hồ sơ bệnh nhân được liên kết với số nhận dạng.
   </Form.Text>
 </Form.Group>
 
@@ -991,25 +1012,25 @@ const finalDate = combinedDate.toISOString();
       <hr />
 
       {/* Other Info */}
-      <h5 className="section-title">📋 Additional Info</h5>
+      <h5 className="section-title">📋 Thông tin bổ sung</h5>
       <Row>
         <Col md={6}>
           <Form.Group className="mb-3" controlId="type">
-            <Form.Label>Type</Form.Label>
+            <Form.Label>Kiểu</Form.Label>
             <Form.Select name="type" value={form.type} onChange={handleChange}>
-              <option value="Online">Online</option>
-              <option value="Offline">Offline</option>
+              <option value="Online">Trực tuyến</option>
+              <option value="Offline">Ngoại tuyến</option>
             </Form.Select>
           </Form.Group>
         </Col>
         <Col md={6}>
           <Form.Group className="mb-3" controlId="status">
-            <Form.Label>Status</Form.Label>
+            <Form.Label>Trạng thái</Form.Label>
             <Form.Select name="status" value={form.status} onChange={handleChange}>
-              <option value="Booked">Booked</option>
-              <option value="In-Progress">In-Progress</option>
-              <option value="Completed">Completed</option>
-              <option value="Canceled">Canceled</option>
+              <option value="Booked">Đã đặt chỗ</option>
+              <option value="In-Progress">Đang tiến hành</option>
+              <option value="Completed">Hoàn thành</option>
+              <option value="Canceled">Đã hủy</option>
             </Form.Select>
           </Form.Group>
         </Col>
@@ -1017,7 +1038,7 @@ const finalDate = combinedDate.toISOString();
       <Form.Check
         className="mb-3"
         type="checkbox"
-        label="Reminder Sent"
+        label="Đã gửi lời nhắc nhở"
         name="reminderSent"
         checked={form.reminderSent}
         onChange={handleChange}
@@ -1026,14 +1047,14 @@ const finalDate = combinedDate.toISOString();
   </Modal.Body>
   <Modal.Footer>
     <Button variant="secondary" onClick={handleResetForm}>
-      <i className="bi bi-arrow-clockwise me-1" /> Reset
+      <i className="bi bi-arrow-clockwise me-1" /> Tải lại
     </Button>
     <Button variant="danger" onClick={() => setShowModal(false)}>
-      Cancel
+      Hủy
     </Button>
     <Button variant="primary" onClick={handleSubmit} disabled={isFormLoading || !form.timeSlot}>
       {isFormLoading ? <Spinner size="sm" animation="border" className="me-2" /> : null}
-      {currentAppointment ? "Save" : "Add"}
+      {currentAppointment ? "Thêm" : "Thêm"}
     </Button>
   </Modal.Footer>
 </Modal>
@@ -1041,10 +1062,10 @@ const finalDate = combinedDate.toISOString();
 
       <Modal show={showDeleteModal} onHide={cancelDelete} centered>
         <Modal.Header closeButton className="bg-danger text-white">
-          <Modal.Title>Confirm Delete</Modal.Title>
+          <Modal.Title>Xác nhận xóa</Modal.Title>
         </Modal.Header>
         <Modal.Body className="p-4">
-          Are you sure you want to delete this appointment?
+          Bạn có chắc chắn muốn xóa cuộc hẹn này không?
         </Modal.Body>
         <Modal.Footer className="border-top-0">
           <Button
@@ -1052,14 +1073,14 @@ const finalDate = combinedDate.toISOString();
             onClick={cancelDelete}
             aria-label="Cancel delete"
           >
-            Cancel
+            Hủy
           </Button>
           <Button
             variant="danger"
             onClick={confirmDelete}
             aria-label="Confirm delete"
           >
-            Delete
+            Xóa
           </Button>
         </Modal.Footer>
       </Modal>
@@ -1069,51 +1090,50 @@ const finalDate = combinedDate.toISOString();
   centered
 >
   <Modal.Header closeButton className="bg-info text-white">
-    <Modal.Title>Patient Record Detail</Modal.Title>
+    <Modal.Title>Chi tiết hồ sơ bệnh nhân</Modal.Title>
   </Modal.Header>
   <Modal.Body>
   {selectedProfile ? (
     <>
-      <p><strong>Profile Name:</strong> {selectedProfile.name}</p>
-      <p><strong>Identity Number:</strong> {selectedProfile.identityNumber}</p>
-      <p><strong>Date of Birth:</strong> {new Date(selectedProfile.dateOfBirth).toLocaleDateString()}</p>
-      <p><strong>Gender:</strong> {selectedProfile.gender}</p>
-      <p><strong>Diagnosis:</strong> {selectedProfile.diagnose || "N/A"}</p>
-      <p><strong>Note:</strong> {selectedProfile.note || "None"}</p>
-      <p><strong>Issues:</strong> {selectedProfile.issues || "None"}</p>
-      <p><strong>Doctor:</strong> {selectedProfile.doctorId?.name || "N/A"}</p>
-
-      <p><strong>Medicine:</strong></p>
+        <p><strong>Tên hồ sơ:</strong> {selectedProfile.name}</p>
+        <p><strong>Số định danh:</strong> {selectedProfile.identityNumber}</p>
+        <p><strong>Ngày sinh:</strong> {new Date(selectedProfile.dateOfBirth).toLocaleDateString()}</p>
+        <p><strong>Giới tính:</strong> {selectedProfile.gender}</p>
+        <p><strong>Chẩn đoán:</strong> {selectedProfile.diagnose || "Chưa có"}</p>
+        <p><strong>Ghi chú:</strong> {selectedProfile.note || "Không có"}</p>
+        <p><strong>Vấn đề:</strong> {selectedProfile.issues || "Không có"}</p>
+        <p><strong>Bác sĩ:</strong> {selectedProfile.doctorId?.name || "Chưa có"}</p>
+      <p><strong>Thuốc:</strong></p>
       <ul>
         {Array.isArray(selectedProfile.medicine) && selectedProfile.medicine.length > 0 ? (
           selectedProfile.medicine.map((m, i) => (
             <li key={i}>{m.name || m}</li> // nếu medicine là object thì lấy m.name, nếu là ObjectId thì hiện m
           ))
         ) : (
-          <li>No medicine recorded</li>
+          <li>Không có thuốc nào được ghi nhận</li>
         )}
       </ul>
 
-      <p><strong>Service:</strong></p>
+      <p><strong>Dịch vụ:</strong></p>
       <ul>
         {Array.isArray(selectedProfile.service) && selectedProfile.service.length > 0 ? (
           selectedProfile.service.map((s, i) => (
             <li key={i}>{s.name || s}</li>
           ))
         ) : (
-          <li>No service recorded</li>
+          <li>Không có dịch vụ nào được ghi lại</li>
         )}
       </ul>
     </>
   ) : (
-    <p className="text-muted">No profile data loaded.</p>
+    <p className="text-muted">Không có dữ liệu hồ sơ nào được tải.</p>
   )}
 </Modal.Body>
 
 
   <Modal.Footer>
     <Button variant="secondary" onClick={() => setOpenProfileDialog(false)}>
-      Close
+      Đóng
     </Button>
   </Modal.Footer>
 </Modal>
