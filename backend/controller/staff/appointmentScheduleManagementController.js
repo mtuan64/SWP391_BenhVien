@@ -12,18 +12,24 @@ const mongoose = require("mongoose");
 // Lấy danh sách lịch hẹn có kèm tên bác sĩ, người dùng, số điện thoại và user_code với phân trang
 exports.getAllAppointments = async (req, res) => {
   try {
-    const { search = "", page = 1, limit = 10, status, department, startDate, endDate } = req.query;
+    const {
+      search = "",
+      page = 1,
+      limit = 10,
+      status,
+      department,
+      startDate,
+      endDate
+    } = req.query;
+
     const pageNum = parseInt(page, 10);
     const limitNum = parseInt(limit, 10);
     const skip = (pageNum - 1) * limitNum;
 
     let query = {};
-    if (status) {
-      query.status = status;
-    }
-    if (department) {
-      query.department = department;
-    }
+    if (status) query.status = status;
+    if (department) query.department = department;
+
     if (startDate || endDate) {
       query.appointmentDate = {};
       if (startDate && !isNaN(new Date(startDate).getTime())) {
@@ -34,77 +40,70 @@ exports.getAllAppointments = async (req, res) => {
       }
     }
 
-    const totalAppointments = await Appointment.countDocuments(query);
+    // Fetch appointments with profile reference for later enrich
     const appointments = await Appointment.find(query)
-        .sort({ createdAt: -1 }) // sắp xếp theo thời gian tạo, mới nhất trước
-        .populate("profileId", "name")
-        .skip(skip)
-        .limit(limitNum);
+      .sort({ createdAt: -1 })
+      .populate("profileId", "name identityNumber")
+      .skip(skip)
+      .limit(limitNum);
 
+    const doctorIds = [...new Set(appointments.map(a => a.doctorId?.toString()).filter(Boolean))];
+    const userIds = [...new Set(appointments.map(a => a.userId?.toString()).filter(Boolean))];
 
-    const doctorIds = [...new Set(appointments.map(a => a.doctorId?.toString()))];
-    const userIds = [...new Set(appointments.map(a => a.userId?.toString()))];
+    const [doctors, users] = await Promise.all([
+      Employee.find({ _id: { $in: doctorIds } }, { _id: 1, name: 1 }),
+      User.find({ _id: { $in: userIds } }, { _id: 1, name: 1, phone: 1, user_code: 1 })
+    ]);
 
-    const doctors = await Employee.find({ _id: { $in: doctorIds } }, { _id: 1, name: 1 });
-    const users = await User.find({ _id: { $in: userIds } }, { _id: 1, name: 1, phone: 1, user_code: 1 });
-
-    const doctorMap = doctors.reduce((acc, doc) => {
-      acc[doc._id.toString()] = doc.name;
-      return acc;
-    }, {});
-    const userMap = users.reduce((acc, user) => {
-      acc[user._id.toString()] = { name: user.name, phone: user.phone || "N/A", user_code: user.user_code || "N/A" };
-      return acc;
-    }, {});
+    const doctorMap = Object.fromEntries(doctors.map(doc => [doc._id.toString(), doc.name]));
+    const userMap = Object.fromEntries(users.map(user => [
+      user._id.toString(),
+      {
+        name: user.name,
+        phone: user.phone || "N/A",
+        user_code: user.user_code || "N/A",
+      },
+    ]));
 
     let enrichedAppointments = appointments.map(a => ({
-    ...a._doc,
-    doctorName: doctorMap[a.doctorId?.toString()] || "Unknown Doctor",
-    userName: userMap[a.userId?.toString()]?.name || "Unknown User",
-    userPhone: userMap[a.userId?.toString()]?.phone || "N/A",
-    userCode: userMap[a.userId?.toString()]?.user_code || "N/A",
-    profileName: a.profileId?.name || "N/A"
-  }));
+      ...a._doc,
+      doctorName: doctorMap[a.doctorId?.toString()] || "Unknown Doctor",
+      userName: userMap[a.userId?.toString()]?.name || "Unknown User",
+      userPhone: userMap[a.userId?.toString()]?.phone || "N/A",
+      userCode: userMap[a.userId?.toString()]?.user_code || "N/A",
+      profileName: a.profileId?.name || "N/A",
+      identityNumber: a.profileId?.identityNumber || "",
+    }));
 
-
-    if (search.trim() !== "") {
+    // ✅ Gộp tất cả logic tìm kiếm vào đây
+    if (search.trim()) {
       const searchLower = search.toLowerCase();
       enrichedAppointments = enrichedAppointments.filter(a =>
-        (a.doctorName && a.doctorName.toLowerCase().includes(searchLower)) ||
-        (a.userName && a.userName.toLowerCase().includes(searchLower)) ||
-        (a.userPhone && a.userPhone.toLowerCase().includes(searchLower)) ||
-        (a.userCode && a.userCode.toLowerCase().includes(searchLower)) ||
-        (a.status && a.status.toLowerCase().includes(searchLower))
+        a.doctorName?.toLowerCase().includes(searchLower) ||
+        a.userName?.toLowerCase().includes(searchLower) ||
+        a.userPhone?.toLowerCase().includes(searchLower) ||
+        a.userCode?.toLowerCase().includes(searchLower) ||
+        a.status?.toLowerCase().includes(searchLower) ||
+        a.identityNumber?.toLowerCase().includes(searchLower) // ✅ Gộp identityNumber
       );
-    } else if (startDate || endDate) {
-      enrichedAppointments = enrichedAppointments.filter(a => {
-        const appointmentDate = new Date(a.appointmentDate);
-        let matchesDateRange = true;
-        if (startDate && appointmentDate < new Date(startDate)) {
-          matchesDateRange = false;
-        }
-        if (endDate && appointmentDate > new Date(new Date(endDate).setHours(23, 59, 59, 999))) {
-          matchesDateRange = false;
-        }
-        return matchesDateRange;
-      });
     }
 
-    const response = {
+    res.status(200).json({
       appointments: enrichedAppointments,
       pagination: {
-        total: totalAppointments,
+        total: enrichedAppointments.length,
         page: pageNum,
         limit: limitNum,
-        totalPages: Math.ceil(totalAppointments / limitNum)
-      }
-    };
-    res.status(200).json(response);
+        totalPages: Math.ceil(enrichedAppointments.length / limitNum),
+      },
+    });
   } catch (error) {
     console.error("Error in getAllAppointments:", error);
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
+
+
 
 exports.getProfileDetail = async (req, res) => {
   try {
