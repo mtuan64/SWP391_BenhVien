@@ -58,7 +58,7 @@ function StaffScheduleManager() {
       const res = await axios.get('/api/staff/schedule');
       setSchedules(res.data);
     } catch (err) {
-      message.error('Failed to fetch schedules');
+      message.error('Không thể lấy lịch');
     }
   };
 
@@ -67,7 +67,7 @@ function StaffScheduleManager() {
       const res = await axios.get('/api/staff/departments');
       setDepartments(res.data);
     } catch (err) {
-      message.error('Failed to fetch departments');
+      message.error('Không thể tìm được các khoa');
     }
   };
 
@@ -76,7 +76,7 @@ function StaffScheduleManager() {
       const res = await axios.get(`/api/staff/employees?department=${departmentName}`);
       setEmployees(res.data);
     } catch (err) {
-      message.error('Failed to fetch employees');
+      message.error('Không thể tìm được nhân viên');
     }
   };
 
@@ -88,10 +88,10 @@ function StaffScheduleManager() {
   const handleDelete = async (id) => {
     try {
       await axios.delete(`/api/staff/schedule/${id}`);
-      message.success('Schedule deleted');
+      message.success('Lịch đã xóa');
       fetchSchedules();
     } catch (err) {
-      message.error('Failed to delete schedule');
+      message.error('Không xóa được lịch');
     }
   };
 
@@ -110,10 +110,10 @@ function StaffScheduleManager() {
     try {
       if (editingId) {
         await axios.put(`/api/staff/schedule/${editingId}`, payload);
-        message.success('Schedule updated');
+        message.success('Lịch trình đã cập nhật');
       } else {
         await axios.post('/api/staff/schedule', payload);
-        message.success('Schedule created');
+        message.success('Lịch đã được tạo');
       }
 
       form.resetFields();
@@ -122,7 +122,7 @@ function StaffScheduleManager() {
       fetchSchedules();
     } catch (err) {
       console.error(err);
-      message.error('Error saving schedule');
+      message.error('Lỗi khi lưu lịch');
     }
   };
 
@@ -155,12 +155,12 @@ function StaffScheduleManager() {
 
   const columns = [
     {
-      title: 'Doctor',
+      title: 'Bác sĩ',
       dataIndex: 'employeeId',
       render: emp => typeof emp === 'object' ? emp.name || emp._id : emp
     },
     {
-      title: 'Department',
+      title: 'Khoa',
       dataIndex: 'department',
       render: (depId) => {
         const dep = departments.find(d => d._id === (depId?._id || depId));
@@ -168,12 +168,12 @@ function StaffScheduleManager() {
       }
     },
     {
-      title: 'Date',
+      title: 'Ngày',
       dataIndex: 'date',
       render: date => dayjs(date).format('DD/MM/YYYY')
     },
     {
-      title: 'Time Slots',
+      title: 'Khung giờ',
       dataIndex: 'timeSlots',
       render: slots => (
         <ul style={{ marginBottom: 0 }}>
@@ -186,7 +186,7 @@ function StaffScheduleManager() {
       )
     },
     {
-      title: 'Status',
+      title: 'Trạng thái',
       dataIndex: 'timeSlots',
       render: slots => {
         const statuses = slots.map(slot => slot.status);
@@ -207,17 +207,17 @@ function StaffScheduleManager() {
       }
     },
     {
-      title: 'Actions',
+      title: 'Hành động',
       render: (_, record) => (
         <Space>
-          <Button type="link" onClick={() => handleEdit(record)}>Edit</Button>
+          <Button type="link" onClick={() => handleEdit(record)}>Sửa</Button>
           <Popconfirm
-            title="Confirm delete?"
+            title="Xác nhận xóa?"
             onConfirm={() => handleDelete(record._id)}
-            okText="Yes"
-            cancelText="No"
+            okText="Đồng ý"
+            cancelText="Không"
           >
-            <Button type="link" danger>Delete</Button>
+            <Button type="link" danger>Xóa</Button>
           </Popconfirm>
         </Space>
       )
@@ -226,18 +226,18 @@ function StaffScheduleManager() {
 
   return (
     <div style={{ padding: 24 }}>
-      <Title level={3}>Doctor Schedule Management</Title>
+      <Title level={3}>Quản lý lịch bác sĩ</Title>
 
       <Space style={{ marginBottom: 16 }}>
         <Search
-          placeholder="Search by doctor name"
+          placeholder="Tìm kiếm theo tên bác sĩ"
           onSearch={value => setSearchText(value)}
           onChange={e => setSearchText(e.target.value)}
           style={{ width: 200 }}
           value={searchText}
         />
         <Select
-          placeholder="Filter by department"
+          placeholder="Lọc theo phòng ban"
           allowClear
           style={{ width: 200 }}
           onChange={value => setFilterDepartment(value)}
@@ -248,12 +248,12 @@ function StaffScheduleManager() {
           ))}
         </Select>
         <DatePicker
-          placeholder="Filter by date"
+          placeholder="Lọc theo ngày"
           onChange={value => setFilterDate(value)}
           style={{ width: 200 }}
           value={filterDate}
         />
-        <Button onClick={clearFilters}>Clear</Button>
+        <Button onClick={clearFilters}>Xóa Filter</Button>
 
         <Button
           type="primary"
@@ -264,7 +264,7 @@ function StaffScheduleManager() {
             setIsModalVisible(true);
           }}
         >
-          Add Schedule
+          Thêm lịch
         </Button>
       </Space>
 
@@ -273,7 +273,7 @@ function StaffScheduleManager() {
       <Table rowKey="_id" dataSource={filteredSchedules} columns={columns} />
 
       <Modal
-        title={editingId ? "Edit Schedule" : "Create Schedule"}
+        title={editingId ? "Chỉnh sửa lịch" : "Tạo lịch"}
         open={isModalVisible}
         onCancel={() => {
           setIsModalVisible(false);
@@ -285,11 +285,11 @@ function StaffScheduleManager() {
       >
         <Form form={form} layout="vertical" onFinish={onFinish}>
           <Form.Item
-            label="Department"
+            label="Khoa"
             name="department"
-            rules={[{ required: true, message: 'Please select department' }]}
+            rules={[{ required: true, message: 'Vui lòng chọn khoa' }]}
           >
-            <Select placeholder="Select department" onChange={handleDepartmentChange}>
+            <Select placeholder="Chọn khoa" onChange={handleDepartmentChange}>
               {departments.map(dep => (
                 <Option key={dep._id} value={dep._id}>{dep.name}</Option>
               ))}
@@ -297,11 +297,11 @@ function StaffScheduleManager() {
           </Form.Item>
 
           <Form.Item
-            label="Doctor"
+            label="Bác sĩ"
             name="employeeId"
-            rules={[{ required: true, message: 'Please select employee' }]}
+            rules={[{ required: true, message: 'Vui lòng chọn bác sĩ' }]}
           >
-            <Select placeholder="Select employee" allowClear>
+            <Select placeholder="Chọn bác sĩ" allowClear>
               {employees.map(emp => (
                 <Option key={emp._id} value={emp._id}>{emp.name}</Option>
               ))}
@@ -309,9 +309,9 @@ function StaffScheduleManager() {
           </Form.Item>
 
           <Form.Item
-            label="Date"
+            label="Ngày"
             name="date"
-            rules={[{ required: true, message: 'Please select a date' }]}
+            rules={[{ required: true, message: 'Vui lòng chọn ngày' }]}
           >
             <DatePicker style={{ width: '100%' }} disabledDate={disabledDate} />
           </Form.Item>
@@ -324,14 +324,14 @@ function StaffScheduleManager() {
                     <Form.Item
                       {...restField}
                       name={[name, 'timeRange']}
-                      rules={[{ required: true, message: 'Select time range' }]}
+                      rules={[{ required: true, message: 'Chọn khoảng thời gian' }]}
                     >
                       <TimePicker.RangePicker format="HH:mm" />
                     </Form.Item>
                     <Form.Item
                       {...restField}
-                      name={[name, 'status']}
-                      rules={[{ required: true, message: 'Select status' }]}
+                      name={[name, 'Trạng thái']}
+                      rules={[{ required: true, message: 'Chọn trạng thái' }]}
                     >
                       <Select style={{ width: 120 }}>
                         <Option value="Available">Available</Option>
@@ -341,7 +341,7 @@ function StaffScheduleManager() {
                     <Button danger onClick={() => remove(name)}>-</Button>
                   </Space>
                 ))}
-                <Button type="dashed" onClick={() => add()} icon={<PlusOutlined />}>Add Slot</Button>
+                <Button type="dashed" onClick={() => add()} icon={<PlusOutlined />}>Thêm chỗ</Button>
               </>
             )}
           </Form.List>
