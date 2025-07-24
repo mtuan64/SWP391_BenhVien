@@ -60,7 +60,7 @@ const UserManagement = () => {
       setLoading(false);
     } catch (err) {
       console.error(err);
-      setError("Failed to load users.");
+      setError("Không tải được người dùng.");
       setLoading(false);
     }
   };
@@ -125,7 +125,7 @@ const UserManagement = () => {
       setShowModal(false);
       fetchUsers(searchQuery, statusFilter, currentPage);
     } catch (error) {
-      alert("Operation failed: " + (error.response?.data?.message || error.message));
+      alert("Hoạt động không thành công: " + (error.response?.data?.message || error.message));
     }
   };
 
@@ -157,18 +157,18 @@ const UserManagement = () => {
   return (
     <>
       <Container className="py-5">
-        <h2 className="mb-4 text-primary fw-bold">User Management</h2>
+        <h2 className="mb-4 text-primary fw-bold">Quản lý người dùng</h2>
 
         <Row className="align-items-end mb-4 filter-card">
           <Col md={3} sm={12} className="mb-3">
             <Form.Group>
-              <Form.Label>Search</Form.Label>
+              <Form.Label>Tìm kiếm</Form.Label>
               <InputGroup>
                 <InputGroup.Text>
                   <FaSearch />
                 </InputGroup.Text>
                 <FormControl
-                  placeholder="Search by name, email, or user code..."
+                  placeholder="Tìm kiếm theo tên, email hoặc mã người dùng..."
                   value={searchQuery}
                   onChange={handleSearchChange}
                   aria-label="Search users"
@@ -179,15 +179,15 @@ const UserManagement = () => {
 
           <Col md={2} sm={12} className="mb-3">
             <Form.Group>
-              <Form.Label>Status</Form.Label>
+              <Form.Label>Trạng thái</Form.Label>
               <Form.Select
                 value={statusFilter}
                 onChange={handleStatusChange}
                 aria-label="Filter by status"
               >
-                <option value="all">All Statuses</option>
-                <option value="active">Active</option>
-                <option value="inactive">Inactive</option>
+                <option value="all">Tất cả các trạng thái</option>
+                <option value="active">Hoạt động</option>
+                <option value="inactive">Không hoạt động</option>
               </Form.Select>
             </Form.Group>
           </Col>
@@ -199,7 +199,7 @@ const UserManagement = () => {
               className="w-100"
               aria-label="Clear filters"
             >
-              Clear Filters
+              Xóa
             </Button>
           </Col>
 
@@ -209,7 +209,7 @@ const UserManagement = () => {
               onClick={handleAddNew}
               aria-label="Add new user"
             >
-              Add User
+              Thêm mới
             </Button>
           </Col>
         </Row>
@@ -217,7 +217,7 @@ const UserManagement = () => {
         {loading ? (
           <div className="loading-container">
             <Spinner animation="border" variant="primary" role="status" />
-            <p className="text-muted mt-2">Loading users...</p>
+            <p className="text-muted mt-2">Đang tải người dùng...</p>
           </div>
         ) : error ? (
           <div className="error-container">
@@ -227,106 +227,113 @@ const UserManagement = () => {
               onClick={() => fetchUsers(searchQuery, statusFilter, currentPage)}
               aria-label="Retry loading users"
             >
-              Retry
+              Thử lại
             </Button>
           </div>
         ) : users.length === 0 ? (
-          <p className="text-muted text-center">No users found.</p>
+          <p className="text-muted text-center">Không tìm thấy người dùng nào.</p>
         ) : (
           <>
             <div className="table-responsive">
-              <Table striped hover>
-                <thead className="table-dark">
-                  <tr>
-                    <th>No</th>
-                    <th className="user-code">User Code</th>
-                    <th>Email</th>
-                    <th>Name</th>
-                    <th>Phone</th>
-                    <th>Status</th>
-                    <th>Profiles</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {users.map((user, index) => (
-                    <tr key={user._id}>
-                      <td>{(currentPage - 1) * limit + index + 1}</td>
-                      <td className="user-code">{user.user_code || "N/A"}</td>
-                      <td>{user.email}</td>
-                      <td>{user.name}</td>
-                      <td>{user.phone || "N/A"}</td>
-                      <td>{user.status}</td>
-                      <td>
-                        {user.profiles && user.profiles.length > 0
-                          ? user.profiles.map((pId) => <div key={pId}>{pId}</div>)
-                          : "No profiles"}
-                      </td>
-                      <td>
-                        <div className="d-flex gap-2">
-                          <Button
-                            variant="primary"
-                            size="sm"
-                            onClick={() => handleEdit(user)}
-                            aria-label="Edit user"
-                          >
-                            <FaEdit />
-                          </Button>
-                          <Button
-                            variant="danger"
-                            size="sm"
-                            onClick={() => handleDeleteClick(user._id)}
-                            aria-label="Delete user"
-                          >
-                            <FaTrash />
-                          </Button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </Table>
-            </div>
+  <Table striped hover bordered className="align-middle text-center">
+    <thead className="table-primary">
+      <tr>
+        <th style={{ width: "5%" }}>STT</th>
+        <th style={{ width: "10%" }} className="user-code">Mã</th>
+        <th style={{ width: "15%" }}>Email</th>
+        <th style={{ width: "15%" }}>Tên</th>
+        <th style={{ width: "12%" }}>Số điện thoại</th>
+        <th style={{ width: "10%" }}>Trạng thái</th>
+        <th style={{ width: "15%" }}>Hồ sơ bệnh án</th>
+        <th style={{ width: "18%" }}>Hành động</th>
+      </tr>
+    </thead>
+    <tbody>
+      {users.map((user, index) => (
+        <tr key={user._id}>
+          <td>{(currentPage - 1) * limit + index + 1}</td>
+          <td className="user-code">{user.user_code || "N/A"}</td>
+          <td>{user.email}</td>
+          <td>{user.name}</td>
+          <td>{user.phone || "N/A"}</td>
+          <td>
+            <span className={`badge bg-${user.status === "Active" ? "success" : "secondary"}`}>
+              {user.status}
+            </span>
+          </td>
 
-            <div className="d-flex justify-content-between align-items-center mt-4">
-              <div className="text-muted">
-                Showing {(currentPage - 1) * limit + 1} to{" "}
-                {Math.min(currentPage * limit, totalItems)} of {totalItems} users
-              </div>
-              <Pagination>
-                <Pagination.Prev
-                  onClick={() => handlePageChange(currentPage - 1)}
-                  disabled={currentPage === 1}
-                />
-                {[...Array(totalPages).keys()].map((page) => (
-                  <Pagination.Item
-                    key={page + 1}
-                    active={page + 1 === currentPage}
-                    onClick={() => handlePageChange(page + 1)}
-                    aria-label={`Go to page ${page + 1}`}
-                  >
-                    {page + 1}
-                  </Pagination.Item>
-                ))}
-                <Pagination.Next
-                  onClick={() => handlePageChange(currentPage + 1)}
-                  disabled={currentPage === totalPages}
-                />
-              </Pagination>
+          <td>
+            {user.profiles && user.profiles.length > 0
+              ? user.profiles.map((pId) => <div key={pId}>{pId}</div>)
+              : <span className="text-muted">Không có hồ sơ</span>}
+          </td>
+          <td>
+            <div className="d-flex justify-content-center gap-2">
+              <Button
+                variant="outline-primary"
+                size="sm"
+                onClick={() => handleEdit(user)}
+                aria-label="Chỉnh sửa người dùng"
+              >
+                <FaEdit />
+              </Button>
+              <Button
+                variant="outline-danger"
+                size="sm"
+                onClick={() => handleDeleteClick(user._id)}
+                aria-label="Xóa người dùng"
+              >
+                <FaTrash />
+              </Button>
             </div>
+          </td>
+        </tr>
+      ))}
+    </tbody>
+  </Table>
+</div>
+
+
+          <div className="d-flex justify-content-between align-items-center mt-4">
+            <div className="text-muted">
+              Hiển thị từ {(currentPage - 1) * limit + 1} đến{" "}
+              {Math.min(currentPage * limit, totalItems)} trên tổng số {totalItems} người dùng
+            </div>
+            <Pagination>
+              <Pagination.Prev
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1}
+              />
+              {[...Array(totalPages).keys()].map((page) => (
+                <Pagination.Item
+                  key={page + 1}
+                  active={page + 1 === currentPage}
+                  onClick={() => handlePageChange(page + 1)}
+                  aria-label={`Chuyển đến trang ${page + 1}`}
+                >
+                  {page + 1}
+                </Pagination.Item>
+              ))}
+              <Pagination.Next
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage === totalPages}
+              />
+            </Pagination>
+          </div>
+
           </>
         )}
       </Container>
 
       <Modal show={showModal} onHide={() => setShowModal(false)} centered>
         <Modal.Header closeButton className="bg-primary text-white">
-          <Modal.Title>{currentUser ? "Edit User" : "Add User"}</Modal.Title>
+          <Modal.Title>{currentUser ? "Chỉnh sửa người dùng" : "Thêm mới"}</Modal.Title>
         </Modal.Header>
         <Modal.Body className="p-4">
           <Form>
             {currentUser && (
               <Form.Group className="mb-3">
-                <Form.Label className="fw-medium">User Code</Form.Label>
+                <Form.Label className="fw-medium">Mã</Form.Label>
                 <Form.Control
                   value={currentUser.user_code || "N/A"}
                   readOnly
@@ -335,7 +342,7 @@ const UserManagement = () => {
               </Form.Group>
             )}
             <Form.Group className="mb-3">
-              <Form.Label className="fw-medium">Name</Form.Label>
+              <Form.Label className="fw-medium">Tên</Form.Label>
               <Form.Control
                 name="name"
                 value={form.name}
@@ -353,7 +360,7 @@ const UserManagement = () => {
               />
             </Form.Group>
             <Form.Group className="mb-3">
-              <Form.Label className="fw-medium">Phone</Form.Label>
+              <Form.Label className="fw-medium">Số điện thoại</Form.Label>
               <Form.Control
                 name="phone"
                 value={form.phone}
@@ -362,7 +369,7 @@ const UserManagement = () => {
               />
             </Form.Group>
             <Form.Group className="mb-3">
-              <Form.Label className="fw-medium">Password</Form.Label>
+              <Form.Label className="fw-medium">Mật khẩu</Form.Label>
               <Form.Control
                 name="password"
                 type="password"
@@ -373,15 +380,15 @@ const UserManagement = () => {
               />
             </Form.Group>
             <Form.Group className="mb-3">
-              <Form.Label className="fw-medium">Status</Form.Label>
+              <Form.Label className="fw-medium">Trạng thái</Form.Label>
               <Form.Select
                 name="status"
                 value={form.status}
                 onChange={handleChange}
                 aria-label="Select status"
               >
-                <option value="active">Active</option>
-                <option value="inactive">Inactive</option>
+                <option value="active">Hoạt động</option>
+                <option value="inactive">Không hoạt động</option>
               </Form.Select>
             </Form.Group>
           </Form>
@@ -392,37 +399,37 @@ const UserManagement = () => {
             onClick={() => setShowModal(false)}
             aria-label="Cancel"
           >
-            Cancel
+            Hủy
           </Button>
           <Button
             variant="primary"
             onClick={handleSubmit}
             aria-label={currentUser ? "Save user" : "Add user"}
           >
-            {currentUser ? "Save" : "Add"}
+            {currentUser ? "Lưu" : "Thêm"}
           </Button>
         </Modal.Footer>
       </Modal>
 
       <Modal show={showDeleteModal} onHide={cancelDelete} centered>
         <Modal.Header closeButton className="bg-danger text-white">
-          <Modal.Title>Confirm Delete</Modal.Title>
+          <Modal.Title>Xác nhận xóa</Modal.Title>
         </Modal.Header>
-        <Modal.Body className="p-4">Are you sure you want to delete this user?</Modal.Body>
+        <Modal.Body className="p-4">Bạn có chắc chắn muốn xóa người dùng này không?</Modal.Body>
         <Modal.Footer className="border-top-0">
           <Button
             variant="secondary"
             onClick={cancelDelete}
             aria-label="Cancel delete"
           >
-            Cancel
+            Hủy
           </Button>
           <Button
             variant="danger"
             onClick={confirmDelete}
             aria-label="Confirm delete"
           >
-            Delete
+            Xóa
           </Button>
         </Modal.Footer>
       </Modal>
