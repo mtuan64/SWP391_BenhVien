@@ -4,14 +4,14 @@ const nodemailer = require("nodemailer");
 const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
-        user: process.env.MAIL_USER, // email gửi
-        pass: process.env.MAIL_PASS  // mật khẩu app password
+        user: process.env.EMAIL_USER, // email gửi
+        pass: process.env.EMAIL_USER  // mật khẩu app password
     }
 });
 
 const sendAppointmentConfirmation = async ({ to, patientName, doctorName, date, type }) => {
     const mailOptions = {
-        from: `"Hospital Appointment" <${process.env.MAIL_USER}>`,
+        from: `"Hospital Appointment" <${process.env.EMAIL_USER}>`,
         to,
         subject: 'Appointment Confirmation',
         html: `
@@ -31,7 +31,7 @@ const sendAppointmentConfirmation = async ({ to, patientName, doctorName, date, 
 // NEW: Function gửi reminder 1 giờ trước lịch hẹn
 const sendAppointmentReminder = async ({ to, patientName, doctorName, date }) => {
     const mailOptions = {
-        from: `"Hospital Reminder" <${process.env.MAIL_USER}>`,
+        from: `"Hospital Reminder" <${process.env.EMAIL_USER}>`,
         to,
         subject: 'Appointment Reminder - 1 Hour Left',
         html: `
