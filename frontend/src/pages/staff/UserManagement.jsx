@@ -11,9 +11,10 @@ import {
   InputGroup,
   FormControl,
   Pagination,
+  Card,
+  Badge,
 } from "react-bootstrap";
-import { FaEdit, FaTrash, FaSearch } from "react-icons/fa";
-import FooterComponent from "../../components/FooterComponent";
+import { FaEdit, FaTrash, FaPlus, FaSearch, FaTimes } from "react-icons/fa";
 import axios from "axios";
 import "../../assets/css/UserManagement.css";
 
@@ -155,237 +156,208 @@ const UserManagement = () => {
   };
 
   return (
-    <>
-      <Container className="py-5">
-        <h2 className="mb-4 text-primary fw-bold">Quản lý người dùng</h2>
-
-        <Row className="align-items-end mb-4 filter-card">
-          <Col md={3} sm={12} className="mb-3">
-            <Form.Group>
-              <Form.Label>Tìm kiếm</Form.Label>
-              <InputGroup>
-                <InputGroup.Text>
-                  <FaSearch />
-                </InputGroup.Text>
+    <Container fluid className="py-5 bg-light">
+      <Card className="shadow-lg border-0 rounded-3">
+        <Card.Header className="bg-primary text-white d-flex justify-content-between align-items-center">
+          <h4 className="mb-0">Quản lý người dùng</h4>
+          <Button variant="success" onClick={handleAddNew} className="rounded-pill px-4">
+            <FaPlus className="me-2" /> Thêm mới
+          </Button>
+        </Card.Header>
+        <Card.Body>
+          <Row className="mb-4">
+            <Col md={4}>
+              <InputGroup className="rounded-pill overflow-hidden shadow-sm">
+                <InputGroup.Text className="bg-white border-0"><FaSearch /></InputGroup.Text>
                 <FormControl
-                  placeholder="Tìm kiếm theo tên, email hoặc mã người dùng..."
+                  placeholder="Tìm theo tên, email hoặc mã..."
                   value={searchQuery}
                   onChange={handleSearchChange}
-                  aria-label="Search users"
+                  className="border-0"
                 />
+                {searchQuery && (
+                  <InputGroup.Text className="bg-white border-0" onClick={handleClearFilters} style={{ cursor: 'pointer' }}>
+                    <FaTimes />
+                  </InputGroup.Text>
+                )}
               </InputGroup>
-            </Form.Group>
-          </Col>
-
-          <Col md={2} sm={12} className="mb-3">
-            <Form.Group>
-              <Form.Label>Trạng thái</Form.Label>
+            </Col>
+            <Col md={3}>
               <Form.Select
                 value={statusFilter}
                 onChange={handleStatusChange}
-                aria-label="Filter by status"
+                className="rounded-pill shadow-sm"
               >
-                <option value="all">Tất cả các trạng thái</option>
+                <option value="all">Tất cả trạng thái</option>
                 <option value="active">Hoạt động</option>
                 <option value="inactive">Không hoạt động</option>
               </Form.Select>
-            </Form.Group>
-          </Col>
-
-          <Col md={3} sm={12} className="mb-3">
-            <Button
-              variant="outline-primary"
-              onClick={handleClearFilters}
-              className="w-100"
-              aria-label="Clear filters"
-            >
-              Xóa
-            </Button>
-          </Col>
-
-          <Col md={4} sm={12} className="mb-3 text-md-end">
-            <Button
-              variant="success"
-              onClick={handleAddNew}
-              aria-label="Add new user"
-            >
-              Thêm mới
-            </Button>
-          </Col>
-        </Row>
-
-        {loading ? (
-          <div className="loading-container">
-            <Spinner animation="border" variant="primary" role="status" />
-            <p className="text-muted mt-2">Đang tải người dùng...</p>
-          </div>
-        ) : error ? (
-          <div className="error-container">
-            <h5>{error}</h5>
-            <Button
-              variant="primary"
-              onClick={() => fetchUsers(searchQuery, statusFilter, currentPage)}
-              aria-label="Retry loading users"
-            >
-              Thử lại
-            </Button>
-          </div>
-        ) : users.length === 0 ? (
-          <p className="text-muted text-center">Không tìm thấy người dùng nào.</p>
-        ) : (
-          <>
-            <div className="table-responsive">
-  <Table striped hover bordered className="align-middle text-center">
-    <thead className="table-primary">
-      <tr>
-        <th style={{ width: "5%" }}>STT</th>
-        <th style={{ width: "10%" }} className="user-code">Mã</th>
-        <th style={{ width: "15%" }}>Email</th>
-        <th style={{ width: "15%" }}>Tên</th>
-        <th style={{ width: "12%" }}>Số điện thoại</th>
-        <th style={{ width: "10%" }}>Trạng thái</th>
-        <th style={{ width: "15%" }}>Hồ sơ bệnh án</th>
-        <th style={{ width: "18%" }}>Hành động</th>
-      </tr>
-    </thead>
-    <tbody>
-      {users.map((user, index) => (
-        <tr key={user._id}>
-          <td>{(currentPage - 1) * limit + index + 1}</td>
-          <td className="user-code">{user.user_code || "N/A"}</td>
-          <td>{user.email}</td>
-          <td>{user.name}</td>
-          <td>{user.phone || "N/A"}</td>
-          <td>
-            <span className={`badge bg-${user.status === "Active" ? "success" : "secondary"}`}>
-              {user.status}
-            </span>
-          </td>
-
-          <td>
-            {user.profiles && user.profiles.length > 0
-              ? user.profiles.map((pId) => <div key={pId}>{pId}</div>)
-              : <span className="text-muted">Không có hồ sơ</span>}
-          </td>
-          <td>
-            <div className="d-flex justify-content-center gap-2">
+            </Col>
+            <Col md={2}>
               <Button
                 variant="outline-primary"
-                size="sm"
-                onClick={() => handleEdit(user)}
-                aria-label="Chỉnh sửa người dùng"
+                onClick={handleClearFilters}
+                className="rounded-pill w-100"
               >
-                <FaEdit />
+                Xóa bộ lọc
               </Button>
-              <Button
-                variant="outline-danger"
-                size="sm"
-                onClick={() => handleDeleteClick(user._id)}
-                aria-label="Xóa người dùng"
-              >
-                <FaTrash />
+            </Col>
+          </Row>
+
+          {loading ? (
+            <div className="text-center py-5">
+              <Spinner animation="border" variant="primary" />
+            </div>
+          ) : error ? (
+            <div className="text-center py-5 text-danger">
+              <h5>{error}</h5>
+              <Button variant="primary" onClick={() => fetchUsers(searchQuery, statusFilter, currentPage)}>
+                Thử lại
               </Button>
             </div>
-          </td>
-        </tr>
-      ))}
-    </tbody>
-  </Table>
-</div>
+          ) : users.length === 0 ? (
+            <p className="text-muted text-center">Không tìm thấy người dùng nào.</p>
+          ) : (
+            <>
+              <div className="table-responsive">
+                <Table striped hover className="table-align-middle">
+                  <thead className="table-primary">
+                    <tr>
+                      <th>STT</th>
+                      <th>Mã</th>
+                      <th>Email</th>
+                      <th>Tên</th>
+                      <th>SĐT</th>
+                      <th>Trạng thái</th>
+                      <th>Hồ sơ</th>
+                      <th>Hành động</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {users.map((user, index) => (
+                      <tr key={user._id}>
+                        <td>{(currentPage - 1) * limit + index + 1}</td>
+                        <td className="user-code">{user.user_code || "N/A"}</td>
+                        <td className="text-muted">{user.email}</td>
+                        <td>{user.name}</td>
+                        <td>{user.phone || "N/A"}</td>
+                        <td>
+                          <Badge bg={user.status === "active" ? "success" : "secondary"}>
+                            {user.status.charAt(0).toUpperCase() + user.status.slice(1)}
+                          </Badge>
+                        </td>
+                        <td>
+                          {user.profiles && user.profiles.length > 0 ? (
+                            user.profiles.map((pId) => <Badge key={pId} bg="secondary" className="me-1 mb-1">{pId}</Badge>)
+                          ) : (
+                            <Badge bg="warning">Không có</Badge>
+                          )}
+                        </td>
+                        <td>
+                          <Button variant="outline-primary" size="sm" className="me-2" onClick={() => handleEdit(user)}>
+                            <FaEdit />
+                          </Button>
+                          <Button variant="outline-danger" size="sm" onClick={() => handleDeleteClick(user._id)}>
+                            <FaTrash />
+                          </Button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </Table>
+              </div>
 
+              <div className="d-flex justify-content-between align-items-center mt-4">
+                <small className="text-muted">
+                  Hiển thị từ {(currentPage - 1) * limit + 1} đến{" "}
+                  {Math.min(currentPage * limit, totalItems)} / {totalItems}
+                </small>
+                <Pagination className="mb-0">
+                  <Pagination.Prev
+                    onClick={() => handlePageChange(Math.max(currentPage - 1, 1))}
+                    disabled={currentPage === 1}
+                  />
+                  {[...Array(totalPages).keys()].map((page) => (
+                    <Pagination.Item
+                      key={page + 1}
+                      active={page + 1 === currentPage}
+                      onClick={() => handlePageChange(page + 1)}
+                    >
+                      {page + 1}
+                    </Pagination.Item>
+                  ))}
+                  <Pagination.Next
+                    onClick={() => handlePageChange(Math.min(currentPage + 1, totalPages))}
+                    disabled={currentPage === totalPages}
+                  />
+                </Pagination>
+              </div>
+            </>
+          )}
+        </Card.Body>
+      </Card>
 
-          <div className="d-flex justify-content-between align-items-center mt-4">
-            <div className="text-muted">
-              Hiển thị từ {(currentPage - 1) * limit + 1} đến{" "}
-              {Math.min(currentPage * limit, totalItems)} trên tổng số {totalItems} người dùng
-            </div>
-            <Pagination>
-              <Pagination.Prev
-                onClick={() => handlePageChange(currentPage - 1)}
-                disabled={currentPage === 1}
-              />
-              {[...Array(totalPages).keys()].map((page) => (
-                <Pagination.Item
-                  key={page + 1}
-                  active={page + 1 === currentPage}
-                  onClick={() => handlePageChange(page + 1)}
-                  aria-label={`Chuyển đến trang ${page + 1}`}
-                >
-                  {page + 1}
-                </Pagination.Item>
-              ))}
-              <Pagination.Next
-                onClick={() => handlePageChange(currentPage + 1)}
-                disabled={currentPage === totalPages}
-              />
-            </Pagination>
-          </div>
-
-          </>
-        )}
-      </Container>
-
-      <Modal show={showModal} onHide={() => setShowModal(false)} centered>
+      <Modal show={showModal} onHide={() => setShowModal(false)} centered size="md">
         <Modal.Header closeButton className="bg-primary text-white">
           <Modal.Title>{currentUser ? "Chỉnh sửa người dùng" : "Thêm mới"}</Modal.Title>
         </Modal.Header>
-        <Modal.Body className="p-4">
+        <Modal.Body>
           <Form>
             {currentUser && (
               <Form.Group className="mb-3">
-                <Form.Label className="fw-medium">Mã</Form.Label>
+                <Form.Label>Mã</Form.Label>
                 <Form.Control
                   value={currentUser.user_code || "N/A"}
                   readOnly
-                  aria-label="User code (read-only)"
+                  className="rounded-pill"
                 />
               </Form.Group>
             )}
             <Form.Group className="mb-3">
-              <Form.Label className="fw-medium">Tên</Form.Label>
+              <Form.Label>Tên</Form.Label>
               <Form.Control
                 name="name"
                 value={form.name}
                 onChange={handleChange}
-                aria-label="Enter name"
+                className="rounded-pill"
               />
             </Form.Group>
             <Form.Group className="mb-3">
-              <Form.Label className="fw-medium">Email</Form.Label>
+              <Form.Label>Email</Form.Label>
               <Form.Control
                 name="email"
                 value={form.email}
                 onChange={handleChange}
-                aria-label="Enter email"
+                className="rounded-pill"
               />
             </Form.Group>
             <Form.Group className="mb-3">
-              <Form.Label className="fw-medium">Số điện thoại</Form.Label>
+              <Form.Label>Số điện thoại</Form.Label>
               <Form.Control
                 name="phone"
                 value={form.phone}
                 onChange={handleChange}
-                aria-label="Enter phone"
+                className="rounded-pill"
               />
             </Form.Group>
             <Form.Group className="mb-3">
-              <Form.Label className="fw-medium">Mật khẩu</Form.Label>
+              <Form.Label>Mật khẩu</Form.Label>
               <Form.Control
                 name="password"
                 type="password"
-                placeholder={currentUser ? "Leave blank to keep old password" : ""}
+                placeholder={currentUser ? "Để trống để giữ mật khẩu cũ" : ""}
                 value={form.password}
                 onChange={handleChange}
-                aria-label="Enter password"
+                className="rounded-pill"
               />
             </Form.Group>
             <Form.Group className="mb-3">
-              <Form.Label className="fw-medium">Trạng thái</Form.Label>
+              <Form.Label>Trạng thái</Form.Label>
               <Form.Select
                 name="status"
                 value={form.status}
                 onChange={handleChange}
-                aria-label="Select status"
+                className="rounded-pill"
               >
                 <option value="active">Hoạt động</option>
                 <option value="inactive">Không hoạt động</option>
@@ -393,50 +365,33 @@ const UserManagement = () => {
             </Form.Group>
           </Form>
         </Modal.Body>
-        <Modal.Footer className="border-top-0">
-          <Button
-            variant="secondary"
-            onClick={() => setShowModal(false)}
-            aria-label="Cancel"
-          >
+        <Modal.Footer className="border-0 pt-0">
+          <Button variant="outline-secondary" onClick={() => setShowModal(false)} className="rounded-pill px-4">
             Hủy
           </Button>
-          <Button
-            variant="primary"
-            onClick={handleSubmit}
-            aria-label={currentUser ? "Save user" : "Add user"}
-          >
+          <Button variant="primary" onClick={handleSubmit} className="rounded-pill px-4">
             {currentUser ? "Lưu" : "Thêm"}
           </Button>
         </Modal.Footer>
       </Modal>
 
-      <Modal show={showDeleteModal} onHide={cancelDelete} centered>
+      <Modal show={showDeleteModal} onHide={cancelDelete} centered size="sm">
         <Modal.Header closeButton className="bg-danger text-white">
           <Modal.Title>Xác nhận xóa</Modal.Title>
         </Modal.Header>
-        <Modal.Body className="p-4">Bạn có chắc chắn muốn xóa người dùng này không?</Modal.Body>
-        <Modal.Footer className="border-top-0">
-          <Button
-            variant="secondary"
-            onClick={cancelDelete}
-            aria-label="Cancel delete"
-          >
+        <Modal.Body>Bạn có chắc chắn muốn xóa người dùng này?</Modal.Body>
+        <Modal.Footer className="border-0">
+          <Button variant="outline-secondary" onClick={cancelDelete} className="rounded-pill px-4">
             Hủy
           </Button>
-          <Button
-            variant="danger"
-            onClick={confirmDelete}
-            aria-label="Confirm delete"
-          >
+          <Button variant="danger" onClick={confirmDelete} className="rounded-pill px-4">
             Xóa
           </Button>
         </Modal.Footer>
       </Modal>
-
-     
-    </>
+    </Container>
   );
 };
 
 export default UserManagement;
+
