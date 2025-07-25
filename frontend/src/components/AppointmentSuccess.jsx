@@ -36,7 +36,11 @@ const AppointmentSuccess = () => {
                         doctorId,
                         department,
                         appointmentDate,
-                        type: "Offline",
+                        type: "Offline", timeSlot: {
+                            startTime: new Date(selectedSlot.startTime).toISOString(),
+                            endTime: new Date(selectedSlot.endTime).toISOString(),
+                            // SỬA: Xóa status: 'Booked' để phù hợp model mới, chỉ gửi thời gian
+                        },
                     }, {
                         headers: {
                             Authorization: `Bearer ${localStorage.getItem("token")}`,

@@ -81,10 +81,10 @@ const AppointmentPage = () => {
   }, []);
 
   // NEW: Hàm validate name (không chứa số)
-    const validateName = (name) => {
-        const regex = /^[a-zA-Z\sàáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹđĐ\s]+$/; // Chỉ cho phép chữ cái, dấu tiếng Việt, và khoảng trắng
-        return regex.test(name);
-    };
+  const validateName = (name) => {
+    const regex = /^[a-zA-Z\sàáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹđĐ\s]+$/; // Chỉ cho phép chữ cái, dấu tiếng Việt, và khoảng trắng
+    return regex.test(name);
+  };
 
   // NEW: Hàm validate identityNumber
   const validateIdentityNumber = (identityNumber) => {
@@ -162,17 +162,6 @@ const AppointmentPage = () => {
         setError("Vui lòng chọn đầy đủ thông tin (hồ sơ, bác sĩ, khoa, ngày giờ).");
         return;
       }
-
-      console.log("Token:", token);
-      console.log("Data sent:", {
-        userId,
-        profileId: selectedProfile,
-        doctorId: selectedDoctor,
-        department: selectedDepartment,
-        appointmentDate: usedDate,
-        type: "Offline",
-        timeSlot,
-      });
 
       const res = await axios.post(
         "http://localhost:9999/api/user/create-link-appointment",

@@ -207,7 +207,7 @@ const ProfileManagerPage = () => {
             <div className="mt-4">
                 {displayedProfiles.length === 0 && cccdSearch === "" && !showAllProfiles && !searchTriggered ? (
                     <p>Vui lòng nhập CCCD và bấm "Tìm kiếm" hoặc nhấn "Hiển thị tất cả hồ sơ".</p>
-                ) : searchTriggered && cccdSearch && displayedProfiles.length === 0 ? (
+                ) : displayedProfiles.length === 0 ? (
                     <p>Không tìm thấy hồ sơ nào.</p>
                 ) : (
                     <Row>
