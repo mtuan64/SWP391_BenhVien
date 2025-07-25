@@ -122,87 +122,85 @@ const getAllQAUser = async (req, res) => {
 
 // Đặt lịch khám
 const createAppointment = async (req, res) => {
-  const { profileId, doctorId, department, appointmentDate, type } = req.body;
+  const { profileId, doctorId, department, appointmentDate, type, slotTime } = req.body;
   const userId = req.user.id;
 
-  const session = await mongoose.startSession(); // Bắt đầu transaction
-  session.startTransaction();
+  // const session = await mongoose.startSession(); // Bắt đầu transaction
+  // session.startTransaction();
 
   try {
-    const apptDate = new Date(appointmentDate);
+    if (!data.timeSlot || !data.timeSlot.startTime || !data.timeSlot.endTime) {
+      return res.status(400).json({ message: "Missing timeSlot or invalid structure." });
+    }
+    // ✅ Log kiểm tra
+    //console.log("👨‍⚕️ doctorId:", data.doctorId);
+    //console.log("📅 Ngày hẹn:", data.appointmentDate);
 
-    // Kiểm tra existing appointment cho doctor tại thời gian chính xác
-    const existingAppointment = await Appointment.findOne({
-      doctorId,
-      appointmentDate: apptDate,
-      status: { $ne: "Canceled" },
-    }).session(session);
-
-    if (existingAppointment) {
-      await session.abortTransaction();
-      return res.status(409).json({
-        message: "Lịch này đã được đặt bởi người khác. Vui lòng chọn thời gian khác.",
-      });
+    // ✅ Kiểm tra doctorId hợp lệ
+    if (!mongoose.Types.ObjectId.isValid(data.doctorId)) {
+      return res.status(400).json({ message: "Invalid doctorId format." });
     }
 
-    // Tìm schedule của bác sĩ cho ngày tương ứng
-    const schedule = await Schedule.findOne({
-      employeeId: doctorId,
-      date: {
-        $gte: new Date(apptDate.getFullYear(), apptDate.getMonth(), apptDate.getDate()),
-        $lt: new Date(apptDate.getFullYear(), apptDate.getMonth(), apptDate.getDate() + 1),
-      },
-    }).session(session);
+    // ✅ Chuẩn hóa ngày tìm schedule
+    const appointmentDate = new Date(data.appointmentDate);
+    const y = appointmentDate.getFullYear();
+    const m = appointmentDate.getMonth();
+    const d = appointmentDate.getDate();
 
-    if (!schedule) {
-      await session.abortTransaction();
-      return res.status(404).json({
-        message: "Không tìm thấy lịch làm việc của bác sĩ cho ngày này.",
-      });
-    }
+    const startOfDay = new Date(y, m, d, 0, 0, 0, 0);
+    const endOfDay = new Date(y, m, d, 23, 59, 59, 999);
 
-    // Kiểm tra slot chứa appointmentDate có 'Available' không
-    let slotAvailable = false;
-    let slotIndex = -1;
-    for (let i = 0; i < schedule.timeSlots.length; i++) {
-      const slot = schedule.timeSlots[i];
-      if (
-        new Date(slot.startTime) <= apptDate &&
-        new Date(slot.endTime) > apptDate &&
-        slot.status === 'Available'
-      ) {
-        slotAvailable = true;
-        slotIndex = i;
-        break;
-      }
-    }
 
-    if (!slotAvailable) {
-      await session.abortTransaction();
-      return res.status(409).json({
-        message: "Slot thời gian này đã được đặt hoặc không available. Vui lòng chọn thời gian khác.",
-      });
-    }
-
-    // Nếu OK, tạo appointment
-    const newAppointment = new Appointment({
-      userId,
-      profileId,
-      doctorId,
-      department,
-      appointmentDate,
-      type,
-      status: "Booked",
+    // ✅ Tìm schedule chính xác
+    const doctorSchedule = await Schedule.findOne({
+      employeeId: new mongoose.Types.ObjectId(data.doctorId),
+      date: { $gte: startOfDay, $lte: endOfDay }
     });
 
-    await newAppointment.save({ session });
+    //console.log("📅 Schedule tìm được:", doctorSchedule?.date);
+    if (doctorSchedule) {
+      doctorSchedule.timeSlots.forEach((slot, i) => {
+        //console.log(`⏰ Slot ${i + 1}:`, slot.startTime, "-", slot.endTime, "|", slot.status);
+      });
+    }
 
-    // Cập nhật status slot thành 'Booked'
-    schedule.timeSlots[slotIndex].status = 'Booked';
-    await schedule.save({ session });
+    const selectedSlot = doctorSchedule?.timeSlots.find(slot =>
+      new Date(slot.startTime).getTime() === new Date(data.timeSlot.startTime).getTime() &&
+      new Date(slot.endTime).getTime() === new Date(data.timeSlot.endTime).getTime()
+    );
 
-    // Commit transaction
-    await session.commitTransaction();
+    if (!selectedSlot) {
+      console.warn("❌ Không tìm thấy slot tương ứng trong Schedule.");
+    } else {
+      if (selectedSlot.status === 'Booked') {
+        return res.status(400).json({
+          message: "The selected time slot is already booked. Please choose another time."
+        });
+      }
+
+      // ✅ Đánh dấu đã đặt
+      selectedSlot.status = 'Booked';
+      await doctorSchedule.save();
+      //console.log("✅ Đã cập nhật status = Booked cho slot.");
+    }
+
+    // ✅ Tạo cuộc hẹn như cũ
+    // ✅ Tạo cuộc hẹn
+    const newAppointment = new Appointment({
+      appointmentDate: data.appointmentDate,
+      department: data.department,
+      doctorId: data.doctorId,
+      timeSlot: {
+        startTime: data.timeSlot.startTime,
+        endTime: data.timeSlot.endTime,
+        status: 'Booked',
+      },
+      type: data.type || "Offline",
+      status: data.status || "Booked",
+      reminderSent: data.reminderSent || false,
+      profileId: data.profileId,
+      userId: data.userId,
+    });
 
     // Tiếp tục gửi email xác nhận
     const [user, profile, doctor] = await Promise.all([
@@ -219,21 +217,15 @@ const createAppointment = async (req, res) => {
       type,
     });
 
-    res.status(201).json({
-      message: "Appointment created successfully.",
-      appointment: newAppointment,
-    });
+    await newAppointment.save();
+    res.status(201).json(newAppointment);
+
   } catch (error) {
-    await session.abortTransaction();
-    console.error("Error creating appointment:", error);
-    res.status(500).json({
-      message: "Failed to create appointment.",
-      error: error.message,
-    });
-  } finally {
-    session.endSession();
+    console.error("Lỗi tạo appointment:", error);
+    res.status(500).json({ message: "Lỗi server", error: error.message });
   }
 };
+
 
 // Hiển thị toàn bộ danh sách đặt lịch của chính người dùng
 const getAppointmentsByUser = async (req, res) => {

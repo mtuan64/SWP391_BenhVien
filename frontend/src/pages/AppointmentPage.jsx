@@ -171,6 +171,7 @@ const AppointmentPage = () => {
         department: selectedDepartment,
         appointmentDate: usedDate,
         type: "Offline",
+        timeSlot,
       });
 
       const res = await axios.post(
