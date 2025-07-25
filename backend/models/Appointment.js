@@ -26,13 +26,7 @@ const appointmentSchema = new mongoose.Schema(
       enum: ["Booked", "In-Progress", "Completed", "Canceled", "PendingCancel"],
       default: "Booked",
     },
-    reminderSent: { type: Boolean, default: false },
-    timeSlots: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "TimeSlot",
-      },
-    ],
+    reminderSent: { type: Boolean, default: false }
   },
   { timestamps: true }
 );
