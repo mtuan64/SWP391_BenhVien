@@ -22,8 +22,10 @@ const DoctorSidebar = () => {
   ];
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
+    localStorage.removeItem("user"); // Clear user from localStorage
+    localStorage.removeItem("token"); // Clear token from localStorage
     navigate("/login");
+    window.location.reload(); // Force reload to update Header
   };
 
   return (
