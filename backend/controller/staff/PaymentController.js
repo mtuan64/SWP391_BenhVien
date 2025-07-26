@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const Invoice = require('../../models/Invoice');
 const Payment = require('../../models/Payment');
 const crypto = require('crypto');
+const Schedule = require("../../models/Schedule");
 
 const payos = new PayOS(
     process.env.PAYOS_CLIENT_ID,
@@ -493,11 +494,26 @@ exports.createPaymentLinkEmbedded = async (req, res) => {
 exports.createPaymentLinkEmbeddedForBookAppointment = async (req, res) => {
     try {
         console.log("Request body:", req.body);
-        const { profileId, userId, doctorId, department, appointmentDate } = req.body;
+        const { profileId, userId, doctorId, department, appointmentDate, timeSlot } = req.body;
 
-        if (!userId || !profileId || !doctorId || !department || !appointmentDate) {
+        if (!userId || !profileId || !doctorId || !department || !appointmentDate || !timeSlot) {
             throw new Error("Thiếu thông tin bắt buộc");
         }
+
+        const appointmentDateObj = new Date(appointmentDate);
+        const startOfDay = new Date(appointmentDateObj.getFullYear(), appointmentDateObj.getMonth(), appointmentDateObj.getDate(), 0, 0, 0);
+        const endOfDay = new Date(appointmentDateObj.getFullYear(), appointmentDateObj.getMonth(), appointmentDateObj.getDate(), 23, 59, 59);
+        const doctorSchedule = await Schedule.findOne({
+            employeeId: new mongoose.Types.ObjectId(doctorId),
+            date: { $gte: startOfDay, $lte: endOfDay }
+        });
+        if (!doctorSchedule) throw new Error("Không tìm thấy lịch bác sĩ");
+
+        const selectedSlot = doctorSchedule.timeSlots.find(slot =>
+            new Date(slot.startTime).getTime() === new Date(timeSlot.startTime).getTime() &&
+            new Date(slot.endTime).getTime() === new Date(timeSlot.endTime).getTime()
+        );
+        if (!selectedSlot || selectedSlot.status === 'Booked') throw new Error("TimeSlot không available");
 
         const servicesID = "6878a90d732616504cf8bddc";
         const service = await Service.findById(servicesID);
@@ -510,8 +526,7 @@ exports.createPaymentLinkEmbeddedForBookAppointment = async (req, res) => {
         if (isNaN(dateObj.getTime())) throw new Error("Ngày giờ hẹn không hợp lệ");
         const date = dateObj.toISOString().split("T")[0];
         const time = dateObj.toTimeString().split(" ")[0].slice(0, 5);
-        const returnUrl = `http://localhost:5173/appointment/success?orderCode=${orderCode}&serviceId=${servicesID}&amount=${total}&userId=${userId}&profileId=${profileId}&doctorId=${doctorId}&department=${department}&date=${date}&time=${time}`;
-
+const returnUrl = `http://localhost:5173/appointment/success?orderCode=${orderCode}&serviceId=${servicesID}&amount=${total}&userId=${userId}&profileId=${profileId}&doctorId=${doctorId}&department=${department}&date=${date}&time=${time}&startTime=${encodeURIComponent(timeSlot.startTime)}&endTime=${encodeURIComponent(timeSlot.endTime)}`;
         const result = await payos.createPaymentLink({
             orderCode,
             amount: total,

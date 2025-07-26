@@ -163,6 +163,10 @@ const AppointmentPage = () => {
         return;
       }
 
+      const selectedSlot = availableTimeSlots.find(slot =>
+        new Date(slot.startTime).getTime() === new Date(selectedTime).getTime()
+      );
+
       const res = await axios.post(
         "http://localhost:9999/api/user/create-link-appointment",
         {
@@ -172,6 +176,10 @@ const AppointmentPage = () => {
           department: selectedDepartment,
           appointmentDate: usedDate,
           type: "Offline",
+          timeSlot: {
+            startTime: selectedSlot.startTime.toISOString(),
+            endTime: selectedSlot.endTime.toISOString()
+          }
         },
         {
           headers: {
@@ -224,9 +232,12 @@ const AppointmentPage = () => {
           }
         );
 
+        const now = new Date();  // Giờ hiện tại
+        const minTime = new Date(now.getTime() + 60 * 60 * 1000);  // Thêm 1 tiếng (3600000 ms)
+
         const availableSlots = res.data.flatMap((schedule) =>
           schedule.timeSlots
-            .filter((slot) => slot.status === "Available")
+            .filter((slot) => slot.status === "Available" && new Date(slot.startTime) >= minTime)
             .map((slot) => ({
               startTime: new Date(slot.startTime),
               endTime: new Date(slot.endTime),

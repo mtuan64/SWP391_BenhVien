@@ -176,7 +176,7 @@ const createAppointment = async (req, res) => {
     selectedSlot.status = 'Booked';
     await doctorSchedule.save();
 
-    // ✅ Tạo cuộc hẹn (SỬA: timeSlot chỉ lưu startTime/endTime, không status)
+    // ✅ Tạo cuộc hẹn 
     const newAppointment = new Appointment({
       appointmentDate,
       department,
@@ -184,10 +184,9 @@ const createAppointment = async (req, res) => {
       timeSlot: {
         startTime: timeSlot.startTime,
         endTime: timeSlot.endTime,
-        // SỬA: Không đặt status nữa, vì model mới không có
+        status: "Booked",
       },
       type: type || "Offline",
-      status: "Booked",
       reminderSent: false,
       profileId,
       userId,

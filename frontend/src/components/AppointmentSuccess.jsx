@@ -17,6 +17,9 @@ const AppointmentSuccess = () => {
         const department = searchParams.get("department");
         const date = searchParams.get("date"); // ISO string hoặc yyyy-MM-dd
         const time = searchParams.get("time"); // hh:mm
+        const startTime = searchParams.get("startTime");
+        const endTime = searchParams.get("endTime");
+
 
         if (orderCode && serviceId && amount && userId && profileId) {
             // 1. Gửi tạo hóa đơn
@@ -36,10 +39,11 @@ const AppointmentSuccess = () => {
                         doctorId,
                         department,
                         appointmentDate,
-                        type: "Offline", timeSlot: {
-                            startTime: new Date(selectedSlot.startTime).toISOString(),
-                            endTime: new Date(selectedSlot.endTime).toISOString(),
-                            // SỬA: Xóa status: 'Booked' để phù hợp model mới, chỉ gửi thời gian
+                        type: "Offline",
+                        timeSlot: {
+                            startTime: new Date(startTime).toISOString(),
+                            endTime: new Date(endTime).toISOString(),
+                            status: "Booked",
                         },
                     }, {
                         headers: {
@@ -60,7 +64,7 @@ const AppointmentSuccess = () => {
         <div className="container text-center mt-5">
             <h2 className="text-success">🎉 Thanh toán thành công!</h2>
             <p>Cuộc hẹn đang được xác nhận và lưu vào hệ thống.</p>
-            <a className="btn btn-primary mt-3" href="/appointmentmanage">Xem lịch hẹn</a>
+            <a className="btn btn-primary mt-3" href="/myappointments">Xem lịch hẹn</a>
         </div>
     );
 };
