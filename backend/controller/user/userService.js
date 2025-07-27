@@ -125,15 +125,15 @@ const createAppointment = async (req, res) => {
   const userId = req.user.id;
 
   try {
-    // ✅ Kiểm tra timeSlot hợp lệ
-    if (!timeSlot || !timeSlot.startTime || !timeSlot.endTime) {
-      return res.status(400).json({ message: "Thiếu thông tin timeSlot hoặc cấu trúc không hợp lệ." });
-    }
+    // // ✅ Kiểm tra timeSlot hợp lệ
+    // if (!timeSlot || !timeSlot.startTime || !timeSlot.endTime) {
+    //   return res.status(400).json({ message: "Thiếu thông tin timeSlot hoặc cấu trúc không hợp lệ." });
+    // }
 
-    // ✅ Kiểm tra doctorId đúng format
-    if (!mongoose.Types.ObjectId.isValid(doctorId)) {
-      return res.status(400).json({ message: "doctorId không hợp lệ." });
-    }
+    // // ✅ Kiểm tra doctorId đúng format
+    // if (!mongoose.Types.ObjectId.isValid(doctorId)) {
+    //   return res.status(400).json({ message: "doctorId không hợp lệ." });
+    // }
 
     // ✅ Chuẩn hóa ngày appointmentDate để tìm lịch
     const appointmentDateObj = new Date(appointmentDate);
@@ -192,20 +192,20 @@ const createAppointment = async (req, res) => {
       userId,
     });
 
-    // ✅ Gửi mail xác nhận
-    const [user, profile, doctor] = await Promise.all([
-      User.findById(userId),
-      Profile.findById(profileId),
-      Employee.findById(doctorId),
-    ]);
+    // // ✅ Gửi mail xác nhận
+    // const [user, profile, doctor] = await Promise.all([
+    //   User.findById(userId),
+    //   Profile.findById(profileId),
+    //   Employee.findById(doctorId),
+    // ]);
 
-    await sendAppointmentConfirmation({
-      to: user.email,
-      patientName: profile.name,
-      doctorName: doctor.name,
-      date: new Date(appointmentDate),
-      type,
-    });
+    // await sendAppointmentConfirmation({
+    //   to: user.email,
+    //   patientName: profile.name,
+    //   doctorName: doctor.name,
+    //   date: new Date(appointmentDate),
+    //   type,
+    // });
 
     await newAppointment.save();
     return res.status(201).json(newAppointment);
@@ -455,16 +455,69 @@ const createFeedback = async (req, res) => {
   const userId = req.user.id;
   try {
     const { content, rating, appointmentId } = req.body;
+
+    // Validation cơ bản
+    if (!content || !rating || !appointmentId) {
+      return res.status(400).json({ error: 'Thiếu thông tin: content, rating, appointmentId bắt buộc' });
+    }
+    if (rating < 1 || rating > 5) {
+      return res.status(400).json({ error: 'Rating phải từ 1 đến 5' });
+    }
+
+    // Kiểm tra appointment tồn tại và thuộc user
+    const appointment = await Appointment.findById(appointmentId).select('doctorId userId');
+    if (!appointment) {
+      return res.status(404).json({ error: 'Không tìm thấy lịch hẹn' });
+    }
+    if (appointment.userId.toString() !== userId) {
+      return res.status(403).json({ error: 'Bạn không phải chủ lịch hẹn này' });
+    }
+
+    // Lấy doctorId từ appointment
+    const doctorId = appointment.doctorId;
+
     const feedback = new Feedback({
       userId,
       appointmentId,
+      doctorId,  // Set từ appointment
       content,
       rating,
     });
     await feedback.save();
     res.status(201).json({ message: 'Feedback sent successfully', feedback });
   } catch (err) {
-    res.status(500).json({ error: 'Failed to send feedback' });
+    res.status(500).json({ error: 'Failed to send feedback', details: err.message });
+  }
+};
+
+// POST: Guest gửi feedback (không cần login)
+const createGuestFeedback = async (req, res) => {
+  try {
+    const { guestName, guestEmail, content, rating, doctorId } = req.body; // doctorId optional nếu gửi cho bác sĩ cụ thể
+
+    // Validation cơ bản
+    if (!content || !rating) {
+      return res.status(400).json({ error: 'Thiếu thông tin: content, rating bắt buộc' });
+    }
+    if (rating < 1 || rating > 5) {
+      return res.status(400).json({ error: 'Rating phải từ 1 đến 5' });
+    }
+    if (guestEmail && !/\S+@\S+\.\S+/.test(guestEmail)) { // Validate email optional
+      return res.status(400).json({ error: 'Email không hợp lệ' });
+    }
+
+    const feedback = new Feedback({
+      userId: null, // Null cho guest
+      appointmentId: null,
+      doctorId: doctorId || null, // Optional
+      guestName: guestName || 'Ẩn danh',
+      content,
+      rating,
+    });
+    await feedback.save();
+    res.status(201).json({ message: 'Feedback sent successfully', feedback });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to send feedback', details: err.message });
   }
 };
 
@@ -484,5 +537,6 @@ module.exports = {
   getAllMedicines,
   getMedicineById,
   createFeedback,
+  createGuestFeedback,
 };
 

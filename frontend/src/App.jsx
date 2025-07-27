@@ -95,6 +95,7 @@ import LabTestPage from "./pages/LabTestPage.jsx";
 import DoctorAppointments from "./pages/DoctorAppointment.jsx";
 import CreateInvoice2 from "./components/staff/CreateInvoiceTest.jsx";
 import AttendanceManagement from "./pages/admin/AttendanceManagement.jsx";
+import FeedbackList from "./pages/ListFeedback.jsx";
 
 const DRAWER_WIDTH = 240;
 
@@ -291,6 +292,7 @@ const AppRoutes = () => {
           <Route path="service/:serviceId" element={<ServiceDetail />} />
           <Route path="/department/:departmentId" element={<DepartmentDetail />} />
           <Route path="/myappointments" element={<ListAppointmentPage />} />
+          <Route path="/listfeedback" element={<FeedbackList />} />
 
 
           {/* <Route path="/medicalrecord" element={<AddMedicalRecord />} />
