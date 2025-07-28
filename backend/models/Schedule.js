@@ -7,7 +7,8 @@ const scheduleSchema = new mongoose.Schema({
   timeSlots: [{
     startTime: { type: Date, required: true },
     endTime: { type: Date, required: true },
-    status: { type: String, enum: ['Available', 'Booked', 'Unavailable'], default: 'Available' }
+    status: { type: String, enum: ['Available', 'Booked', 'Unavailable'], default: 'Available' },
+    duration: { type: Number, default: 15 }, // phút
   }]
 }, { timestamps: true });
 

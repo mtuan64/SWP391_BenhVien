@@ -1,12 +1,26 @@
 const mongoose = require('mongoose');
 
 const medicalRecordSchema = new mongoose.Schema({
-    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     profileId: { type: mongoose.Schema.Types.ObjectId, ref: 'Profile', required: true },
-    doctorId: { type: mongoose.Schema.Types.ObjectId, ref: 'Employee', required: true },
-    diagnose: { type: String, required: true },
-    treatment: { type: String, required: true },
-    notes: { type: String },
+
+    symptoms: {
+        type: String,
+    },
+    diagnosis: {
+        type: String,
+    },
+    conclusion: {
+        type: String,
+    },
+    status: { type: String, enum: ['in-progress', 'completed'], default: 'in-progress' },
+
+    doctorId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Employee"
+    },
+
+    procedureRequests: [{ type: mongoose.Schema.Types.ObjectId, ref: 'ProcedureRequest' }],
+    prescriptions: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Prescription' }],
     createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'Employee' } // Bác sĩ tạo bản ghi
 }, { timestamps: true });
 

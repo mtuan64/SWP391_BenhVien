@@ -72,7 +72,7 @@ exports.createPaymentLink = async (req, res) => {
         const paymentData = {
             orderCode: orderCode,
             amount: invoice.totalAmount,
-            description: `Pay ${invoice.invoiceNumber} for ${invoice.profileId?.name ?? "patient"}`,
+            description: `Pay for services`,
             items: (invoice.services || []).map(service => ({
                 name: service.name || 'Dịch vụ y tế',
                 quantity: 1,

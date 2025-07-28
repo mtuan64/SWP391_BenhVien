@@ -88,22 +88,22 @@ module.exports.getProfilesByDoctor = async (req, res) => {
   }
 };
 
-module.exports.getProfileById = async (req, res) => {
-  const id = req.params.profileId;
+// module.exports.getProfileById = async (req, res) => {
+//   const id = req.params.profileId;
 
-  try {
-    const profile = await Profile.findById(id).populate("doctorId medicine");
+//   try {
+//     const profile = await Profile.findById(id).populate("doctorId medicine");
 
-    if (!profile) {
-      return res.status(404).json({ message: "Profile not found" });
-    }
+//     if (!profile) {
+//       return res.status(404).json({ message: "Profile not found" });
+//     }
 
-    res.status(200).json({ data: profile });
-  } catch (err) {
-    console.error("Fetch by ID error:", err);
-    res.status(500).json({ message: "Internal server error" });
-  }
-};
+//     res.status(200).json({ data: profile });
+//   } catch (err) {
+//     console.error("Fetch by ID error:", err);
+//     res.status(500).json({ message: "Internal server error" });
+//   }
+// };
 
 module.exports.deleteProfileById = async (req, res) => {
   const { id } = req.params;
@@ -212,10 +212,12 @@ module.exports.updateProfileById = async (req, res) => {
 };
 
 module.exports.searchByIdentityNumber = async (req, res) => {
-  const { identityNumber } = req.params; // 👈 Lấy từ params chứ không phải query
+  const { identityNumber } = req.params;
 
   try {
-    const profiles = await Profile.find({ identityNumber }).populate("medicine labTestId userId doctorId");
+    const profiles = await Profile.find({ identityNumber })
+      .populate("labTestId userId doctorId")
+      .populate("medicine", "name");
     res.status(200).json({ data: profiles });
   } catch (err) {
     console.error("Search error:", err);

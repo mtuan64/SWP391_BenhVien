@@ -95,6 +95,13 @@ import LabTestPage from "./pages/LabTestPage.jsx";
 import DoctorAppointments from "./pages/DoctorAppointment.jsx";
 import CreateInvoice2 from "./components/staff/CreateInvoiceTest.jsx";
 import AttendanceManagement from "./pages/admin/AttendanceManagement.jsx";
+import TodayQueue from "./pages/staff/TodayQueue.jsx";
+import ScheduleCreate from "./pages/admin/ScheduleCreate.jsx";
+import BookingForm from "./pages/Booking.jsx";
+import CreateProfile from "./pages/TaoProfile.jsx";
+import BookingFormStaff from "./pages/staff/StaffBooking.jsx";
+import StaffCreateProfile from "./pages/staff/StaffTaoProfile.jsx";
+import AppointmentList from "./pages/staff/StaffAppointment.jsx";
 
 const DRAWER_WIDTH = 240;
 
@@ -180,9 +187,11 @@ const AppRoutes = () => {
           <Route path="/doctor" element={<DoctorLayout />}>
             <Route path="medical-profile" element={<UserMedicalProfile />} />
             <Route path="medicine" element={<MedicinePage />} />
+            <Route path="exam-queue" element={<TodayQueue />} />
+
             <Route
               path="appointments"
-              element={<DoctorAppointments/>}
+              element={<DoctorAppointments />}
             />
             <Route
               path="notifications"
@@ -207,6 +216,8 @@ const AppRoutes = () => {
             <Route path="accounts" element={<AccountManagement />} />
             <Route path="employees" element={<EmployeeManagement />} />
             <Route path="attendance" element={<AttendanceManagement />} />
+            <Route path="taolich" element={<ScheduleCreate />} />
+
           </Route>
 
           {/* Staff */}
@@ -219,9 +230,10 @@ const AppRoutes = () => {
             }
           >
             <Route index element={<BlogManagement />} />
+
             <Route path="blogs" element={<BlogManagement />} />
             <Route path="category-management" element={<CategoryManagement />} />
-            <Route path="invoices/create" element={<CreateInvoice2/>}></Route>
+            <Route path="invoices/create" element={<CreateInvoice2 />}></Route>
             <Route path="services" element={<ServiceManagement />} />
             <Route path="services/create" element={<CreateServicePage />} />
             <Route path="services/edit/:id" element={<EditServicePage />} />
@@ -235,12 +247,18 @@ const AppRoutes = () => {
               path="view/medicalrecords"
               element={<ViewMedicalRecords />}
             />
+            <Route path="datlichoffline" element={<BookingFormStaff />} />
+            <Route path="tao-ho-so" element={< StaffCreateProfile />} />
 
             <Route path="feedback" element={<FeedbackManagement />} />
             <Route path="qna" element={<QnAView />} />
-            <Route
+            {/* <Route
               path="appointments"
               element={<AppointmentScheduleManagement />}
+            /> */}
+            <Route
+              path="appointments"
+              element={<AppointmentList />}
             />
             <Route path="notifications" element={<NotificationManagement />} />
             <Route path="users" element={<UserManagement />} />
@@ -263,6 +281,7 @@ const AppRoutes = () => {
               path="notifications"
               element={<div>Notifications Page</div>}
             />
+            <Route path="today" element={<TodayQueue />} />
             <Route path="work-schedule" element={<WorkSchedulePage />} />
 
             <Route path="profile" element={<ProfileDoctor />} />
@@ -291,6 +310,8 @@ const AppRoutes = () => {
           <Route path="service/:serviceId" element={<ServiceDetail />} />
           <Route path="/department/:departmentId" element={<DepartmentDetail />} />
           <Route path="/myappointments" element={<ListAppointmentPage />} />
+          <Route path="/datlich" element={<BookingForm />} />
+          <Route path="/taoprofile" element={<CreateProfile />} />
 
 
           {/* <Route path="/medicalrecord" element={<AddMedicalRecord />} />

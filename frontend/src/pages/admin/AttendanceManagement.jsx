@@ -89,7 +89,7 @@ const AttendanceManagement = () => {
 
   const columns = [
     {
-      title: "Employee",
+      title: "Nhân Viên",
       dataIndex: ["employeeId", "name"],
     },
     {
@@ -97,18 +97,17 @@ const AttendanceManagement = () => {
       dataIndex: ["employeeId", "email"],
     },
     {
-      title: "Date",
+      title: "Ngày",
       dataIndex: "date",
-      render: (val) => dayjs(val).format("YYYY-MM-DD"),
+      render: (val) => dayjs(val).format("DD-MM-YYYY"),
     },
     {
-      title: "Check-In Time",
+      title: "Giờ Check-In",
       dataIndex: "checkInTime",
-      render: (val) => (val ? dayjs(val).format("HH:mm:ss") : "N/A"),
+      render: (val) => (val ? dayjs(val).format("HH:mm:ss") : "Không có"),
     },
-
     {
-      title: "Late",
+      title: "Đi trễ",
       render: (_, record) => {
         const mins = calculateLateMinutes(record.checkInTime, record.date);
         if (mins <= 0) return "-";
@@ -120,31 +119,37 @@ const AttendanceManagement = () => {
       },
     },
     {
-      title: "Check-Out Time",
+      title: "Giờ Check-Out",
       dataIndex: "checkOutTime",
-      render: (val) => (val ? dayjs(val).format("HH:mm:ss") : "N/A"),
+      render: (val) => (val ? dayjs(val).format("HH:mm:ss") : "Không có"),
     },
     {
-      title: "Working Duration",
+      title: "Thời Gian Làm Việc",
       dataIndex: "workingDuration",
       render: (val) => val || "-",
     },
     {
-  title: "Status",
-  render: (_, record) => {
-    if (!record.checkInTime) {
-      const deadline = dayjs(record.date).hour(deadlineHour).minute(deadlineMinute);
-      return dayjs().isAfter(deadline) ? <Tag color="red">Absent</Tag> : <Tag color="orange">Pending</Tag>;
-    }
-    return <Tag color="green">Present</Tag>;
-  },
-},
+      title: "Trạng Thái",
+      render: (_, record) => {
+        if (!record.checkInTime) {
+          const deadline = dayjs(record.date)
+            .hour(deadlineHour)
+            .minute(deadlineMinute);
+          return dayjs().isAfter(deadline) ? (
+            <Tag color="red">Vắng mặt</Tag>
+          ) : (
+            <Tag color="orange">Chưa điểm danh</Tag>
+          );
+        }
+        return <Tag color="green">Có mặt</Tag>;
+      },
+    },
     {
-      title: "Notes",
+      title: "Ghi Chú",
       dataIndex: "notes",
     },
     {
-      title: "Action",
+      title: "Thao Tác",
       render: (_, record) => (
         <Button
           onClick={() => {
@@ -152,7 +157,7 @@ const AttendanceManagement = () => {
             setNoteModal(true);
           }}
         >
-          Edit Note
+          Chỉnh Sửa Ghi Chú
         </Button>
       ),
     },
@@ -173,10 +178,10 @@ const AttendanceManagement = () => {
 
   return (
     <div className="p-4">
-      <h2 className="text-xl font-bold mb-4">Attendance Management</h2>
+      <h2 className="text-xl font-bold mb-4">Quản Lý Điểm Danh</h2>
       <div className="flex gap-4 mb-4 flex-wrap">
         <Input
-          placeholder="Search by employee name"
+          placeholder="Tìm theo tên nhân viên"
           value={filters.employeeName}
           onChange={(e) =>
             setFilters({ ...filters, employeeName: e.target.value })
@@ -185,22 +190,24 @@ const AttendanceManagement = () => {
         <Select
           value={filters.status}
           onChange={(val) => setFilters({ ...filters, status: val })}
-          placeholder="Status"
+          placeholder="Trạng thái"
           allowClear
           style={{ width: 150 }}
         >
-          <Option value="Present">Present</Option>
-          <Option value="Absent">Absent</Option>
+          <Option value="Present">Có mặt</Option>
+          <Option value="Absent">Vắng mặt</Option>
         </Select>
         <RangePicker
           value={filters.dates}
           onChange={(dates) => setFilters({ ...filters, dates })}
+          format="DD/MM/YYYY"
+          placeholder={["Ngày bắt đầu", "Ngày kết thúc"]}
         />
-        <Button onClick={() => setConfigModalOpen(true)}>
-          Edit Check-in Deadline
-        </Button>
+        {/* <Button onClick={() => setConfigModalOpen(true)}>
+          Chỉnh sửa thời gian điểm danh
+        </Button> */}
         <Button danger onClick={resetFilters}>
-          Reset Filters
+          Đặt lại bộ lọc
         </Button>
       </div>
       <Table
@@ -211,7 +218,7 @@ const AttendanceManagement = () => {
         pagination={{ pageSize: 10 }}
       />
       <Modal
-        title="Edit Note"
+        title="Chỉnh Sửa Ghi Chú"
         open={noteModal}
         onOk={handleNoteUpdate}
         onCancel={() => setNoteModal(false)}

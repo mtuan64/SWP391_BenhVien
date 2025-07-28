@@ -5,7 +5,7 @@ const transporter = nodemailer.createTransport({
   service: "gmail", // hoặc SMTP khác như Mailtrap, Outlook...
   auth: {
     user: process.env.EMAIL_USER,      // ví dụ: support.benhvien@gmail.com
-    pass: process.env.EMAIL_PASSWORD   // ứng dụng mật khẩu (app password)
+    pass: process.env.EMAIL_PASS   // ứng dụng mật khẩu (app password)
   }
 });
 

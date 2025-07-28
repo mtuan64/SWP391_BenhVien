@@ -30,6 +30,8 @@ app.use("/api/user", require("./routers/User/user.route"));
 app.use("/api/admin", require("./routers/Admin/admin.route"));
 app.use("/api/auth", require("./routers/auth/auth.route"));
 app.use("/api/doctor", require("./routers/Doctor/doctor.route"));
+app.use("/api/doctor", require("./routers/Doctor/binh"));
+
 app.use("/api/staff", require("./routers/Staff/blog.route"));
 app.use("/api/staff", require("./routers/Staff/news.route"));
 app.use("/api/staff", require("./routers/Staff/medicalrecord.route"));

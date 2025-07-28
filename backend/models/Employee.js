@@ -5,7 +5,7 @@ const employeeSchema = new mongoose.Schema({
   password: { type: String, required: true },
   name: { type: String, required: true },
   avatar: { type: String },
-  role: { type: String, enum: ['Doctor', 'Staff', 'Admin'], required: true },
+  role: { type: String, enum: ['Doctor', 'Staff', 'Admin', 'Doctor2'], required: true },
   degree: { type: String },
   expYear: { type: String },
   department: { type: mongoose.Schema.Types.ObjectId, ref: 'Department' },
