@@ -161,12 +161,23 @@ router.patch('/capnhathosobenhan/:id', async (req, res) => {
 });
 router.get('/medicalrecord/:id', async (req, res) => {
     try {
-        const record = await MedicalRecord.findById(req.params.id).populate('prescriptions');
+        const record = await MedicalRecord.findById(req.params.id)
+            .populate('prescriptions')
+            .populate({
+                path: 'procedureRequests',
+                populate: {
+                    path: 'services.serviceId',
+                    model: 'Services'
+                }
+            });
+
         if (!record) return res.status(404).json({ message: 'Không tìm thấy hồ sơ' });
+
         res.json(record);
     } catch (err) {
         res.status(500).json({ message: err.message });
     }
 });
+
 
 module.exports = router;

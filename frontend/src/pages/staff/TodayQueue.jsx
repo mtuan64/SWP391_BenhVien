@@ -107,7 +107,6 @@ const TodayQueue = () => {
         try {
             const { symptoms, diagnosis, conclusion, medicines } = formData;
             const profileId = selectedTicket.patientId._id;
-
             let medicalRecordId = selectedTicket.medicalRecordId;
 
             // Nếu chưa có hồ sơ, tạo mới
@@ -130,12 +129,16 @@ const TodayQueue = () => {
                 });
             } else {
                 // Đã có hồ sơ → chỉ cập nhật trạng thái
-                await axios.patch(`/api/doctor/updatemedicalrecord/${medicalRecordId._id}`, {
-                    symptoms, diagnosis, conclusion, status: 'Completed'
+                await axios.patch(`/api/doctor/updatemedicalrecord/${medicalRecordId._id || medicalRecordId}`, {
+                    symptoms,
+                    diagnosis,
+                    conclusion,
+                    status: 'Completed'
                 });
+
                 // Cập nhật ticket
                 await axios.patch(`/api/doctor/updateticket/${selectedTicket._id}`, {
-                    medicalRecordId,
+                    medicalRecordId: medicalRecordId._id || medicalRecordId,
                     statusMedical: 'Done'
                 });
             }
@@ -143,10 +146,39 @@ const TodayQueue = () => {
             // Nếu có thuốc thì tạo đơn
             if (medicines && medicines.length > 0) {
                 await axios.post('/api/doctor/taodonthuoc', {
-                    medicalRecordId,
+                    medicalRecordId: medicalRecordId._id || medicalRecordId,
                     medicines,
                     createdBy: doctorId
                 });
+            }
+
+            // Lấy lại medicalRecord mới nhất để lấy các dịch vụ đã chỉ định
+            const refreshedRecordRes = await axios.get(`/api/doctor/medicalrecord/${medicalRecordId._id || medicalRecordId}`);
+            const refreshedMedicalRecord = refreshedRecordRes.data;
+
+            const serviceIds = refreshedMedicalRecord.procedureRequests
+                ?.flatMap(pr => pr.services?.map(s => s.serviceId?._id))
+                .filter(Boolean);
+
+            console.log("ServiceIds:", serviceIds);
+            console.log("Tổng dịch vụ:", serviceIds.length);
+
+            if (serviceIds.length > 0) {
+                try {
+                    const res = await axios.post("http://localhost:9999/api/staff/invoices", {
+                        userId: selectedTicket.patientId.userId || null,
+                        profileId: selectedTicket.patientId._id,
+                        ArrayServiceId: serviceIds
+                    }, {
+                        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
+                    });
+
+                    console.log("Tạo hóa đơn thành công:", res.data);
+                } catch (error) {
+                    console.error("Tạo hóa đơn thất bại:", error.response?.data || error.message);
+                }
+            } else {
+                console.warn("Không có dịch vụ nào để tạo hóa đơn.");
             }
 
             alert('Đã hoàn thành khám!');
@@ -156,6 +188,7 @@ const TodayQueue = () => {
             alert('Lỗi: ' + (err.response?.data?.message || err.message));
         }
     };
+
 
     const handleAssignServices = async () => {
         try {
