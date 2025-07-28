@@ -30,6 +30,8 @@ const menuByRole = (role) => {
       { title: "Lịch Sử Q/A", path: "/qahistory", icon: <ClockCircleOutlined /> },
       { title: "Hóa đơn", path: "/invoice", icon: <DollarOutlined /> },
       { title: "FAQ", path: "/faq", icon: <QuestionCircleOutlined /> },
+      { title: "Đặt lịch", path: "/datlich", icon: <UserOutlined /> },
+      { title: "Tạo hồ sơ", path: "/taoprofile", icon: <UserOutlined /> },
     ],
   };
 
