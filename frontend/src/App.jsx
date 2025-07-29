@@ -102,6 +102,7 @@ import CreateProfile from "./pages/TaoProfile.jsx";
 import BookingFormStaff from "./pages/staff/StaffBooking.jsx";
 import StaffCreateProfile from "./pages/staff/StaffTaoProfile.jsx";
 import AppointmentList from "./pages/staff/StaffAppointment.jsx";
+import MedicalRecordPage from "./pages/Hosobenhan.jsx";
 
 const DRAWER_WIDTH = 240;
 
@@ -334,6 +335,7 @@ const AppRoutes = () => {
           <Route path="/qahistory" element={<QAHistories />} />
           <Route path="/qa" element={<SendQAForm />} />
           <Route path="/faq" element={<FAQList />} /> {/*them FAQ cho user xem*/}
+    <Route path="/medical-records/:profileId" element={<MedicalRecordPage />} />
 
           {/* Protected routes */}
           <Route

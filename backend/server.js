@@ -27,6 +27,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use("/api/user", require("./routers/User/user.route"));
+app.use("/api/user",require('./routers/User/chirouter'));
 app.use("/api/admin", require("./routers/Admin/admin.route"));
 app.use("/api/auth", require("./routers/auth/auth.route"));
 app.use("/api/doctor", require("./routers/Doctor/doctor.route"));
