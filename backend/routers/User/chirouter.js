@@ -16,11 +16,19 @@ router.get("/danhsachprofile/:userId", async (req, res) => {
 
 router.get("/hosobenhan/:profileId", async (req, res) => {
   try {
-    const records = await MedicalRecord.find({ profileId: req.params.profileId })
-      .populate("doctorId", "name")
-      .populate("procedureRequests")
-      .populate("prescriptions")
-      .sort({ createdAt: -1 });
+   const records = await MedicalRecord.find({ profileId: req.params.profileId })
+  .populate('doctorId', 'name')
+  .populate({
+    path: 'prescriptions',
+    select: 'medicines'
+  })
+  .populate({
+    path: 'procedureRequests',
+    populate: {
+      path: 'services.serviceId',
+      select: 'name'
+    }
+  });
 
     res.status(200).json(records);
   } catch (err) {

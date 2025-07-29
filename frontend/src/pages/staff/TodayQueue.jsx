@@ -214,6 +214,10 @@ const TodayQueue = () => {
                     statusMedical: 'Labtest'
                 });
             } else {
+                // Nếu nó là object, chuyển sang chuỗi id
+if (medicalRecordId && typeof medicalRecordId === 'object') {
+  medicalRecordId = medicalRecordId._id?.toString?.() || medicalRecordId.toString();
+}
                 await axios.patch(`/api/doctor/updatemedicalrecord/${medicalRecordId}`, {
                     symptoms, diagnosis, conclusion, status: 'Labtest'
                 });

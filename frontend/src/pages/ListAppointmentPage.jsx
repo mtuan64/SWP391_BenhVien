@@ -98,7 +98,7 @@ const ListAppointmentPage = () => {
           >
             <option value="">Tất cả</option>
             <option value="Booked">Đã đặt</option>
-            <option value="Completed">Đã khám</option>
+            {/* <option value="Completed">Đã khám</option> */}
             <option value="Canceled">Đã hủy</option>
           </Form.Select>
         </Form.Group>
