@@ -11,7 +11,29 @@ const bodyParser = require("body-parser");
 // App initialization
 const app = express();
 const connectDb = require("./config/db");
+const path = require("path");
+const fs = require("fs");
+const rateLimit = require('express-rate-limit');
+const router = express.Router();
 
+router.post("/verify-recaptcha", async (req, res) => {
+  const token = req.body.recaptchaToken;
+  const secret = "6LcbD5IrAAAAACmy-AxKFYShfUu7EKiXeDgevoXD";
+
+  try {
+    const verifyURL = `https://www.google.com/recaptcha/api/siteverify?secret=${secret}&response=${token}`;
+    const response = await fetch(verifyURL, { method: "POST" });
+    const data = await response.json();
+
+    if (data.success) {
+      res.json({ success: true });
+    } else {
+      res.status(400).json({ success: false, message: "Captcha verification failed" });
+    }
+  } catch (err) {
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
 // CORS configuration
 const corsOptions = {
   origin: ["http://localhost:5173"],
@@ -19,12 +41,37 @@ const corsOptions = {
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true,
 };
-
+// const chatRoute = require("./routers/chat.route");
+const port = process.env.PORT || 9999;
 // Middleware setup
 app.use(morgan("dev"));
 app.use(cors(corsOptions));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+const limiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 100,
+  message: 'Quá nhiều request, vui lòng thử lại sau!'
+});
+app.use(limiter);
+
+// Routes
+// app.use("/api", chatRoute);  // Endpoint: /api/chat
+
+// Route test
+app.get('/', (req, res) => {
+  res.send('Server đang chạy!');
+});
+
+// Error handler
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).send('Có lỗi server!');
+});
+
 
 app.use("/api/user", require("./routers/User/user.route"));
 app.use("/api/user",require('./routers/User/chirouter'));

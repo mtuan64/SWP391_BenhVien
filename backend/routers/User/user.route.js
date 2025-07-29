@@ -1,14 +1,32 @@
 const { authMiddleware } = require("../../middleware/auth.middleware");
 const express = require("express");
 const verifyToken = require("../../middleware/verifyToken");
+const multer = require("multer");
+const path = require("path");
+const fs = require("fs");
+const User = require("../../models/User");
+function authenticateToken(req, res, next) {
+  const authHeader = req.headers["authorization"];
+  const token = authHeader && authHeader.split(" ")[1];
+  if (!token) return res.status(401).json({ message: "Unauthorized" });
+
+  jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+    if (err) return res.status(403).json({ message: "Token không hợp lệ" });
+    req.user = user;
+    next();
+  });
+}
 const userService = require("../../controller/user/userService");
 const userRouter = express.Router();
-const User = require("../../models/User"); // đường dẫn đúng đến file User.js
+ // đường dẫn đúng đến file User.js
 const Department = require("../../models/Department");
+
 
 const { verifyToken1 } = require("../../middleware/tokencheck");
 const Employee = require("../../models/Employee");
 // Update user by ID
+
+
 userRouter.put("/update", async (req, res) => {
   try {
     const { email, name, phone, status, department, specialization } = req.body;
