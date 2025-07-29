@@ -115,7 +115,7 @@ userRouter.get("/", (req, res) => {
 });
 
 userRouter.post("/create", authMiddleware, createAppointment);
-userRouter.get("/user", authMiddleware, getAppointmentsByUser);
+userRouter.get("/user", getAppointmentsByUser);
 userRouter.post("/cancel/:id", authMiddleware, cancelAppointment);
 userRouter.post('/createFeedback', authMiddleware, createFeedback);
 
