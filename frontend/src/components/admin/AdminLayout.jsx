@@ -24,7 +24,9 @@ const AdminLayout = () => {
     { key: "2", path: "/admin/accounts", icon: <UserOutlined />, label: "Quản Lý Người Dùng" },
     { key: "3", path: "/admin/employees", icon: <TeamOutlined />, label: "Quản Lý Nhân Viên" },
     { key: "4", path: "/admin/attendance", icon: <TeamOutlined />, label: "Quản Lý Điểm Danh" },
-    { key: "5", path: null, icon: <LogoutOutlined />, label: "Đăng Xuất", onClick: () => handleLogout() },
+    { key: "5", path: "/admin/taolich", icon: <TeamOutlined />, label: "Quản lí lịch làm việc bác sĩ" },
+
+    { key: "6", path: null, icon: <LogoutOutlined />, label: "Đăng Xuất", onClick: () => handleLogout() },
   ];
 
   // Handle logout
