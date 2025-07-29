@@ -17,14 +17,37 @@ const AboutPage = () => {
             </small>
           </Col>
           <Col md={6} className="text-end">
-            <small className="text-muted me-4">
-              <i className="fa fa-envelope-open text-primary me-2"></i>
-              contact@kiwicare.com
-            </small>
-            <small className="text-muted">
+          <small>
               <i className="fa fa-phone-alt text-primary me-2"></i>
-              +987 654 3210
+ <a href="https://www.google.com/maps?q=Trường+Đại+học+FPT+Hà+Nội" target="_blank" rel="noopener noreferrer"
+    style={{ textDecoration: 'none',  }}>
+  📍 Đại học FPT Hà Nội
+</a>
+
+
+
             </small>
+            <small className="me-4">
+              <i className="fa fa-envelope-open text-primary me-2"></i>
+              <a href="mailto:ngochiine@gmail.com"
+              rel="noopener noreferrer"
+    style={{ textDecoration: 'none' }}>
+  📩 kiwicare@gmail.com
+</a>
+
+            </small>
+            <small>
+  <i className="fa fa-phone-alt text-primary me-2"></i>
+  <a
+    href="https://zalo.me/0941458055"
+    target="_blank"
+    rel="noopener noreferrer"
+    style={{ textDecoration: 'none' }}
+  >
+    📞 0941458055
+  </a>
+</small>
+
           </Col>
         </Row>
       </div>
