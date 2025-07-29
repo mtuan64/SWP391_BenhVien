@@ -298,12 +298,14 @@ const HomePage = () => {
                   >
                     Đặt Lịch Hẹn
                   </Link>
-                  <Link
-                    to="/contact"
-                    className="btn btn-outline-light btn-lg px-4 shadow"
-                  >
-                    Liên Hệ
-                  </Link>
+                  <a
+  href="https://zalo.me/0941458055"
+  target="_blank"
+  rel="noopener noreferrer"
+  className="btn btn-outline-light btn-lg px-4 shadow"
+>
+  Liên Hệ
+</a>
                 </div>
               </div>
             </div>
