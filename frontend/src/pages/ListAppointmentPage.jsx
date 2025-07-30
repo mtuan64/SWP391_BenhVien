@@ -1,268 +1,222 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useAuth } from "../context/authContext";
-import { Table, Button, Spinner, Alert, Form, Modal } from "react-bootstrap";
+import { Table, Button, Spinner, Alert, Form } from "react-bootstrap";
 
 const ListAppointmentPage = () => {
-    const { token } = useAuth();
-    const [appointments, setAppointments] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [totalAppointments, setTotalAppointments] = useState(0);
-    const [currentPage, setCurrentPage] = useState(1);
-    const [appointmentsPerPage] = useState(10);
-    const [filterStatus, setFilterStatus] = useState("booked");
+  const { token } = useAuth();
+  const [appointments, setAppointments] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [totalAppointments, setTotalAppointments] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [appointmentsPerPage] = useState(10);
 
-    const [showFeedbackModal, setShowFeedbackModal] = useState(false);
-    const [selectedAppointmentId, setSelectedAppointmentId] = useState(null);
-    const [feedbackData, setFeedbackData] = useState({ content: "", rating: 5 });
+  const [filterStatus, setFilterStatus] = useState("");
+  const [filterDoctor, setFilterDoctor] = useState("");
+  const [filterDepartment, setFilterDepartment] = useState("");
+  const [filterDate, setFilterDate] = useState("");
 
-    const fetchAppointments = async () => {
-        try {
-            const res = await axios.get(
-                `/api/user/user?page=${currentPage}&limit=${appointmentsPerPage}`,
-                {
-                    headers: { Authorization: `Bearer ${token}` },
-                }
-            );
+  const [doctors, setDoctors] = useState([]);
+  const [departments, setDepartments] = useState([]);
 
-            const data = res.data;
-            const appointmentsData = Array.isArray(data)
-                ? data
-                : data.appointments || [];
+  const userId = JSON.parse(localStorage.getItem("user"))._id;
 
-            setAppointments(appointmentsData);
-            setTotalAppointments(data.totalAppointments || appointmentsData.length);
-        } catch (err) {
-            console.error("Lỗi lấy dữ liệu lịch hẹn:", err);
-            setAppointments([]);
-            setTotalAppointments(0);
-        } finally {
-            setLoading(false);
-        }
-    };
+  const fetchAppointments = async () => {
+    setLoading(true);
+    try {
+      const params = {
+        page: currentPage,
+        limit: appointmentsPerPage,
+        userId,
+        ...(filterStatus && { status: filterStatus }),
+        ...(filterDoctor && { doctorId: filterDoctor }),
+        ...(filterDepartment && { departmentId: filterDepartment }),
+        ...(filterDate && { date: filterDate }),
+      };
 
-    useEffect(() => {
-        setLoading(true);
-        fetchAppointments();
-    }, [currentPage]);
+      const res = await axios.get(`/api/user/user`, {
+        params,
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
-    const handleCancel = async (id) => {
-        if (!window.confirm("Bạn có chắc muốn hủy lịch hẹn này?")) return;
-        try {
-            await axios.post(
-                `http://localhost:9999/api/user/cancel/${id}`,
-                {},
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                }
-            );
-            setAppointments((prev) =>
-                prev.map((a) => (a._id === id ? { ...a, status: "Canceled" } : a))
-            );
-        } catch (err) {
-            console.error("Cancel failed", err);
-            alert("Hủy lịch hẹn thất bại. Vui lòng thử lại.");
-        }
-    };
+      setAppointments(res.data.appointments || []);
+      setTotalAppointments(res.data.totalAppointments || 0);
+    } catch (err) {
+      console.error("Lỗi lấy dữ liệu lịch hẹn:", err);
+      setAppointments([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    const openFeedbackModal = (appointmentId) => {
-        setSelectedAppointmentId(appointmentId);
-        setShowFeedbackModal(true);
-    };
+  // Lấy danh sách chuyên khoa khi trang được load
+  useEffect(() => {
+    axios
+      .get("/api/departments", {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      .then((res) => setDepartments(res.data.departments || []))
+      .catch((err) => console.error("Lỗi lấy chuyên khoa:", err));
+  }, []);
 
-    const handleSendFeedback = async () => {
-        try {
-            await axios.post(
-                "/api/user/createFeedback",
-                {
-                    content: feedbackData.content,
-                    rating: feedbackData.rating,
-                    appointmentId: selectedAppointmentId,
-                },
-                {
-                    headers: { Authorization: `Bearer ${token}` },
-                }
-            );
-            setShowFeedbackModal(false);
-            alert("Gửi phản hồi thành công!");
-        } catch (err) {
-            console.error("Gửi feedback thất bại:", err);
-            alert("Gửi phản hồi thất bại.");
-        }
-    };
+  // Khi chọn chuyên khoa thì load bác sĩ theo khoa
+  useEffect(() => {
+    if (filterDepartment) {
+      axios
+        .get(`/api/staff/employees?department=${filterDepartment}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+        .then((res) => setDoctors(res.data || []))
+        .catch((err) => console.error("Lỗi lấy bác sĩ theo khoa:", err));
+    } else {
+      setDoctors([]);
+    }
+  }, [filterDepartment]);
 
-    const filteredAppointments =
-        filterStatus === "booked"
-            ? appointments.filter((a) => a.status === "Booked")
-            : appointments;
+  useEffect(() => {
+    fetchAppointments();
+  }, [currentPage, filterStatus, filterDoctor, filterDepartment, filterDate]);
 
-    const totalPages = Math.ceil(totalAppointments / appointmentsPerPage);
+  const formatTime = (dateStr) =>
+    new Date(dateStr).toLocaleTimeString("vi-VN", {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
 
-    return (
-        <div className="container py-4">
-            <div className="d-flex justify-content-between align-items-center mb-3">
-                <h2 className="text-primary fw-bold">Lịch hẹn của bạn</h2>
-                <Form.Select
-                    value={filterStatus}
-                    onChange={(e) => setFilterStatus(e.target.value)}
-                    style={{ width: 200 }}
-                >
-                    <option value="all">Tất cả lịch hẹn</option>
-                    <option value="booked">Lịch đã đặt</option>
-                </Form.Select>
-            </div>
+  const totalPages = Math.ceil(totalAppointments / appointmentsPerPage);
 
-            {loading ? (
-                <Spinner animation="border" variant="primary" />
-            ) : filteredAppointments.length === 0 ? (
-                <Alert variant="info">Không có lịch hẹn nào phù hợp.</Alert>
-            ) : (
-                <div className="table-responsive">
-                    <Table bordered hover className="align-middle">
-                        <thead>
-                            <tr>
-                                <th>Bác sĩ</th>
-                                <th>Chuyên khoa</th>
-                                <th>Hồ sơ bệnh nhân</th>
-                                <th>Ngày</th>
-                                <th>Loại</th>
-                                <th>Trạng thái</th>
-                                <th>Hành động</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {filteredAppointments.map((app) => (
-                                <tr key={app._id}>
-                                    <td>{app.doctorId?.name || "(Không rõ)"}</td>
-                                    <td>{app.department?.name || app.doctorId?.department || ""}</td>
-                                    <td>{app.profileId?.name || "(Không rõ)"}</td>
-                                    <td>
-                                        {app.appointmentDate
-                                            ? new Date(app.appointmentDate).toLocaleString("vi-VN")
-                                            : ""}
-                                    </td>
-                                    <td>{app.type === "Online" ? "Online" : "Tại viện"}</td>
-                                    <td>
-                                        <span
-                                            className={
-                                                "badge " +
-                                                (app.status === "Booked"
-                                                    ? "bg-warning"
-                                                    : app.status === "Completed"
-                                                        ? "bg-success"
-                                                        : app.status === "Canceled"
-                                                            ? "bg-secondary"
-                                                            : "bg-info")
-                                            }
-                                        >
-                                            {app.status === "Booked"
-                                                ? "Đã đặt"
-                                                : app.status === "Completed"
-                                                    ? "Đã khám"
-                                                    : app.status === "Canceled"
-                                                        ? "Đã hủy"
-                                                        : app.status}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        {app.status === "Booked" ? (
-                                            <Button
-                                                variant="danger"
-                                                size="sm"
-                                                onClick={() => handleCancel(app._id)}
-                                            >
-                                                Hủy
-                                            </Button>
-                                        ) : app.status === "Completed" ? (
-                                            <Button
-                                                variant="info"
-                                                size="sm"
-                                                onClick={() => openFeedbackModal(app._id)}
-                                            >
-                                                Gửi Feedback
-                                            </Button>
-                                        ) : (
-                                            "-"
-                                        )}
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </Table>
-                </div>
-            )}
+  return (
+    <div className="container py-4">
+      <h2 className="text-primary fw-bold mb-3">Lịch hẹn của bạn</h2>
 
-            {/* Pagination */}
-            <div className="d-flex justify-content-between align-items-center mt-3">
-                <h6 className="text-muted">Tổng số lịch hẹn: {totalAppointments}</h6>
-                <div>
-                    <Button
-                        variant="secondary"
-                        onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
-                        disabled={currentPage === 1}
-                        className="me-2"
-                    >
-                        Trước
-                    </Button>
-                    <span>{`Trang ${currentPage} / ${totalPages}`}</span>
-                    <Button
-                        variant="secondary"
-                        onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
-                        disabled={currentPage === totalPages}
-                        className="ms-2"
-                    >
-                        Sau
-                    </Button>
-                </div>
-            </div>
+      <Form className="row g-3 mb-4">
+        <Form.Group className="col-md-3">
+          <Form.Label>Trạng thái</Form.Label>
+          <Form.Select
+            value={filterStatus}
+            onChange={(e) => setFilterStatus(e.target.value)}
+          >
+            <option value="">Tất cả</option>
+            <option value="Booked">Đã đặt</option>
+            {/* <option value="Completed">Đã khám</option> */}
+            <option value="Canceled">Đã hủy</option>
+          </Form.Select>
+        </Form.Group>
+        <Form.Group className="col-md-3">
+          <Form.Label>Chuyên khoa</Form.Label>
+          <Form.Select
+            value={filterDepartment}
+            onChange={(e) => setFilterDepartment(e.target.value)}
+          >
+            <option value="">Tất cả</option>
+            {departments.map((d) => (
+              <option key={d._id} value={d._id}>
+                {d.name}
+              </option>
+            ))}
+          </Form.Select>
+        </Form.Group>
+        <Form.Group className="col-md-3">
+          <Form.Label>Bác sĩ</Form.Label>
+          <Form.Select
+            value={filterDoctor}
+            onChange={(e) => setFilterDoctor(e.target.value)}
+          >
+            <option value="">Tất cả</option>
+            {doctors.map((d) => (
+              <option key={d._id} value={d._id}>
+                {d.name}
+              </option>
+            ))}
+          </Form.Select>
+        </Form.Group>
+        <Form.Group className="col-md-3">
+          <Form.Label>Ngày</Form.Label>
+          <Form.Control
+            type="date"
+            value={filterDate}
+            onChange={(e) => setFilterDate(e.target.value)}
+          />
+        </Form.Group>
+      </Form>
 
-            {/* Feedback Modal */}
-            <Modal show={showFeedbackModal} onHide={() => setShowFeedbackModal(false)}>
-                <Modal.Header closeButton>
-                    <Modal.Title>Gửi Feedback</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                    <Form>
-                        <Form.Group>
-                            <Form.Label>Nội dung</Form.Label>
-                            <Form.Control
-                                as="textarea"
-                                value={feedbackData.content}
-                                onChange={(e) =>
-                                    setFeedbackData({ ...feedbackData, content: e.target.value })
-                                }
-                            />
-                        </Form.Group>
-                        <Form.Group className="mt-3">
-                            <Form.Label>Đánh giá</Form.Label>
-                            <Form.Select
-                                value={feedbackData.rating}
-                                onChange={(e) =>
-                                    setFeedbackData({ ...feedbackData, rating: Number(e.target.value) })
-                                }
-                            >
-                                {[1, 2, 3, 4, 5].map((n) => (
-                                    <option key={n} value={n}>
-                                        {n} sao
-                                    </option>
-                                ))}
-                            </Form.Select>
-                        </Form.Group>
-                    </Form>
-                </Modal.Body>
-                <Modal.Footer>
-                    <Button variant="secondary" onClick={() => setShowFeedbackModal(false)}>
-                        Hủy
-                    </Button>
-                    <Button variant="primary" onClick={handleSendFeedback}>
-                        Gửi
-                    </Button>
-                </Modal.Footer>
-            </Modal>
+      {loading ? (
+        <Spinner animation="border" variant="primary" />
+      ) : appointments.length === 0 ? (
+        <Alert variant="info">Không có lịch hẹn phù hợp.</Alert>
+      ) : (
+        <Table bordered hover responsive className="align-middle">
+          <thead>
+            <tr>
+              <th>Bác sĩ</th>
+              <th>Khoa</th>
+              <th>Hồ sơ</th>
+              <th>Ngày</th>
+              <th>Giờ</th>
+              <th>Loại</th>
+              <th>Trạng thái</th>
+            </tr>
+          </thead>
+          <tbody>
+            {appointments.map((app) => (
+              <tr key={app._id}>
+                <td>{app.doctorId?.name || "Không rõ"}</td>
+                <td>{app.department?.name || app.doctorId?.department || ""}</td>
+                <td>{app.profileId?.name || "Không rõ"}</td>
+                <td>
+                  {new Date(app.appointmentDate).toLocaleDateString("vi-VN")}
+                </td>
+                <td>
+                  {app.timeSlot?.startTime
+                    ? `${formatTime(app.timeSlot.startTime)} - ${formatTime(app.timeSlot.endTime)}`
+                    : "Không rõ"}
+                </td>
+                <td>{app.type === "Online" ? "Online" : "Tại viện"}</td>
+                <td>
+                  <span
+                    className={`badge bg-${
+                      app.status === "Booked"
+                        ? "warning"
+                        : app.status === "Completed"
+                        ? "success"
+                        : "secondary"
+                    }`}
+                  >
+                    {app.status === "Booked"
+                      ? "Đã đặt"
+                      : app.status === "Completed"
+                      ? "Đã khám"
+                      : "Đã hủy"}
+                  </span>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </Table>
+      )}
+
+      <div className="d-flex justify-content-between mt-3">
+        <span className="text-muted">Tổng số: {totalAppointments}</span>
+        <div>
+          <Button
+            variant="secondary"
+            disabled={currentPage === 1}
+            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+          >
+            Trước
+          </Button>{" "}
+          <span>{`Trang ${currentPage} / ${totalPages}`}</span>{" "}
+          <Button
+            variant="secondary"
+            disabled={currentPage === totalPages}
+            onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+          >
+            Sau
+          </Button>
         </div>
-    );
+      </div>
+    </div>
+  );
 };
 
 export default ListAppointmentPage;

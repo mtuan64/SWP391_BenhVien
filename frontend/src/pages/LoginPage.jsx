@@ -4,15 +4,27 @@ import { useAuth } from "../context/authContext";
 import "../assets/css/Login.css";
 import { Modal } from "antd";
 
+import ReCAPTCHA from "react-google-recaptcha";
+import { auth, googleProvider } from "../firebase";
+import { signInWithPopup } from "firebase/auth";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
+
+const RECAPTCHA_SITE_KEY = "6LcbD5IrAAAAAPX5M_8OhjdRBfht_ZIfok4-hBaG";
 const LoginPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const { login } = useAuth();
+  const [recaptchaToken, setRecaptchaToken] = useState("");
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!recaptchaToken) {
+      alert("Vui lòng xác minh reCAPTCHA");
+      return;
+    }
     try {
       const response = await fetch("http://localhost:9999/api/auth/login", {
         method: "POST",
@@ -20,6 +32,7 @@ const LoginPage = () => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ email, password }),
+        recaptchaToken,
       });
 
       const data = await response.json();
@@ -67,6 +80,50 @@ const LoginPage = () => {
       alert("An error occurred. Please try again.");
     }
   };
+
+  const handleGoogleLogin = async () => {
+    try {
+      const result = await signInWithPopup(auth, googleProvider);
+      const user = result.user;
+  
+      // ✅ Gửi dữ liệu user Google lên backend để xử lý đăng nhập/đăng ký
+      const response = await fetch("http://localhost:9999/api/auth/oauth-login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: user.email,
+          name: user.displayName,
+          phone: user.phoneNumber || "", // hoặc "" nếu không có
+          provider: "google",
+        }),
+      });
+  
+      const data = await response.json();
+  
+      if (response.ok) {
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("user", JSON.stringify(data.user));
+        alert("Đăng nhập bằng Google thành công!");
+        // ✅ Lưu token nếu server trả về
+        
+         const role = data.user.role || "patient";
+        if (role === "patient") {
+          navigate("/");
+        } else {
+          navigate("/");
+        }
+      } else {
+        alert(data.message || "Đăng nhập thất bại");
+      }
+    } catch (err) {
+      console.error("Google Login Error:", err);
+      alert("Lỗi khi đăng nhập bằng Google");
+    }
+    
+  };
+
 
   return (
     <div className="loginContainer">
@@ -125,7 +182,7 @@ const LoginPage = () => {
                     userSelect: "none",
                   }}
                 >
-                  {showPassword ? "Ẩn" : "Hiện"}
+                  <FontAwesomeIcon icon={showPassword ? faEye : faEyeSlash} />
                 </span>
               </div>
             </div>
@@ -133,12 +190,29 @@ const LoginPage = () => {
             <div className="forgotPasswordLink">
               <a href="/forgot-password">Bạn quên mật khẩu ?</a>
             </div>
+            <div className="formGroup">
+                           <ReCAPTCHA
+                            sitekey={RECAPTCHA_SITE_KEY}
+                            onChange={(token) => setRecaptchaToken(token)}
+                          />
+                        </div>
             <button type="submit" className="loginButton">
               Đăng Nhập
             </button>
           </form>
           <div className="signupLink">
             Bạn Chưa Có Tài Khoản? <a href="/register">Đăng Ký</a>
+          </div>
+          <div className="socialLogin">
+            <p>Hoặc đăng nhập với:</p>
+            {/* Nút Google */}
+  <button onClick={handleGoogleLogin} className="socialBtn google">
+    <img
+      src="https://upload.wikimedia.org/wikipedia/commons/4/4a/Logo_2013_Google.png"
+      alt="Google"
+      style={{ width: "70px", marginRight: "20px", marginLeft: "50px" }}
+    />
+  </button>
           </div>
         </div>
       </div>

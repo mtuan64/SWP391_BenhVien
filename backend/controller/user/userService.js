@@ -194,25 +194,69 @@ const createAppointment = async (req, res) => {
 
 // Hiển thị toàn bộ danh sách đặt lịch của chính người dùng
 const getAppointmentsByUser = async (req, res) => {
-  const userId = req.user.id;
-  const page = parseInt(req.query.page) || 1; // Mặc định là trang 1
-  const limit = parseInt(req.query.limit) || 10; // Mặc định là 10 bản ghi mỗi trang
-  const skip = (page - 1) * limit; // Tính toán số lượng bản ghi bỏ qua
+  const userId = req.query.userId;
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 10;
+  const skip = (page - 1) * limit;
+
+  const { doctorId, department, status, date } = req.query;
 
   try {
-    // Lấy tổng số cuộc hẹn để tính toán tổng số trang
-    const totalAppointments = await Appointment.countDocuments({ userId });
-    const totalPages = Math.ceil(totalAppointments / limit);
-    // Lấy các cuộc hẹn theo phân trang
-    const appointments = await Appointment.find({ userId })
-      .populate('profileId doctorId')
-      .populate("department", "name") // NEW: Populate department để lấy name
-      .sort({ appointmentDate: -1 })
-      .skip(skip) // Bỏ qua số lượng bản ghi trước đó
-      .limit(limit); // Giới hạn số bản ghi trả về
+    // Lấy danh sách hồ sơ của user
+    const profiles = await Profile.find({ userId }).select("_id");
+    if (!profiles || profiles.length === 0) {
+      return res.status(200).json({
+        appointments: [],
+        totalAppointments: 0,
+        totalPages: 0,
+        currentPage: page,
+        perPage: limit,
+      });
+    }
 
-    // Trả về kết quả phân trang
-    res.status(200).json({
+    const profileIds = profiles.map((p) => p._id);
+    const query = { profileId: { $in: profileIds } };
+
+    // ✅ Lọc theo bác sĩ hoặc department
+    if (doctorId) {
+      query.doctorId = doctorId;
+    } else if (department) {
+      const doctorsInDept = await Employee.find({ department }).select("_id");
+      if (!doctorsInDept.length) {
+        // ❗ Nếu không có bác sĩ nào trong khoa → trả về luôn danh sách rỗng
+        return res.status(200).json({
+          appointments: [],
+          totalAppointments: 0,
+          totalPages: 0,
+          currentPage: page,
+          perPage: limit,
+        });
+      }
+      const doctorIds = doctorsInDept.map((d) => d._id);
+      query.doctorId = { $in: doctorIds };
+    }
+
+    if (status) query.status = status;
+
+    if (date) {
+      const start = new Date(date);
+      start.setHours(0, 0, 0, 0);
+      const end = new Date(date);
+      end.setHours(23, 59, 59, 999);
+      query.appointmentDate = { $gte: start, $lte: end };
+    }
+
+    const totalAppointments = await Appointment.countDocuments(query);
+    const totalPages = Math.ceil(totalAppointments / limit);
+
+    const appointments = await Appointment.find(query)
+      .populate("profileId doctorId")
+      .populate("department", "name")
+      .sort({ appointmentDate: -1 })
+      .skip(skip)
+      .limit(limit);
+
+    return res.status(200).json({
       appointments,
       totalAppointments,
       totalPages,
@@ -220,7 +264,11 @@ const getAppointmentsByUser = async (req, res) => {
       perPage: limit,
     });
   } catch (err) {
-    res.status(500).json({ message: 'Failed to get appointments', error: err.message });
+    console.error("Lỗi khi lấy cuộc hẹn:", err);
+    return res.status(500).json({
+      message: "Failed to get appointments",
+      error: err.message,
+    });
   }
 };
 
