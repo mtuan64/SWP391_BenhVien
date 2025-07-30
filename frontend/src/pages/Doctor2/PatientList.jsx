@@ -4,8 +4,10 @@ import { useNavigate } from 'react-router-dom';
 
 const PatientList = () => {
   const [procedureRequests, setProcedureRequests] = useState([]);
+  const [filteredRequests, setFilteredRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [selectedDate, setSelectedDate] = useState(() => new Date().toISOString().split('T')[0]);
 
   const user = JSON.parse(localStorage.getItem('user'));
   const token = localStorage.getItem('token');
@@ -50,16 +52,36 @@ const PatientList = () => {
     fetchProcedureRequests();
   }, [fetchProcedureRequests]);
 
+  useEffect(() => {
+    // Filter requests based on selected date
+    const filtered = procedureRequests.filter(request => {
+      if (!request.requestedAt) return false;
+      const requestDate = new Date(request.requestedAt).toISOString().split('T')[0];
+      return requestDate === selectedDate;
+    });
+    setFilteredRequests(filtered);
+  }, [procedureRequests, selectedDate]);
+
   return (
     <div className="p-6 max-w-6xl mx-auto bg-white rounded-lg shadow-lg">
+      <div className="flex items-center gap-4 mb-6">
+        <label className="font-semibold">Chọn ngày:</label>
+        <input
+          type="date"
+          value={selectedDate}
+          onChange={(e) => setSelectedDate(e.target.value)}
+          className="border px-3 py-1 rounded"
+        />
+      </div>
+
       {error && (
         <p className="text-red-500 mb-4 font-medium">{error}</p>
       )}
 
       {loading ? (
         <p className="text-gray-600 italic">Đang tải dữ liệu...</p>
-      ) : procedureRequests.length === 0 ? (
-        <p className="text-gray-600 italic">Không có bệnh nhân nào trong danh sách.</p>
+      ) : filteredRequests.length === 0 ? (
+        <p className="text-gray-600 italic">Không có yêu cầu xét nghiệm nào cho ngày đã chọn.</p>
       ) : (
         <div className="overflow-auto rounded-lg border">
           <table className="min-w-full text-sm">
@@ -75,7 +97,7 @@ const PatientList = () => {
               </tr>
             </thead>
             <tbody>
-              {procedureRequests.map((request, index) => (
+              {filteredRequests.map((request, index) => (
                 <tr key={request._id} className="hover:bg-gray-50">
                   <td className="px-4 py-2 border">{index + 1}</td>
                   <td className="px-4 py-2 border">{request.profile?.name || 'N/A'}</td>
