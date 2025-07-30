@@ -84,9 +84,26 @@ const Signup = async (req, res) => {
     return res.status(400).json({ error: "Missing request body" });
   }
 
-  const { email, password, name, phone } = req.body;
+  const { email, password, name, phone, recaptchaToken } = req.body;
 
+  
   try {
+
+    const secretKey = process.env.RECAPTCHA_SECRET_KEY;
+    const verifyUrl = `https://www.google.com/recaptcha/api/siteverify`;
+
+    const { data } = await axios.post(
+      verifyUrl,
+      new URLSearchParams({
+        secret: secretKey,
+        response: recaptchaToken,
+      }),
+    );
+
+    if (!data.success) {
+      return res.status(400).json({ message: "Xác minh reCAPTCHA thất bại" });
+    }
+
     // 1) Kiểm tra email đã tồn tại chưa
     const emailExist = await User.findOne({ email });
     if (emailExist) {
@@ -132,6 +149,67 @@ const check = async (req, res) => {
   res.status(200).json({ message: "API hoat dong" });
 };
 
+const oauthLogin = async (req, res) => {
+  const { email, name, phone, provider } = req.body;
+
+  if (!email || !provider) {
+    return res.status(400).json({ message: "Thiếu thông tin OAuth" });
+  }
+
+  try {
+    let user = await User.findOne({ email });
+
+    if (!user) {
+      // Nếu user chưa tồn tại, tạo mới
+      user = new User({
+        email,
+        name,
+        phone: phone || "N/A",
+        status: "active",
+        password: "OAUTH_PROVIDER",
+        authProvider: provider.toLowerCase(),
+        role: "patient",
+
+      });
+      await user.save();
+    }
+
+    if (user.status === "inactive") {
+      return res
+        .status(403)
+        .json({ message: "Tài khoản của bạn đã bị khóa" });
+    }
+
+    const payload = {
+      id: user._id,
+      email: user.email,
+      name: user.name,
+      role: user.role || "patient",
+      status: user.status,
+    };
+
+    const token = jwt.sign(payload, process.env.JWT_SECRET, {
+      expiresIn: "1h",
+    });
+
+    return res.status(200).json({
+      message: "Đăng nhập thành công",
+      token,
+      user: {
+        _id: user._id,
+        email: user.email,
+        name: user.name,
+        phone: user.phone,
+        role: user.role,
+      },
+    });
+  } catch (err) {
+    res.status(500).json({ message: "Lỗi server", error: err.message });
+  }
+  console.log("OAuth login request received:", req.body);
+
+};
+
 const changePassword = async (req, res) => {
   try {
     const { email, newPassword } = req.body;
@@ -173,7 +251,7 @@ const changePassword = async (req, res) => {
   }
 };
 
-module.exports = changePassword;
+
 
 // Cấu hình Nodemailer
 const transporter = nodemailer.createTransport({
@@ -307,4 +385,7 @@ module.exports = {
   changePassword,
   forgotPassword,
   resetPassword,
+  oauthLogin
 };
+const secretKey = process.env.RECAPTCHA_SECRET_KEY;
+console.log("Recaptcha secret key:", secretKey);
