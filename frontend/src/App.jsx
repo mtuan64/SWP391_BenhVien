@@ -61,6 +61,7 @@ import NotificationCenter from "./pages/NotificationCenter";
 import NotificationDetail from "./pages/NotificationDetail";
 import Doctor2Layout from "./components/doctor2/Doctor2Layout";
 import PatientList from "./pages/Doctor2/PatientList";
+import LabTest from "./pages/Doctor2/Labtest";
 import {
   PrivateRoute,
   PrivateRouteNotAllowUser,
@@ -284,9 +285,7 @@ const AppRoutes = () => {
           >
             <Route index element={<PatientList />} />
             <Route path="procedure-requests" element={<PatientList />} />
-            <Route path="employees" element={<EmployeeManagement />} />
-            <Route path="attendance" element={<AttendanceManagement />} />
-            <Route path="taolich" element={<ScheduleCreate />} />
+            <Route path="lab-tests" element={<LabTest />} />
 
           </Route>
 
@@ -332,6 +331,7 @@ const AppRoutes = () => {
           <Route path="/myappointments" element={<ListAppointmentPage />} />
           <Route path="/datlich" element={<BookingForm />} />
           <Route path="/taoprofile" element={<CreateProfile />} />
+          {/* <Route path="/doctor2/lab-tests" element={<LabTest />} /> */}
 
 
           {/* <Route path="/medicalrecord" element={<AddMedicalRecord />} />

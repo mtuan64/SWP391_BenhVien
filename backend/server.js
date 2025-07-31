@@ -81,6 +81,7 @@ app.use("/api/doctor", require("./routers/Doctor/doctor.route"));
 app.use("/api/doctor", require("./routers/Doctor/binh"));
 
 app.use("/api/doctor2", require("./routers/Doctor2/patientlist.route"));
+app.use("/api/doctor2", require("./routers/Doctor2/labtest.route"));
 
 app.use("/api/staff", require("./routers/Staff/blog.route"));
 app.use("/api/staff", require("./routers/Staff/news.route"));

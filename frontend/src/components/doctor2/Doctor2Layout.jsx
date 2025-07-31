@@ -27,12 +27,6 @@ const Doctor2Layout = () => {
       label: "Danh sách bệnh nhân",
     },
     {
-      key: "2",
-      path: "/doctor2/lab-tests",
-      icon: <MedicineBoxOutlined />,
-      label: "Xét nghiệm",
-    },
-    {
       key: "3",
       path: "/doctor2/profile",
       icon: <UserOutlined />,
