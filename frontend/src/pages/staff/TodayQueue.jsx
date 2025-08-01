@@ -208,17 +208,45 @@ const TodayQueue = () => {
                 });
             }
 
+            // if (selectedServices.length > 0) {
+            //     await axios.post('/api/doctor/chidinhdichvu', {
+            //         medicalRecordId,
+            //         profileId,
+            //         doctorId,
+            //         services: selectedServices.map(s => ({
+            //             serviceId: s.serviceId,
+            //             scheduledTime: null,
+            //             status: 'Waiting',
+            //             doctorId: s.doctorId || ''
+            //         }))
+            //     });
+            // }
+
             if (selectedServices.length > 0) {
                 await axios.post('/api/doctor/chidinhdichvu', {
                     medicalRecordId,
                     profileId,
                     doctorId,
-                    services: selectedServices.map(s => ({
-                        serviceId: s.serviceId,
-                        scheduledTime: null,
-                        status: 'Waiting',
-                        doctorId: s.doctorId || ''
-                    }))
+                    services: selectedServices.map(s => {
+                        const matchedService = servicesList.find(item => item._id === s.serviceId);
+                        const serviceName = matchedService?.name?.toLowerCase() || '';
+                        let testType = 'other';
+                        if (serviceName.includes('máu')) {
+                            testType = 'blood';
+                        } else if (serviceName.includes('nước tiểu')) {
+                            testType = 'urine';
+                        } else if (serviceName.includes('x-quang') || serviceName.includes('x quang')) {
+                            testType = 'xray';
+                        }
+
+                        return {
+                            serviceId: s.serviceId,
+                            scheduledTime: null,
+                            status: 'Waiting',
+                            doctorId: s.doctorId || '',
+                            testType // thêm testType cho mỗi dịch vụ
+                        };
+                    })
                 });
             }
 

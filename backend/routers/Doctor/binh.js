@@ -111,7 +111,8 @@ router.post('/chidinhdichvu', async (req, res) => {
             serviceId: s.serviceId,
             scheduledTime: s.scheduledTime || null,
             status: s.status || 'Waiting',
-            doctorId2: s.doctorId
+            doctorId2: s.doctorId,
+            testType: s.testType || 'other'
         }));
 
         const request = await ProcedureRequest.create({
