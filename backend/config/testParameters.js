@@ -10,10 +10,15 @@ module.exports = {
         { name: 'Glucose', unit: 'mg/dL', referenceRange: '0-15' }
     ],
     xray: [
-        { name: 'Findings', unit: '', referenceRange: 'Normal/Abnormal' },
-        { name: 'Location', unit: '', referenceRange: 'e.g., Chest, Spine' }
+        { name: 'Chest X-Ray', unit: '', referenceRange: 'Normal/Abnormal' },
+        { name: 'Spine X-Ray', unit: '', referenceRange: 'Normal/Abnormal' }
     ],
-    other: [
-        { name: 'Custom Parameter', unit: '', referenceRange: '' }
+    ultrasound: [
+        { name: 'Abdominal Ultrasound', unit: '', referenceRange: 'Normal/Abnormal' },
+        { name: 'Obstetric Ultrasound', unit: '', referenceRange: 'Normal/Abnormal' }
+    ],
+    ecg: [
+        { name: 'Electrocardiogram (ECG)', unit: '', referenceRange: 'Normal/Abnormal' },
+        { name: 'Heart Rate', unit: 'bpm', referenceRange: '60-100' }
     ]
 };

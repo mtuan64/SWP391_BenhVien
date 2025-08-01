@@ -2,83 +2,147 @@ import React, { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import axios from "axios";
 import "../assets/css/DepartmentDetail.css";
-import HeroBanner from "../components/HeroBanner";
-import TopBarComponent from "../components/TopBarComponent";
-
-const DEPT_BANNER = "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=facearea&w=1600&q=80";
 
 const DepartmentDetail = () => {
-    const { departmentId } = useParams();
-    const [department, setDepartment] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+  const { departmentId } = useParams();
+  const [department, setDepartment] = useState(null);
+  const [allDepartments, setAllDepartments] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-    useEffect(() => {
-        const fetchDepartment = async () => {
-            try {
-                const res = await axios.get(`/api/user/department/${departmentId}`);
-                console.log("API Response:", res.data);
-                if (Array.isArray(res.data.department)) {
-                    setDepartment(res.data.department[0]);
-                } else if (res.data.data) {
-                    setDepartment(res.data.data);
-                } else if (res.data.department) {
-                    setDepartment(res.data.department);
-                } else {
-                    throw new Error("Invalid response format");
-                }
-                setLoading(false);
-            } catch (error) {
-                console.error("Error fetching department details:", error);
-                setError("Failed to load department details. Please check the console for more details.");
-                setLoading(false);
-            }
-        };
-        fetchDepartment();
-    }, [departmentId]);
+  // Hàm trích xuất và giới hạn nội dung
+  const truncateText = (text, maxLength) => {
+    if (!text || text.length <= maxLength) return text || "";
+    return text.substring(0, maxLength - 3) + "...";
+  };
 
-    if (loading) {
-        return (
-            <div className="text-center py-5">
-                <h3>Loading...</h3>
-            </div>
-        );
-    }
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // Fetch department by ID
+        const departmentResponse = await axios.get(`/api/user/department/${departmentId}`);
+        console.log("Department API Response:", departmentResponse.data);
+        if (departmentResponse.data.data) {
+          setDepartment(departmentResponse.data.data);
+        } else if (departmentResponse.data.department) {
+          setDepartment(departmentResponse.data.department);
+        } else {
+          throw new Error("Invalid department response format");
+        }
 
-    if (error) {
-        return (
-            <div className="text-center py-5">
-                <h3>{error}</h3>
-                <Link to="/department-home" className="btn btn-primary mt-3">Back to Department Home</Link>
-            </div>
-        );
-    }
+        // Fetch all departments
+        const allDepartmentsResponse = await axios.get(`/api/user/department`);
+        console.log("All Departments API Response:", allDepartmentsResponse.data);
+        const departments = allDepartmentsResponse.data.departments || allDepartmentsResponse.data.data || allDepartmentsResponse.data || [];
+        setAllDepartments(departments);
+        console.log("allDepartments state:", departments);
 
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+        console.log("Error response:", error.response?.data);
+        setError("Không thể tải thông tin phòng ban hoặc danh sách phòng ban. Vui lòng kiểm tra console để biết thêm chi tiết.");
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [departmentId]);
+
+  if (loading) {
+    return <div className="departmentdetail-loading">Đang tải...</div>;
+  }
+
+  if (error) {
     return (
-        <>
-            {/* Topbar */}
-            <TopBarComponent />
-
-            {/* Hero Carousel */}
-            <HeroBanner
-                image={DEPT_BANNER}
-                title="Chuyên Khoa Bệnh Viện"
-                subtitle="Danh sách các chuyên khoa – phòng ban – đội ngũ chuyên gia hàng đầu"
-            />
-            {/* Department Detail Section */}
-            <div className="department-detail-container">
-                <h1 className="department-detail-title">{department.name}</h1>
-                <div className="department-detail-desc">
-                    <b>Mô tả chuyên khoa:</b>
-                    <div>{department.description || "Chưa cập nhật mô tả."}</div>
-                </div>
-                <Link className="btn btn-secondary mt-4" to="/department-home">
-                    Quay lại danh sách chuyên khoa
-                </Link>
-            </div>
-        </>
-
+      <div className="departmentdetail-error">
+        Lỗi: {error}
+        <Link to="/department-home" className="btn btn-primary mt-3">Quay lại danh sách chuyên khoa</Link>
+      </div>
     );
+  }
+
+  if (!department) {
+    return (
+      <div className="departmentdetail-error">
+        Không tìm thấy phòng ban hoặc tải dữ liệu thất bại. Vui lòng kiểm tra console.
+        <Link to="/department-home" className="btn btn-primary mt-3">Quay lại danh sách chuyên khoa</Link>
+      </div>
+    );
+  }
+
+  return (
+    <div className="departmentdetail-page">
+      <div className="departmentdetail-wrapper">
+        <div className="departmentdetail-main">
+          <div className="departmentdetail-container">
+            <div className="departmentdetail-card">
+              <div className="departmentdetail-header">
+                <h1 className="departmentdetail-title">{department.name || "Phòng ban không rõ tên"}</h1>
+              </div>
+              {department.image && (
+                <div className="departmentdetail-image">
+                  <img
+                    src={department.image}
+                    alt={department.name || "Department"}
+                    className="departmentdetail-main-image"
+                  />
+                </div>
+              )}
+              <div className="departmentdetail-content">
+                <p><strong>Mô tả:</strong> {department.description || "Chưa cập nhật mô tả."}</p>
+                <Link to="/department-home" className="departmentdetail-read-more">Quay lại danh sách chuyên khoa</Link>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="departmentdetail-sidebar">
+          <h3 className="departmentdetail-sidebar-title">Danh sách chuyên khoa</h3>
+          <div className="departmentdetail-featured-departments">
+            {allDepartments.filter((d) => d._id !== department._id).length === 0 ? (
+              <p>Không có phòng ban nào khác.</p>
+            ) : (
+              allDepartments
+                .filter((d) => d._id !== department._id)
+                .map((otherDepartment, index) => (
+                  <div key={index} className="departmentdetail-featured-department-card">
+                    <Link to={`/department/${otherDepartment._id}`}>
+                      <img
+                        src={otherDepartment.image || "https://via.placeholder.com/100x100"}
+                        alt={otherDepartment.name || "Unknown Department"}
+                        className="departmentdetail-featured-department-image"
+                        onError={(e) => (e.target.src = "https://via.placeholder.com/100x100")}
+                      />
+                    </Link>
+                    <div className="departmentdetail-featured-department-content">
+                      <Link
+                        to={`/department/${otherDepartment._id}`}
+                        className="departmentdetail-featured-department-title-link"
+                      >
+                        <h4 className="departmentdetail-featured-department-title">
+                          {(otherDepartment.name || "Phòng ban không rõ tên").length > 20
+                            ? (otherDepartment.name || "Phòng ban không rõ tên").substring(0, 20) + "..."
+                            : otherDepartment.name || "Phòng ban không rõ tên"}
+                        </h4>
+                      </Link>
+                      <p className="departmentdetail-featured-department-excerpt">
+                        {truncateText(otherDepartment.description || "Chưa có mô tả", 50)}
+                      </p>
+                      <Link
+                        to={`/department/${otherDepartment._id}`}
+                        className="departmentdetail-read-more"
+                      >
+                        Xem chi tiết
+                      </Link>
+                    </div>
+                  </div>
+                ))
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 };
 
 export default DepartmentDetail;

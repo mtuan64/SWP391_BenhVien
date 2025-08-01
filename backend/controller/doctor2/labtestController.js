@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const ProcedureResult = require('../../models/ProcedureResult');
 const ProcedureRequest = require('../../models/ProcedureRequest');
 const testParameters = require('../../config/testParameters');
@@ -71,6 +72,42 @@ exports.submitTestResult = async (req, res) => {
         res.status(200).json({ success: true, data: procedureResult });
     } catch (error) {
         console.error('Error submitting test result:', error);
+        res.status(500).json({ success: false, message: 'Server error: ' + error.message });
+    }
+};
+
+// New endpoint: Get all procedure results by doctorId2
+exports.getAllProcedureResultByDoctorId2 = async (req, res) => {
+    try {
+        const { doctorId2 } = req.params;
+
+        // Validate doctorId2
+        if (!mongoose.Types.ObjectId.isValid(doctorId2)) {
+            return res.status(400).json({ success: false, message: 'Invalid doctorId2' });
+        }
+
+        // Find all ProcedureRequest with doctorId2 in services
+        const procedureRequests = await ProcedureRequest.find({
+            'services.doctorId2': new mongoose.Types.ObjectId(doctorId2)
+        }).select('_id');
+
+        // Get list of procedureRequestIds
+        const procedureRequestIds = procedureRequests.map(pr => pr._id);
+
+        // Find all ProcedureResult with matching procedureRequestIds
+        const procedureResults = await ProcedureResult.find({
+            procedureRequestId: { $in: procedureRequestIds }
+        })
+            .populate('procedureRequestId', 'medicalRecordId profileId doctorId services')
+            .lean();
+
+        if (!procedureResults.length) {
+            return res.status(404).json({ success: false, message: 'No procedure results found for this doctor' });
+        }
+
+        res.status(200).json({ success: true, data: procedureResults });
+    } catch (error) {
+        console.error('Error fetching procedure results:', error);
         res.status(500).json({ success: false, message: 'Server error: ' + error.message });
     }
 };

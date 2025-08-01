@@ -109,7 +109,7 @@ const Header = ({ onMenuClick, menuOpen }) => {
           <Link to="/service-home" className="header-link">
             <CustomerServiceOutlined /> <span>Dịch Vụ</span>
           </Link>
-          <Link to="/doctor-home" className="header-link">
+          <Link to="/doctor-list" className="header-link">
             <TeamOutlined /> <span>Bác Sĩ</span>
           </Link>
           <Link to="/medicines-home" className="header-link">
