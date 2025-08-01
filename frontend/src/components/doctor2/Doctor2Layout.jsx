@@ -2,53 +2,43 @@ import React, { useState, useEffect } from "react";
 import { Layout, Menu } from "antd";
 import {
   FileTextOutlined,
-  AppstoreOutlined,
   MedicineBoxOutlined,
-  DollarOutlined,
-  CommentOutlined,
-  NotificationOutlined,
-  QuestionCircleOutlined,
+  UserOutlined,
   LogoutOutlined,
   MenuFoldOutlined,
   MenuUnfoldOutlined,
-  CalendarOutlined,
-  BellOutlined,
-  UserOutlined,
-  PlusCircleOutlined,
-  CheckCircleOutlined,
 } from "@ant-design/icons";
 import { Link, Outlet, useNavigate, useLocation } from "react-router-dom";
 
 const { Header, Sider, Content } = Layout;
 
-const StaffLayout = () => {
+const Doctor2Layout = () => {
   const [collapsed, setCollapsed] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const [selectedKey, setSelectedKey] = useState("1");
 
-  // Map routes to menu keys
+  // Menu items for Doctor2 role
   const menuItems = [
-    { key: "1", path: "/staff/blogs", icon: <FileTextOutlined />, label: "Quản Lý Bài Viết" },
-    { key: "2", path: "/staff/services", icon: <AppstoreOutlined />, label: "Quản Lý Dịch Vụ" },
-    { key: "3", path: "/staff/departments", icon: <AppstoreOutlined />, label: "Quản Lý Khoa Phòng" },
-    { key: "4", path: "/staff/appointments", icon: <CalendarOutlined />, label: "Lịch Hẹn" },
-    { key: "5", path: "/staff/notifications", icon: <BellOutlined />, label: "Quản Lý Thông Báo" },
-    { key: "6", path: "/staff/users", icon: <UserOutlined />, label: "Quản Lý Người Dùng" },
-    { key: "7", path: "/staff/medicalrecord", icon: <FileTextOutlined />, label: "Hồ Sơ Y Tế" },
-    { key: "8", path: "/staff/medicines", icon: <PlusCircleOutlined />, label: "Quản Lý Thuốc" },
-    { key: "9", path: "/staff/invoices", icon: <DollarOutlined />, label: "Quản Lý Hóa Đơn" },
-    { key: "10", path: "/staff/payments", icon: <DollarOutlined />, label: "Quản Lý Thanh Toán" },
-    { key: "11", path: "/staff/news", icon: <NotificationOutlined />, label: "Quản Lý Tin Tức" },
-    { key: "12", path: "/staff/feedback", icon: <CommentOutlined />, label: "Quản Lý Feedback" },
-    { key: "13", path: "/staff/qna", icon: <QuestionCircleOutlined />, label: "Q/A" },
-    { key: "14", path: "/staff/schedule", icon: <QuestionCircleOutlined />, label: "Quản Lý Lịch Trình" },
-    { key: "15", path: "/staff/attendance", icon: <CheckCircleOutlined />, label: "Điểm Danh" },
-    { key: "16", path: "/staff/profile", icon: <QuestionCircleOutlined />, label: "Hồ Sơ Cá Nhân" },
-    { key: "17", path: "/staff/datlichoffline", icon: <QuestionCircleOutlined />, label: "Đặt lịch" },
-    { key: "18", path: "/staff/tao-ho-so", icon: <QuestionCircleOutlined />, label: "Tạo hồ sơ" },
-
-    { key: "20", path: null, icon: <LogoutOutlined />, label: "Đăng Xuất", onClick: () => handleLogout() },
+    {
+      key: "1",
+      path: "/doctor2/procedure-requests",
+      icon: <UserOutlined />,
+      label: "Danh sách bệnh nhân",
+    },
+    {
+      key: "3",
+      path: "/doctor2/profile",
+      icon: <UserOutlined />,
+      label: "Hồ sơ cá nhân",
+    },
+    {
+      key: "4",
+      path: null,
+      icon: <LogoutOutlined />,
+      label: "Đăng xuất",
+      onClick: () => handleLogout(),
+    },
   ];
 
   // Handle logout
@@ -81,7 +71,7 @@ const StaffLayout = () => {
             fontWeight: "bold",
           }}
         >
-          {collapsed ? "KC" : "KiwiCare"}
+          {collapsed ? "KC" : "Bác sĩ xét nghiệm"}
         </div>
         <Menu theme="dark" mode="inline" selectedKeys={[selectedKey]}>
           {menuItems.map((item) => (
@@ -119,4 +109,4 @@ const StaffLayout = () => {
   );
 };
 
-export default StaffLayout;
+export default Doctor2Layout;

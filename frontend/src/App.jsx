@@ -59,6 +59,9 @@ import PaymentFail from "./components/PaymentFail";
 import CreateInvoice from "./components/staff/CreateInvoice";
 import NotificationCenter from "./pages/NotificationCenter";
 import NotificationDetail from "./pages/NotificationDetail";
+import Doctor2Layout from "./components/doctor2/Doctor2Layout";
+import PatientList from "./pages/Doctor2/PatientList";
+import LabTest from "./pages/Doctor2/Labtest";
 import {
   PrivateRoute,
   PrivateRouteNotAllowUser,
@@ -122,21 +125,22 @@ const RoleRedirect = () => {
       if (role === "Admin") navigate("/admin", { replace: true });
       else if (role === "Staff") navigate("/staff", { replace: true });
       else if (role === "Doctor") navigate("/doctor", { replace: true });
+      else if (role === "Doctor2") navigate("/doctor2", { replace: true });
       else navigate("/home", { replace: true });
       return;
     }
 
     if (role === "Admin" && !path.startsWith("/admin")) {
       navigate("/admin", { replace: true });
-    }
-    // else if (role === "Staff" && !path.startsWith("/staff")) {
-    //   navigate("/staff", { replace: true });
-    // } else if (role === "Doctor" && !path.startsWith("/doctor")) {
-    //   navigate("/doctor", { replace: true });
-    // }
-    else if (
+    } else if (role === "Staff" && !path.startsWith("/staff")) {
+      navigate("/staff", { replace: true });
+    } else if (role === "Doctor" && !path.startsWith("/doctor")) {
+      navigate("/doctor", { replace: true });
+    } else if (role === "Doctor2" && !path.startsWith("/doctor2")) {
+      navigate("/doctor2", { replace: true });
+    } else if (
       role === "patient" &&
-      (path.startsWith("/admin") || path.startsWith("/staff"))
+      (path.startsWith("/admin") || path.startsWith("/staff") || path.startsWith("/doctor") || path.startsWith("/doctor2"))
     ) {
       navigate("/home", { replace: true });
     }
@@ -270,6 +274,20 @@ const AppRoutes = () => {
             <Route path="attendance" element={<StaffAttendance />} /> {/* Add Staff Attendance route */}
           </Route>
 
+          {/* Doctor2 Layout Routes */}
+          <Route
+            path="/doctor2/*"
+            element={
+              <PrivateRouteByRole allowedRoles={["Doctor2"]}>
+                <Doctor2Layout />
+              </PrivateRouteByRole>
+            }
+          >
+            <Route index element={<PatientList />} />
+            <Route path="procedure-requests" element={<PatientList />} />
+            <Route path="lab-tests" element={<LabTest />} />
+
+          </Route>
 
           <Route path="/doctor" element={<PrivateRouteByRole allowedRoles={["Doctor"]}><DoctorLayout /></PrivateRouteByRole>}>
             <Route path="medical-profile" element={<UserMedicalProfile />} />
@@ -313,6 +331,7 @@ const AppRoutes = () => {
           <Route path="/myappointments" element={<ListAppointmentPage />} />
           <Route path="/datlich" element={<BookingForm />} />
           <Route path="/taoprofile" element={<CreateProfile />} />
+          {/* <Route path="/doctor2/lab-tests" element={<LabTest />} /> */}
 
 
           {/* <Route path="/medicalrecord" element={<AddMedicalRecord />} />

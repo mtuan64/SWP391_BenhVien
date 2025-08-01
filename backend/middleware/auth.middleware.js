@@ -108,6 +108,34 @@ const authDoctorMiddleware = (req, res, next) => {
   });
 };
 
+const authDoctor2Middleware = (req, res, next) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return res.status(401).json({
+      message: "Không tìm thấy token hoặc token không hợp lệ",
+      status: "ERROR",
+    });
+  }
+  const token = authHeader.split(" ")[1];
+
+  jwt.verify(token, process.env.JWT_SECRET, function (err, decoded) {
+    if (err) {
+      return res.status(403).json({
+        message: "Token không hợp lệ hoặc đã hết hạn",
+        status: "ERROR",
+      });
+    }
+    if (decoded.role === "Doctor2") {
+      req.user = decoded;
+      next();
+    } else {
+      return res.status(403).json({
+        message: "Bạn không có quyền truy cập (chỉ dành cho Doctor2)",
+        status: "ERROR",
+      });
+    }
+  });
+};
 const authUserMiddleware = (req, res, next) => {
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
@@ -161,4 +189,4 @@ const ismeomeo = (req, res, next) => {
   next();
 };
 
-module.exports = { authMiddleware, authAdminMiddleware, authDoctorMiddleware, authUserMiddleware, authStaffMiddleware, tokenBlacklist, isTokenBlacklisted };
+module.exports = { authMiddleware, authAdminMiddleware, authDoctorMiddleware, authDoctor2Middleware, authUserMiddleware, authStaffMiddleware, tokenBlacklist, isTokenBlacklisted };

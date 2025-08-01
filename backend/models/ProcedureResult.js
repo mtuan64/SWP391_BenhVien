@@ -1,4 +1,3 @@
-// models/ProcedureResult.js
 const mongoose = require('mongoose');
 
 const ResultDetailSchema = new mongoose.Schema({
@@ -14,6 +13,11 @@ const ProcedureResultSchema = new mongoose.Schema({
         ref: 'ProcedureRequest',
         required: true
     },
+    testType: {
+        type: String,
+        enum: ['blood', 'urine', 'xray', 'other'],
+        required: true
+    },
     status: {
         type: String,
         enum: ['pending', 'completed'],
@@ -24,7 +28,17 @@ const ProcedureResultSchema = new mongoose.Schema({
     createdAt: {
         type: Date,
         default: Date.now
+    },
+    updatedAt: {
+        type: Date,
+        default: Date.now
     }
+});
+
+// Update timestamp on save
+ProcedureResultSchema.pre('save', function(next) {
+    this.updatedAt = Date.now();
+    next();
 });
 
 module.exports = mongoose.model('ProcedureResult', ProcedureResultSchema);
