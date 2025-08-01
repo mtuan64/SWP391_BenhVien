@@ -315,7 +315,7 @@ const TodayQueue = () => {
                                     <div key={service._id} className="flex items-center gap-2 mb-2">
                                         <input type="checkbox" checked={checked} onChange={() => handleCheckboxChange(service._id)} />
                                         <span>{service.name}</span>
-                                        {checked && (
+                                        {/* {checked && (
                                             <select
                                                 className="border px-2 py-1 rounded"
                                                 value={current?.doctorId || ''}
@@ -326,7 +326,24 @@ const TodayQueue = () => {
                                                     <option key={doc._id} value={doc._id}>{doc.name}</option>
                                                 ))}
                                             </select>
-                                        )}
+                                        )} */}
+                                        {checked && (() => {
+                                            const serviceDoctors = service.doctors || [];
+                                            const filteredDoctors = doctorsList.filter(doc => serviceDoctors.includes(doc._id));
+                                            return (
+                                                <select
+                                                    className="border px-2 py-1 rounded"
+                                                    value={current?.doctorId || ''}
+                                                    onChange={(e) => handleDoctorSelect(service._id, e.target.value)}
+                                                >
+                                                    <option value="">-- Chọn bác sĩ --</option>
+                                                    {filteredDoctors.map(doc => (
+                                                        <option key={doc._id} value={doc._id}>{doc.name}</option>
+                                                    ))}
+                                                </select>
+                                            );
+                                        })()}
+
                                     </div>
                                 );
                             })}

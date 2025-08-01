@@ -12,7 +12,7 @@ const procedureRequestSchema = new mongoose.Schema({
         status: { type: String, enum: ['Waiting', 'InProgress', 'Completed'], default: 'Waiting' },
         resultFile: String,
         resultNote: String,
-        doctorId: { type: mongoose.Schema.Types.ObjectId, ref: 'Employee', required: true },
+        doctorId2: { type: mongoose.Schema.Types.ObjectId, ref: 'Employee', required: true },
     }]
 }, { timestamps: true });
 

@@ -53,6 +53,15 @@ router.get('/bacsixetnghiem', async (req, res) => {
         res.status(500).json({ message: err.message });
     }
 });
+router.get('/bacsi2', async (req, res) => {
+
+    try {
+        const doctors = await Employee.find({ role: "Doctor2" });
+        res.json(doctors);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
 router.patch('/updatemedicalrecord/:id', async (req, res) => {
     try {
         const updates = req.body;
@@ -102,7 +111,7 @@ router.post('/chidinhdichvu', async (req, res) => {
             serviceId: s.serviceId,
             scheduledTime: s.scheduledTime || null,
             status: s.status || 'Waiting',
-            doctorId: s.doctorId
+            doctorId2: s.doctorId
         }));
 
         const request = await ProcedureRequest.create({

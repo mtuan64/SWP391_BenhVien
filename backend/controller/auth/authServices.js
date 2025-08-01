@@ -5,6 +5,8 @@ const nodemailer = require("nodemailer");
 const Employee = require("../../models/Employee");
 const bcrypt = require("bcrypt");
 const Counter = require("../../models/Counter");
+const axios = require('axios');
+
 
 require("dotenv").config();
 const Login = async (req, res) => {
@@ -86,7 +88,7 @@ const Signup = async (req, res) => {
 
   const { email, password, name, phone, recaptchaToken } = req.body;
 
-  
+
   try {
 
     const secretKey = process.env.RECAPTCHA_SECRET_KEY;

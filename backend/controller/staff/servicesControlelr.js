@@ -92,24 +92,81 @@ const getServiceById = async (req, res) => {
 };
 
 // Create a new service
+// const createService = async (req, res) => {
+//     try {
+//         const service = await Service.create(req.body);
+//         res.status(201).json({
+//             success: true,
+//             service,
+//         });
+//     } catch (error) {
+//         if (error.code === 11000) {
+//             return res.status(400).json({
+//                 success: false,
+//                 message: 'Service name already exists',
+//             });
+//         }
+//         console.error('Error in createService:', error);
+//         res.status(500).json({
+//             success: false,
+//             message: 'Server Error',
+//             error: error.message,
+//         });
+//     }
+// };
 const createService = async (req, res) => {
     try {
-        const service = await Service.create(req.body);
+        let { name, description, price, doctors } = req.body;
+
+        // Kiểm tra bắt buộc
+        if (!name || !price) {
+            return res.status(400).json({
+                success: false,
+                message: 'Tên và giá dịch vụ là bắt buộc.',
+            });
+        }
+
+        // Chuyển giá thành số (nếu frontend gửi string)
+        price = Number(price);
+        if (isNaN(price) || price < 0) {
+            return res.status(400).json({
+                success: false,
+                message: 'Giá dịch vụ không hợp lệ.',
+            });
+        }
+
+        // Đảm bảo doctors là mảng các ObjectId
+        if (!Array.isArray(doctors)) doctors = [];
+        doctors = doctors.map((id) => {
+            if (!mongoose.Types.ObjectId.isValid(id)) {
+                throw new Error(`ID bác sĩ không hợp lệ: ${id}`);
+            }
+            return new mongoose.Types.ObjectId(id);
+        });
+
+        const newService = await Service.create({
+            name,
+            description,
+            price,
+            doctors,
+        });
+
         res.status(201).json({
             success: true,
-            service,
+            service: newService,
         });
     } catch (error) {
         if (error.code === 11000) {
             return res.status(400).json({
                 success: false,
-                message: 'Service name already exists',
+                message: 'Tên dịch vụ đã tồn tại.',
             });
         }
-        console.error('Error in createService:', error);
+
+        console.error('Lỗi tạo dịch vụ:', error);
         res.status(500).json({
             success: false,
-            message: 'Server Error',
+            message: 'Lỗi server.',
             error: error.message,
         });
     }
