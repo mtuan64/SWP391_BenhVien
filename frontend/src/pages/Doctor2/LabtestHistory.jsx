@@ -5,7 +5,6 @@ import { FileText, AlertCircle, Loader2 } from 'lucide-react';
 import { Drawer, Descriptions, Table, List } from 'antd';
 import moment from 'moment';
 
-
 const TestResultList = () => {
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -82,7 +81,7 @@ const TestResultList = () => {
       render: (status) => (
         <span
           className={`inline-flex items-center px-3 py-1 rounded-full text-white ${
-            status === 'completed' ? 'bg-green-500' : 'bg-red-500'
+            status === 'Completed' ? 'bg-green-500' : 'bg-red-500'
           }`}
         >
           {status || 'N/A'}
@@ -182,7 +181,7 @@ const TestResultList = () => {
               <Descriptions.Item label="Trạng thái">
                 <span
                   className={`inline-flex items-center px-3 py-1 rounded-full text-white ${
-                    viewingResult.status === 'completed' ? 'bg-green-500' : 'bg-red-500'
+                    viewingResult.status === 'Completed' ? 'bg-green-500' : 'bg-red-500'
                   }`}
                 >
                   {viewingResult.status || 'N/A'}

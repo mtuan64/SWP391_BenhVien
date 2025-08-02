@@ -1,3 +1,4 @@
+// testParameters.js
 module.exports = {
     blood: [
         { name: 'Hemoglobin', unit: 'g/dL', referenceRange: '12-16' },
@@ -20,5 +21,11 @@ module.exports = {
     ecg: [
         { name: 'Electrocardiogram (ECG)', unit: '', referenceRange: 'Normal/Abnormal' },
         { name: 'Heart Rate', unit: 'bpm', referenceRange: '60-100' }
+    ],
+    lipid: [ // New test type
+        { name: 'Cholesterol Total', unit: 'mg/dL', referenceRange: '125-200' },
+        { name: 'HDL Cholesterol', unit: 'mg/dL', referenceRange: '40-60' },
+        { name: 'LDL Cholesterol', unit: 'mg/dL', referenceRange: '0-100' },
+        { name: 'Triglycerides', unit: 'mg/dL', referenceRange: '0-150' }
     ]
 };

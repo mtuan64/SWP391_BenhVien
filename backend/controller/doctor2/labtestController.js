@@ -52,20 +52,25 @@ exports.submitTestResult = async (req, res) => {
             procedureResult.testType = testType;
             procedureResult.resultDetails = resultDetails;
             procedureResult.resultNote = resultNote;
-            procedureResult.status = 'completed';
         } else {
             procedureResult = new ProcedureResult({
                 procedureRequestId,
                 serviceId,
                 testType,
                 resultDetails,
-                resultNote,
-                status: 'completed'
+                resultNote
             });
         }
 
-        // Update service status in ProcedureRequest
+        // Update service status in ProcedureRequest to Completed
         service.status = 'Completed';
+
+        // Check if all services are Completed
+        const allServicesCompleted = procedureRequest.services.every(s => s.status === 'Completed');
+        if (allServicesCompleted) {
+            procedureRequest.status = 'Completed';
+        }
+
         await procedureRequest.save();
         await procedureResult.save();
 
@@ -76,7 +81,6 @@ exports.submitTestResult = async (req, res) => {
     }
 };
 
-// New endpoint: Get all procedure results by doctorId2
 exports.getAllProcedureResultByDoctorId2 = async (req, res) => {
     try {
         const { doctorId2 } = req.params;
@@ -89,23 +93,37 @@ exports.getAllProcedureResultByDoctorId2 = async (req, res) => {
         // Find all ProcedureRequest with doctorId2 in services
         const procedureRequests = await ProcedureRequest.find({
             'services.doctorId2': new mongoose.Types.ObjectId(doctorId2)
-        }).select('_id');
+        }).select('_id services medicalRecordId profileId doctorId');
 
-        // Get list of procedureRequestIds
-        const procedureRequestIds = procedureRequests.map(pr => pr._id);
-
-        // Find all ProcedureResult with matching procedureRequestIds
+        // Get list of procedureRequestIds and relevant services
         const procedureResults = await ProcedureResult.find({
-            procedureRequestId: { $in: procedureRequestIds }
+            procedureRequestId: { $in: procedureRequests.map(pr => pr._id) }
         })
-            .populate('procedureRequestId', 'medicalRecordId profileId doctorId services')
+            .populate({
+                path: 'procedureRequestId',
+                select: 'medicalRecordId profileId doctorId services',
+                populate: [
+                    { path: 'profileId', select: 'name identityNumber' },
+                    { path: 'doctorId', select: 'name' }
+                ]
+            })
             .lean();
 
         if (!procedureResults.length) {
             return res.status(404).json({ success: false, message: 'No procedure results found for this doctor' });
         }
 
-        res.status(200).json({ success: true, data: procedureResults });
+        // Format response to include service status
+        const formattedResults = procedureResults.map(result => {
+            const procedureRequest = procedureRequests.find(pr => pr._id.toString() === result.procedureRequestId.toString());
+            const service = procedureRequest?.services.find(s => s._id.toString() === result.serviceId.toString());
+            return {
+                ...result,
+                status: service?.status || 'N/A'
+            };
+        });
+
+        res.status(200).json({ success: true, data: formattedResults });
     } catch (error) {
         console.error('Error fetching procedure results:', error);
         res.status(500).json({ success: false, message: 'Server error: ' + error.message });
