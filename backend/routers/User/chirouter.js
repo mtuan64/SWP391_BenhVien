@@ -16,19 +16,19 @@ router.get("/danhsachprofile/:userId", async (req, res) => {
 
 router.get("/hosobenhan/:profileId", async (req, res) => {
   try {
-   const records = await MedicalRecord.find({ profileId: req.params.profileId })
-  .populate('doctorId', 'name')
-  .populate({
-    path: 'prescriptions',
-    select: 'medicines'
-  })
-  .populate({
-    path: 'procedureRequests',
-    populate: {
-      path: 'services.serviceId',
-      select: 'name'
-    }
-  });
+    const records = await MedicalRecord.find({ profileId: req.params.profileId })
+      .populate('doctorId', 'name')
+      .populate({
+        path: 'prescriptions',
+        select: 'medicines'
+      })
+      .populate({
+        path: 'procedureRequests',
+        populate: {
+          path: 'services.serviceId',
+          select: 'name'
+        }
+      });
 
     res.status(200).json(records);
   } catch (err) {
@@ -49,6 +49,30 @@ router.put("/capnhatprofile/:id", async (req, res) => {
     res.status(500).json({ message: "Lỗi khi cập nhật hồ sơ", error: err.message });
   }
 });
+router.post('/claim', async (req, res) => {
+  const { identityNumber, userId } = req.body;
 
+  try {
+    const profile = await Profile.findOne({ identityNumber });
+
+    if (!profile) {
+      return res.status(404).json({ message: 'not found' });
+    }
+
+    if (profile.userId && profile.userId.toString() !== userId) {
+      return res.status(403).json({ message: 'already linked' });
+    }
+
+    if (!profile.userId) {
+      profile.userId = userId;
+      await profile.save();
+    }
+
+    return res.json({ success: true, profile });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: 'server error' });
+  }
+});
 
 module.exports = router;

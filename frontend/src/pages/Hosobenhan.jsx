@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useParams } from "react-router-dom";
+import Modal from "react-modal";
+
+Modal.setAppElement("#root");
 
 const MedicalRecordPage = () => {
   const { profileId } = useParams();
@@ -11,6 +14,8 @@ const MedicalRecordPage = () => {
   const [sortField, setSortField] = useState("createdAt");
   const [sortOrder, setSortOrder] = useState("desc");
   const [expandedId, setExpandedId] = useState(null);
+  const [modalIsOpen, setModalIsOpen] = useState(false);
+  const [ketQua, setKetQua] = useState(null);
 
   useEffect(() => {
     fetchRecords();
@@ -58,6 +63,28 @@ const MedicalRecordPage = () => {
 
   const toggleExpand = (id) => {
     setExpandedId(expandedId === id ? null : id);
+  };
+
+  const openModal = async (procedureRequestId, testType) => {
+    if (!procedureRequestId || !testType) {
+      alert("Thiếu procedureRequestId hoặc testType");
+      return;
+    }
+
+    try {
+      const res = await axios.get("/api/doctor/ketquakham", {
+        params: { procedureRequestId, testType },
+      });
+      setKetQua(res.data);
+      setModalIsOpen(true);
+    } catch (err) {
+      alert("Lỗi khi lấy kết quả: " + (err.response?.data?.message || err.message));
+    }
+  };
+
+  const closeModal = () => {
+    setModalIsOpen(false);
+    setKetQua(null);
   };
 
   return (
@@ -111,13 +138,13 @@ const MedicalRecordPage = () => {
         <table className="table table-hover table-bordered align-middle">
           <thead className="table-primary">
             <tr>
-              <th scope="col" className="text-center">#</th>
-              <th scope="col">Triệu chứng</th>
-              <th scope="col">Chẩn đoán</th>
-              <th scope="col">Bác sĩ</th>
-              <th scope="col">Trạng thái</th>
-              <th scope="col">Ngày tạo</th>
-              <th scope="col" className="text-center">Chi tiết</th>
+              <th className="text-center">#</th>
+              <th>Triệu chứng</th>
+              <th>Chẩn đoán</th>
+              <th>Bác sĩ</th>
+              <th>Trạng thái</th>
+              <th>Ngày tạo</th>
+              <th className="text-center">Chi tiết</th>
             </tr>
           </thead>
           <tbody>
@@ -137,11 +164,10 @@ const MedicalRecordPage = () => {
                     <td>{record.doctorId?.name || "Chưa rõ"}</td>
                     <td>
                       <span
-                        className={`badge ${
-                          record.status === "in-progress"
-                            ? "bg-warning"
-                            : "bg-success"
-                        }`}
+                        className={`badge ${record.status === "in-progress"
+                          ? "bg-warning"
+                          : "bg-success"
+                          }`}
                       >
                         {record.status === "in-progress"
                           ? "Đang điều trị"
@@ -163,8 +189,7 @@ const MedicalRecordPage = () => {
                       <td colSpan="7" className="bg-light p-4">
                         <div className="text-muted">
                           <p className="mb-3">
-                            <strong>Kết luận:</strong>{" "}
-                            {record.conclusion || "Chưa có"}
+                            <strong>Kết luận:</strong> {record.conclusion || "Chưa có"}
                           </p>
 
                           <div className="mb-3">
@@ -182,9 +207,7 @@ const MedicalRecordPage = () => {
                                 ))}
                               </ul>
                             ) : (
-                              <p className="ms-3 text-muted">
-                                Không có đơn thuốc.
-                              </p>
+                              <p className="ms-3 text-muted">Không có đơn thuốc.</p>
                             )}
                           </div>
 
@@ -195,20 +218,24 @@ const MedicalRecordPage = () => {
                                 {record.procedureRequests.map((req, idx) => (
                                   <li key={idx} className="list-group-item">
                                     {req.services.map((s, i) => (
-                                      <div key={i}>
-                                        - {s.serviceId?.name || "Tên dịch vụ?"} (
-                                        {s.status})
-                                        {s.resultNote &&
-                                          ` - Ghi chú: ${s.resultNote}`}
+                                      <div key={i} className="d-flex justify-content-between align-items-center">
+                                        <div>
+                                          - {s.serviceId?.name || "Tên dịch vụ?"} ({s.status})
+                                          {s.resultNote && ` - Ghi chú: ${s.resultNote}`}
+                                        </div>
+                                        <button
+                                          className="btn btn-sm btn-outline-secondary"
+                                          onClick={() => openModal(req._id, s.testType)}
+                                        >
+                                          Xem kết quả
+                                        </button>
                                       </div>
                                     ))}
                                   </li>
                                 ))}
                               </ul>
                             ) : (
-                              <p className="ms-3 text-muted">
-                                Không có dịch vụ.
-                              </p>
+                              <p className="ms-3 text-muted">Không có dịch vụ.</p>
                             )}
                           </div>
                         </div>
@@ -221,7 +248,88 @@ const MedicalRecordPage = () => {
           </tbody>
         </table>
       </div>
-    </div>
+
+      <Modal
+        isOpen={modalIsOpen}
+        onRequestClose={closeModal}
+        contentLabel="Kết quả khám"
+        style={{
+          content: {
+            top: "50%",
+            left: "50%",
+            right: "auto",
+            bottom: "auto",
+            transform: "translate(-50%, -50%)",
+            background: "#fff",
+            borderRadius: "10px",
+            padding: "0",
+            maxWidth: "800px",
+            width: "90%",
+            maxHeight: "90vh",
+            overflowY: "auto",
+            boxShadow: "0 4px 20px rgba(0, 0, 0, 0.3)",
+          },
+          overlay: {
+            backgroundColor: "rgba(0, 0, 0, 0.6)", // chỉnh độ mờ tại đây
+            zIndex: 1050,
+          },
+        }}
+        ariaHideApp={false}
+      >
+
+        <div className="modal-dialog modal-lg modal-dialog-centered">
+          <div className="modal-content">
+            <div className="modal-header bg-primary text-white">
+              <h5 className="modal-title">Kết quả xét nghiệm</h5>
+              <button type="button" className="btn-close btn-close-white" onClick={closeModal}></button>
+            </div>
+
+            <div className="modal-body">
+              {ketQua ? (
+                <>
+                  <p><strong>Loại xét nghiệm:</strong> {ketQua.testType.toUpperCase()}</p>
+
+                  <table className="table table-bordered table-hover mt-3">
+                    <thead className="table-light">
+                      <tr>
+                        <th>Chỉ số</th>
+                        <th>Giá trị</th>
+                        <th>Đơn vị</th>
+                        <th>Khoảng tham chiếu</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {ketQua.resultDetails.map((item, idx) => (
+                        <tr key={idx}>
+                          <td>{item.name}</td>
+                          <td>{item.value}</td>
+                          <td>{item.unit || '-'}</td>
+                          <td>{item.referenceRange || '-'}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+
+                  {ketQua.resultNote && (
+                    <div className="mt-3">
+                      <strong>Ghi chú:</strong>
+                      <div className="alert alert-info mt-1">{ketQua.resultNote}</div>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div className="text-center text-muted">Đang tải kết quả...</div>
+              )}
+            </div>
+
+            <div className="modal-footer">
+              <button className="btn btn-secondary" onClick={closeModal}>Đóng</button>
+            </div>
+          </div>
+        </div>
+      </Modal>
+
+    </div >
   );
 };
 
