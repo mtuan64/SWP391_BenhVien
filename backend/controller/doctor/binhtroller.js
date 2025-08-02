@@ -116,6 +116,46 @@ exports.getAppointments = async (req, res) => {
 };
 
 
+// exports.getTodayQueue = async (req, res) => {
+//     try {
+//         const { doctorId, date } = req.query;
+
+//         if (!doctorId || !date) {
+//             return res.status(400).json({ message: "Thiếu doctorId hoặc date" });
+//         }
+
+//         const targetDate = new Date(date);
+//         targetDate.setHours(0, 0, 0, 0);
+
+//         const queue = await Queue.findOne({
+//             doctorId,
+//             date: targetDate
+//         }).populate({
+//             path: 'tickets',
+//             populate: [
+//                 {
+//                     path: 'patientId',
+//                     model: 'Profile'
+//                 },
+//                 {
+//                     path: 'medicalRecordId',
+//                     model: 'MedicalRecord'
+//                 }
+//             ]
+//         });
+
+//         if (!queue) {
+//             return res.status(200).json([]);
+//         }
+
+//         res.status(200).json(queue.tickets);
+//     } catch (err) {
+//         console.error("❌ Lỗi khi lấy hàng chờ:", err);
+//         res.status(500).json({ message: "Lỗi server khi lấy danh sách bệnh nhân." });
+//     }
+// };
+
+
 exports.getTodayQueue = async (req, res) => {
     try {
         const { doctorId, date } = req.query;
@@ -139,7 +179,11 @@ exports.getTodayQueue = async (req, res) => {
                 },
                 {
                     path: 'medicalRecordId',
-                    model: 'MedicalRecord'
+                    model: 'MedicalRecord',
+                    populate: {
+                        path: 'procedureRequests',
+                        model: 'ProcedureRequest'
+                    }
                 }
             ]
         });

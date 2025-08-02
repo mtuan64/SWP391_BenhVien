@@ -8,7 +8,10 @@ const ProcedureRequest = require('../../models/ProcedureRequest');
 const Employee = require('../../models/Employee');
 const MedicalRecord = require('../../models/MedicalRecord');
 const Prescription = require('../../models/Prescription');
+const Profile = require('../../models/Profile');
 const Ticket = require('../../models/Ticket');
+const ProcedureResult = require('../../models/ProcedureResult');
+
 // router.get('/today', binhtroll.getTodayAppointmentsByDoctor);
 
 
@@ -189,5 +192,64 @@ router.get('/medicalrecord/:id', async (req, res) => {
     }
 });
 
+router.get('/danhsachhosocuatatcabenhnhan', async (req, res) => {
+    const { search = '', gender, sortBy = 'name', page = 1, limit = 10 } = req.query;
+
+    const filter = {
+        ...(gender && { gender }),
+        ...(search && {
+            $or: [
+                { name: { $regex: search, $options: 'i' } },
+                { identityNumber: { $regex: search, $options: 'i' } }
+            ]
+        })
+    };
+
+    const total = await Profile.countDocuments(filter);
+    const profiles = await Profile.find(filter)
+        .sort({ [sortBy]: 1 })
+        .skip((page - 1) * limit)
+        .limit(parseInt(limit));
+
+    res.json({ profiles, total });
+});
+router.get('/danhsachhosobenhancuabenhnhan', async (req, res) => {
+    const { profileId } = req.query;
+
+    if (!profileId) return res.status(400).json({ message: 'Missing profileId' });
+
+    const records = await MedicalRecord.find({ profileId }).populate({
+        path: 'procedureRequests',
+        populate: {
+            path: 'services',
+            model: 'Service'
+        }
+    });
+    res.json(records);
+});
+router.get('/ketquakham', async (req, res) => {
+    try {
+        const { procedureRequestId, testType } = req.query;
+
+        if (!procedureRequestId || !testType) {
+            return res.status(400).json({ message: 'Thiếu procedureRequestId hoặc testType' });
+        }
+
+        const result = await ProcedureResult.findOne({
+            procedureRequestId,
+            testType
+        });
+
+        if (!result) {
+            return res.status(404).json({ message: 'Không tìm thấy kết quả xét nghiệm' });
+        }
+
+        res.json(result);
+    } catch (error) {
+        console.error('Lỗi khi lấy kết quả xét nghiệm:', error);
+        res.status(500).json({ message: 'Lỗi server' });
+    }
+}
+);
 
 module.exports = router;

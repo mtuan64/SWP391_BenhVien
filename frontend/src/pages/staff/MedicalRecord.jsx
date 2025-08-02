@@ -1,461 +1,237 @@
-import React, { useEffect, useState } from "react";
-import {
-  Table,
-  Button,
-  message,
-  Input,
-  Modal,
-  Form,
-  Select,
-  DatePicker,
-  Space,
-  notification,
-  Drawer,
-  Descriptions,
-  List,
-} from "antd";
-import axios from "axios";
-import moment from "moment";
-import "../../assets/css/AdminPages.css";
-const { Option } = Select;
-const { RangePicker } = DatePicker;
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import Modal from 'react-modal';
+
+Modal.setAppElement('#root');
 
 function MedicalRecord() {
   const [profiles, setProfiles] = useState([]);
-  const [doctors, setDoctors] = useState([]);
-  const [medicines, setMedicines] = useState([]);
-  const [services, setServices] = useState([]);
-  const [searchText, setSearchText] = useState("");
-  const [genderFilter, setGenderFilter] = useState(null);
-  const [dateRange, setDateRange] = useState(null);
-  const [editingProfile, setEditingProfile] = useState(null);
-  const [viewingProfile, setViewingProfile] = useState(null);
-  const [createModalVisible, setCreateModalVisible] = useState(false);
-  const [form] = Form.useForm();
-  const [createForm] = Form.useForm();
+  const [selectedProfile, setSelectedProfile] = useState(null);
+  const [medicalRecords, setMedicalRecords] = useState([]);
+  const [search, setSearch] = useState('');
+  const [gender, setGender] = useState('');
+  const [sortBy, setSortBy] = useState('name');
+  const [page, setPage] = useState(1);
+  const [limit] = useState(10);
+  const [total, setTotal] = useState(0);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedService, setSelectedService] = useState(null);
+  const [procedureResult, setProcedureResult] = useState(null);
+  const [resultModalOpen, setResultModalOpen] = useState(false);
 
-  // Hàm kiểm tra số CMND/CCCD
-  const validateIdentityNumber = (_, value) => {
-    if (!value) {
-      return Promise.reject(new Error("Vui lòng nhập số CMND/CCCD!"));
-    }
-    const identityNumberRegex = /^[0-9]{12}$/;
-    if (!identityNumberRegex.test(value)) {
-      return Promise.reject(new Error("Số CMND/CCCD phải là 12 ký tự số, không chứa chữ, không khoảng trắng và không ký tự đặc biệt!"));
-    }
-    return Promise.resolve();
-  };
+  useEffect(() => {
+    fetchProfiles();
+  }, [search, gender, sortBy, page]);
 
   const fetchProfiles = async () => {
     try {
-      const token = localStorage.getItem("token");
-      const config = { headers: { Authorization: `Bearer ${token}` } };
-      const res = await axios.get("http://localhost:9999/api/staff/profiles", config);
-      const sortedProfiles = (res.data.data || []).sort(
-        (a, b) => new Date(b.updatedAt) - new Date(a.updatedAt)
-      );
-      setProfiles(sortedProfiles);
-    } catch (err) {
-      message.error("Không thể tải hồ sơ bệnh nhân");
-    }
-  };
-
-  const fetchDoctors = async () => {
-    try {
-      const token = localStorage.getItem("token");
-      const config = { headers: { Authorization: `Bearer ${token}` } };
-      const res = await axios.get("http://localhost:9999/api/staff/doctors", config);
-      setDoctors(res.data.data || []);
-    } catch (err) {
-      message.error("Không thể tải danh sách bác sĩ");
-    }
-  };
-
-  const fetchMedicines = async () => {
-    try {
-      const token = localStorage.getItem("token");
-      const config = { headers: { Authorization: `Bearer ${token}` } };
-      const res = await axios.get("http://localhost:9999/api/staff/medicines", config);
-      setMedicines(res.data.data || []);
-    } catch (err) {
-      message.error("Không thể tải danh sách thuốc");
-    }
-  };
-
-  const fetchServices = async () => {
-    try {
-      const token = localStorage.getItem("token");
-      const config = { headers: { Authorization: `Bearer ${token}` } };
-      const res = await axios.get("http://localhost:9999/api/staff/services", config);
-      setServices(res.data.data || []);
-    } catch (err) {
-      message.error("Không thể tải danh sách dịch vụ");
-    }
-  };
-
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    const user = JSON.parse(localStorage.getItem("user"));
-    if (!token || !user || user.role !== "Staff") {
-      message.error("Truy cập không được phép");
-      window.location.href = "/";
-      return;
-    }
-    fetchProfiles();
-    fetchDoctors();
-    fetchMedicines();
-    fetchServices();
-  }, []);
-
-  const handleDelete = async (id) => {
-    try {
-      const token = localStorage.getItem("token");
-      await axios.delete(`http://localhost:9999/api/staff/profiles/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
+      const res = await axios.get('/api/doctor/danhsachhosocuatatcabenhnhan', {
+        params: { search, gender, sortBy, page, limit },
       });
-      message.success("Đã xóa hồ sơ bệnh nhân");
-      setProfiles((prev) => prev.filter((profile) => profile._id !== id));
+      setProfiles(res.data.profiles);
+      setTotal(res.data.total);
     } catch (err) {
-      message.error("Xóa thất bại");
+      console.error('Loi khi lay danh sach profile', err);
     }
   };
 
-  const handleEdit = (profile) => {
-    setEditingProfile(profile);
-    form.setFieldsValue({
-      name: profile.name,
-      identityNumber: profile.identityNumber,
-      gender: profile.gender,
-      dateOfBirth: profile.dateOfBirth ? moment(profile.dateOfBirth) : null,
-    });
-  };
-
-  const handleEditSubmit = async () => {
+  const fetchMedicalRecords = async (profileId) => {
     try {
-      const values = await form.validateFields();
-      const payload = {
-        name: values.name,
-        identityNumber: values.identityNumber,
-        gender: values.gender,
-        dateOfBirth: values.dateOfBirth,
-      };
-      const token = localStorage.getItem("token");
-      await axios.put(`http://localhost:9999/api/staff/profiles/${editingProfile._id}`, payload, {
-        headers: { Authorization: `Bearer ${token}` },
+      const res = await axios.get('/api/doctor/danhsachhosobenhancuabenhnhan', {
+        params: { profileId },
       });
-      notification.success({ message: "Đã cập nhật hồ sơ bệnh nhân" });
-      setEditingProfile(null);
-      fetchProfiles();
+      setMedicalRecords(res.data);
     } catch (err) {
-      notification.error({ message: "Cập nhật thất bại" });
+      console.error('Loi khi lay ho so benh an', err);
     }
   };
 
-  const handleCreate = async () => {
+  const handleView = (profile) => {
+    setSelectedProfile(profile);
+    fetchMedicalRecords(profile._id);
+    setIsModalOpen(true);
+  };
+
+  const handleViewResult = async (service) => {
+    setSelectedService(service);
     try {
-      const values = await createForm.validateFields();
-      const payload = {
-        name: values.name,
-        identityNumber: values.identityNumber,
-        gender: values.gender,
-        dateOfBirth: values.dateOfBirth,
-      };
-      const token = localStorage.getItem("token");
-      await axios.post("http://localhost:9999/api/staff/profiles", payload, {
-        headers: { Authorization: `Bearer ${token}` },
+      const res = await axios.get('/api/doctor/ketquakham', {
+        params: {
+          procedureRequestId: service.procedureRequestId,
+          testType: service.testType
+        }
       });
-      notification.success({ message: "Đã tạo hồ sơ bệnh nhân" });
-      setCreateModalVisible(false);
-      createForm.resetFields();
-      fetchProfiles();
+      setProcedureResult(res.data);
+      setResultModalOpen(true);
     } catch (err) {
-      notification.error({ message: "Tạo hồ sơ thất bại" });
+      console.error('Loi khi lay ket qua dich vu', err);
     }
   };
-
-  const filteredProfiles = profiles.filter((profile) => {
-    const matchName = profile.name.toLowerCase().includes(searchText.toLowerCase()) ||
-                     profile.identityNumber.toLowerCase().includes(searchText.toLowerCase());
-    const matchGender = genderFilter ? profile.gender === genderFilter : true;
-    const matchDate = dateRange
-      ? new Date(profile.createdAt) >= dateRange[0] &&
-        new Date(profile.createdAt) <= dateRange[1]
-      : true;
-    return matchName && matchGender && matchDate;
-  });
 
   return (
-    <div>
-      <h1>Quản Lý Bệnh Nhân</h1>
-      {/* Filters */}
-      <div
-        style={{ marginBottom: 16, display: "flex", gap: 8, flexWrap: "wrap" }}
-      >
-        <Input
-          placeholder="Tìm kiếm theo tên hoặc số CMND/CCCD"
-          value={searchText}
-          onChange={(e) => setSearchText(e.target.value)}
-          style={{ width: 200 }}
-        />
-        <Select
-          placeholder="Lọc theo giới tính"
-          onChange={(value) => setGenderFilter(value)}
-          allowClear
-          style={{ width: 150 }}
-        >
-          <Option value="Male">Nam</Option>
-          <Option value="Female">Nữ</Option>
-          <Option value="Other">Khác</Option>
-        </Select>
-        <RangePicker
-          onChange={(dates) => setDateRange(dates)}
-          allowClear
-          format="YYYY-MM-DD"
-        />
-        <Button
-          onClick={() => {
-            setSearchText("");
-            setGenderFilter(null);
-            setDateRange(null);
-          }}
-        >
-          Đặt Lại
-        </Button>
-        <Button
-          type="primary"
-          className="custom-add-button"
-          onClick={() => setCreateModalVisible(true)}
-        >
-          Thêm Bệnh Nhân
-        </Button>
+    <div className="p-4">
+      <h2 className="text-2xl font-semibold mb-4">Danh sach benh nhan</h2>
+
+      <div className="flex gap-3 mb-4">
+        <input type="text" placeholder="Tim ten hoac CCCD" className="border p-2 rounded" value={search} onChange={(e) => setSearch(e.target.value)} />
+        <select className="border p-2 rounded" value={gender} onChange={(e) => setGender(e.target.value)}>
+          <option value="">Tat ca gioi tinh</option>
+          <option value="Male">Nam</option>
+          <option value="Female">Nu</option>
+          <option value="Other">Khac</option>
+        </select>
+        <select className="border p-2 rounded" value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
+          <option value="name">Sap xep theo ten</option>
+          <option value="createdAt">Sap xep theo ngay tao</option>
+        </select>
       </div>
 
-      {/* Table */}
-      <Table
-        dataSource={filteredProfiles}
-        columns={[
-          {
-            title: "STT",
-            render: (_, __, index) => index + 1,
-            width: 70,
-          },
-          {
-            title: "Tên Bệnh Nhân",
-            dataIndex: "name",
-            render: (text, record) => (
-              <Button type="link" onClick={() => setViewingProfile(record)}>
-                {text}
-              </Button>
-            ),
-            sorter: (a, b) => a.name.localeCompare(b.name),
-          },
-          { title: "Số CMND/CCCD", dataIndex: "identityNumber" },
-          { title: "Giới Tính", dataIndex: "gender", render: (gender) => ({
-              Male: "Nam",
-              Female: "Nữ",
-              Other: "Khác",
-            }[gender] || gender)
-          },
-          {
-            title: "Ngày Sinh",
-            dataIndex: "dateOfBirth",
-            render: (date) => moment(date).format("YYYY-MM-DD"),
-            sorter: (a, b) => new Date(a.dateOfBirth) - new Date(b.dateOfBirth),
-          },
-          {
-            title: "Hành Động",
-            render: (_, record) => (
-              <Space>
-                <Button onClick={() => handleEdit(record)}>Sửa</Button>
-                <Button danger onClick={() => handleDelete(record._id)}>
-                  Xóa
-                </Button>
-              </Space>
-            ),
-          },
-        ]}
-        rowKey="_id"
-      />
+      <table className="table-auto w-full border mb-8">
+        <thead>
+          <tr className="bg-gray-200">
+            <th className="border px-4 py-2">Ten</th>
+            <th className="border px-4 py-2">CCCD</th>
+            <th className="border px-4 py-2">Gioi tinh</th>
+            <th className="border px-4 py-2">Ngay sinh</th>
+            <th className="border px-4 py-2">Xem</th>
+          </tr>
+        </thead>
+        <tbody>
+          {profiles.map((p) => (
+            <tr key={p._id} className="hover:bg-gray-100">
+              <td className="border px-4 py-2">{p.name}</td>
+              <td className="border px-4 py-2">{p.identityNumber}</td>
+              <td className="border px-4 py-2">{p.gender}</td>
+              <td className="border px-4 py-2">{new Date(p.dateOfBirth).toLocaleDateString()}</td>
+              <td className="border px-4 py-2 text-center">
+                <button onClick={() => handleView(p)} className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600">View</button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
 
-      {/* Patient Detail Drawer */}
-      <Drawer
-        title="Chi Tiết Bệnh Nhân"
-        open={!!viewingProfile}
-        onClose={() => setViewingProfile(null)}
-        width={400}
-      >
-        {viewingProfile && (
-          <Descriptions column={1} bordered>
-            <Descriptions.Item label="Tên Bệnh Nhân">
-              {viewingProfile.name}
-            </Descriptions.Item>
-            <Descriptions.Item label="Số CMND/CCCD">
-              {viewingProfile.identityNumber}
-            </Descriptions.Item>
-            <Descriptions.Item label="Giới Tính">
-              {{
-                Male: "Nam",
-                Female: "Nữ",
-                Other: "Khác",
-              }[viewingProfile.gender] || viewingProfile.gender}
-            </Descriptions.Item>
-            <Descriptions.Item label="Ngày Sinh">
-              {moment(viewingProfile.dateOfBirth).format("YYYY-MM-DD")}
-            </Descriptions.Item>
-            <Descriptions.Item label="Chẩn Đoán">
-              {viewingProfile.diagnose || "—"}
-            </Descriptions.Item>
-            <Descriptions.Item label="Ghi Chú">
-              {viewingProfile.note || "—"}
-            </Descriptions.Item>
-            <Descriptions.Item label="Vấn Đề">
-              {viewingProfile.issues || "—"}
-            </Descriptions.Item>
-            <Descriptions.Item label="Bác Sĩ">
-              {viewingProfile.doctor?.name || "—"}
-            </Descriptions.Item>
-            <Descriptions.Item label="Thuốc">
-              {viewingProfile.medicines?.length > 0 ? (
-                <List
-                  dataSource={viewingProfile.medicines}
-                  renderItem={(item) => (
-                    <List.Item>
-                      {item.name} (Loại: {item.type}, Giá: {item.unitPrice})
-                    </List.Item>
-                  )}
-                />
-              ) : (
-                "—"
-              )}
-            </Descriptions.Item>
-            <Descriptions.Item label="Dịch Vụ">
-              {viewingProfile.services?.length > 0 ? (
-                <List
-                  dataSource={viewingProfile.services}
-                  renderItem={(item) => (
-                    <List.Item>
-                      {item.name} (Giá: {item.price})
-                    </List.Item>
-                  )}
-                />
-              ) : (
-                "—"
-              )}
-            </Descriptions.Item>
-            <Descriptions.Item label="Xét Nghiệm">
-              {viewingProfile.labTest ? (
-                <>
-                  Kết quả: {viewingProfile.labTest.result || "—"}<br />
-                  Ngày: {viewingProfile.labTest.dayTest ? moment(viewingProfile.labTest.dayTest).format("YYYY-MM-DD") : "—"}
-                </>
-              ) : (
-                "—"
-              )}
-            </Descriptions.Item>
-            <Descriptions.Item label="Ngày Tạo">
-              {moment(viewingProfile.createdAt).format("YYYY-MM-DD HH:mm")}
-            </Descriptions.Item>
-            <Descriptions.Item label="Ngày Cập Nhật">
-              {moment(viewingProfile.updatedAt).format("YYYY-MM-DD HH:mm")}
-            </Descriptions.Item>
-          </Descriptions>
-        )}
-      </Drawer>
+      {total > limit && (
+        <div className="flex justify-center mt-4 gap-2">
+          {Array.from({ length: Math.ceil(total / limit) }, (_, i) => (
+            <button
+              key={i}
+              className={`px-3 py-1 rounded ${page === i + 1 ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
+              onClick={() => setPage(i + 1)}
+            >
+              {i + 1}
+            </button>
+          ))}
+        </div>
+      )}
 
-      {/* Edit Patient Modal */}
       <Modal
-        title="Sửa Hồ Sơ Bệnh Nhân"
-        open={!!editingProfile}
-        onCancel={() => setEditingProfile(null)}
-        onOk={handleEditSubmit}
-        okText="Lưu"
-        destroyOnClose
+        isOpen={isModalOpen}
+        onRequestClose={() => setIsModalOpen(false)}
+        className="bg-white p-6 rounded shadow-lg max-w-4xl mx-auto my-10 overflow-y-auto max-h-screen"
+        overlayClassName="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50"
       >
-        <Form form={form} layout="vertical">
-          <Form.Item
-            label="Tên Bệnh Nhân"
-            name="name"
-            rules={[{ required: true, message: "Vui lòng nhập tên bệnh nhân!" }]}
-          >
-            <Input />
-          </Form.Item>
-          <Form.Item
-            label="Số CMND/CCCD"
-            name="identityNumber"
-            rules={[
-              { required: true, message: "Vui lòng nhập số CMND/CCCD!" },
-              { validator: validateIdentityNumber },
-            ]}
-          >
-            <Input />
-          </Form.Item>
-          <Form.Item
-            label="Giới Tính"
-            name="gender"
-            rules={[{ required: true, message: "Vui lòng chọn giới tính!" }]}
-          >
-            <Select>
-              <Option value="Male">Nam</Option>
-              <Option value="Female">Nữ</Option>
-              <Option value="Other">Khác</Option>
-            </Select>
-          </Form.Item>
-          <Form.Item
-            label="Ngày Sinh"
-            name="dateOfBirth"
-            rules={[{ required: true, message: "Vui lòng chọn ngày sinh!" }]}
-          >
-            <DatePicker format="YYYY-MM-DD" style={{ width: "100%" }} />
-          </Form.Item>
-        </Form>
+        <button className="text-right text-red-500 font-bold mb-2" onClick={() => setIsModalOpen(false)}>Đóng</button>
+
+        {selectedProfile && (
+          <>
+            <h3 className="text-xl font-semibold mb-4">Hồ sơ bệnh án của: {selectedProfile.name}</h3>
+            {medicalRecords.length === 0 ? (
+              <p>Chưa có hồ sơ bệnh án nào.</p>
+            ) : (
+              <table className="table-auto w-full border">
+                <thead>
+                  <tr className="bg-gray-200">
+                    <th className="border px-4 py-2">Ngày tạo</th>
+                    <th className="border px-4 py-2">Triệu chứng</th>
+                    <th className="border px-4 py-2">Chẩn đoán</th>
+                    <th className="border px-4 py-2">Kết luận</th>
+                    <th className="border px-4 py-2">Trạng thái</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {medicalRecords.map((record) => (
+                    <React.Fragment key={record._id}>
+                      <tr>
+                        <td className="border px-4 py-2">{new Date(record.createdAt).toLocaleString()}</td>
+                        <td className="border px-4 py-2">{record.symptoms || '-'}</td>
+                        <td className="border px-4 py-2">{record.diagnosis || '-'}</td>
+                        <td className="border px-4 py-2">{record.conclusion || '-'}</td>
+                        <td className="border px-4 py-2">{record.status}</td>
+                      </tr>
+                      {record.procedureRequests?.map((req, idx) => (
+                        <tr key={req._id} className="bg-gray-50">
+                          <td colSpan={5} className="border px-4 py-2">
+                            <p className="font-semibold mb-2">Yêu cầu thủ tục #{idx + 1}</p>
+                            {req.services?.map((service, idx2) => (
+                              <div key={idx2} className="ml-4 mt-2 border-l-4 pl-2 border-blue-300">
+                                <p>- Dịch vụ: {service.testType}</p>
+                                <p>- Trạng thái: {service.status}</p>
+                                <button
+                                  className="text-blue-500 underline"
+                                  onClick={() => {
+                                    // Debug in log
+                                    console.log("procedureRequestId:", req._id);
+                                    console.log("testType:", service.testType);
+
+                                    handleViewResult({
+                                      ...service,
+                                      procedureRequestId: req._id,
+                                    });
+                                  }}
+                                >
+                                  📄 Xem kết quả
+                                </button>
+                              </div>
+                            ))}
+                          </td>
+                        </tr>
+                      ))}
+
+                    </React.Fragment>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </>
+        )}
       </Modal>
 
-      {/* Create Patient Modal */}
       <Modal
-        title="Thêm Bệnh Nhân Mới"
-        open={createModalVisible}
-        onCancel={() => setCreateModalVisible(false)}
-        onOk={handleCreate}
-        okText="Tạo"
-        destroyOnClose
+        isOpen={resultModalOpen}
+        onRequestClose={() => setResultModalOpen(false)}
+        className="bg-white p-6 rounded shadow-lg max-w-2xl mx-auto my-10 overflow-y-auto max-h-screen"
+        overlayClassName="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50"
       >
-        <Form form={createForm} layout="vertical">
-          <Form.Item
-            label="Tên Bệnh Nhân"
-            name="name"
-            rules={[{ required: true, message: "Vui lòng nhập tên bệnh nhân!" }]}
-          >
-            <Input />
-          </Form.Item>
-          <Form.Item
-            label="Số CMND/CCCD"
-            name="identityNumber"
-            rules={[
-              { required: true, message: "Vui lòng nhập số CMND/CCCD!" },
-              { validator: validateIdentityNumber },
-            ]}
-          >
-            <Input />
-          </Form.Item>
-          <Form.Item
-            label="Giới Tính"
-            name="gender"
-            rules={[{ required: true, message: "Vui lòng chọn giới tính!" }]}
-          >
-            <Select>
-              <Option value="Male">Nam</Option>
-              <Option value="Female">Nữ</Option>
-              <Option value="Other">Khác</Option>
-            </Select>
-          </Form.Item>
-          <Form.Item
-            label="Ngày Sinh"
-            name="dateOfBirth"
-            rules={[{ required: true, message: "Vui lòng chọn ngày sinh!" }]}
-          >
-            <DatePicker format="YYYY-MM-DD" style={{ width: "100%" }} />
-          </Form.Item>
-        </Form>
+        <button className="text-right text-red-500 font-bold mb-2" onClick={() => setResultModalOpen(false)}>Đóng</button>
+        {procedureResult ? (
+          <>
+            <h3 className="text-lg font-semibold mb-2">Kết quả xét nghiệm ({procedureResult.testType})</h3>
+            <p><strong>Ghi chú:</strong> {procedureResult.resultNote || 'Không có'}</p>
+            <table className="w-full border mt-4">
+              <thead>
+                <tr className="bg-gray-100">
+                  <th className="border px-2 py-1">Tên chỉ số</th>
+                  <th className="border px-2 py-1">Giá trị</th>
+                  <th className="border px-2 py-1">Đơn vị</th>
+                  <th className="border px-2 py-1">Khoảng tham chiếu</th>
+                </tr>
+              </thead>
+              <tbody>
+                {procedureResult.resultDetails.map((r, i) => (
+                  <tr key={i}>
+                    <td className="border px-2 py-1">{r.name}</td>
+                    <td className="border px-2 py-1">{r.value}</td>
+                    <td className="border px-2 py-1">{r.unit || '-'}</td>
+                    <td className="border px-2 py-1">{r.referenceRange || '-'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </>
+        ) : (
+          <p>Đang tải dữ liệu...</p>
+        )}
       </Modal>
     </div>
   );
