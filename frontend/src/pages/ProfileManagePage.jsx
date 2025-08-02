@@ -45,7 +45,7 @@ const ProfileManagePage = () => {
         },
         body: JSON.stringify(editingProfile),
       });
-      
+
       if (res.ok) {
         alert("Cập nhật thành công");
         setEditingProfile(null);
@@ -56,7 +56,7 @@ const ProfileManagePage = () => {
     }
   };
 
- 
+
 
   useEffect(() => {
     fetchProfiles();
@@ -86,22 +86,22 @@ const ProfileManagePage = () => {
           </div>
           <p className="text-gray-600">Quản lý và cập nhật thông tin hồ sơ cá nhân</p>
         </div>
-{/* Action Buttons */}
-<div className="flex space-x-3 mt-4 mb-4">
-  <button
-    onClick={() => navigate("/taoprofile")}
-    className="flex items-center space-x-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium transition-all duration-200 shadow"
-  >
-    <span>+ Tạo hồ sơ</span>
-  </button>
+        {/* Action Buttons */}
+        <div className="flex space-x-3 mt-4 mb-4">
+          <button
+            onClick={() => navigate("/taoprofile")}
+            className="flex items-center space-x-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium transition-all duration-200 shadow"
+          >
+            <span>+ Tạo hồ sơ</span>
+          </button>
 
-  <button
-    onClick={() => navigate("/medical-records")}
-    className="flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-all duration-200 shadow"
-  >
-    <span>Lấy hồ sơ bệnh án</span>
-  </button>
-</div>
+          <button
+            onClick={() => navigate("/nhanhosobenhan")}
+            className="flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-all duration-200 shadow"
+          >
+            <span>Lấy hồ sơ bệnh án</span>
+          </button>
+        </div>
 
         {/* Profiles Grid */}
         <div className="grid gap-6 mb-8">
