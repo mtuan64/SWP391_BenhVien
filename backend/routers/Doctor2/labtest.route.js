@@ -7,6 +7,14 @@ router.get('/parameters/:testType', (req, res, next) => {
   procedureResultController.getTestParameters(req, res, next);
 });
 
-router.post('/submit', procedureResultController.submitTestResult);
+router.post('/submit', (req, res, next) => {
+  console.log('Received POST request for /submit');
+  procedureResultController.submitTestResult(req, res, next);
+});
+
+router.get('/results/doctor/:doctorId2', (req, res, next) => {
+  console.log(`Received GET request for /results/doctor/${req.params.doctorId2}`);
+  procedureResultController.getAllProcedureResultByDoctorId2(req, res, next);
+});
 
 module.exports = router;

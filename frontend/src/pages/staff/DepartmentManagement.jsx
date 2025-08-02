@@ -1,24 +1,8 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import {
-  Table,
-  Button,
-  Container,
-  Spinner,
-  Modal,
-  Form,
-  Row,
-  Col,
-  InputGroup,
-  FormControl,
-  Pagination,
-  Card,
-  Badge,
-} from "react-bootstrap";
-import { FaEdit, FaTrash, FaPlus, FaSearch, FaTimes } from "react-icons/fa";
 import { message } from "antd";
-import "../../assets/css/Homepage.css";
+import { FaEdit, FaTrash, FaPlus, FaSearch, FaTimes } from "react-icons/fa";
 
 const DepartmentManagement = () => {
   const [departments, setDepartments] = useState([]);
@@ -71,6 +55,7 @@ const DepartmentManagement = () => {
       setTotalItems(pagination.total || 0);
     } catch (error) {
       console.error("Lỗi tải danh sách khoa:", error);
+      message.error("Lỗi tải danh sách khoa");
     } finally {
       setLoading(false);
     }
@@ -179,187 +164,220 @@ const DepartmentManagement = () => {
     setShowDeleteModal(false);
   };
 
+  const truncateDescription = (description) => {
+    if (!description) return "Không có";
+    return description.length > 50 ? description.substring(0, 50) + "..." : description;
+  };
+
   return (
-    <Container fluid className="py-5 bg-light">
-      <Card className="shadow-lg border-0 rounded-3">
-        <Card.Header className="bg-primary text-white d-flex justify-content-between align-items-center">
-          <h4 className="mb-0">Quản lý khoa</h4>
-          <Button variant="success" onClick={handleAddNew} className="rounded-pill px-4">
-            <FaPlus className="me-2" /> Thêm khoa
-          </Button>
-        </Card.Header>
-        <Card.Body>
-          <Row className="mb-4">
-            <Col md={4}>
-              <InputGroup className="rounded-pill overflow-hidden shadow-sm">
-                <InputGroup.Text className="bg-white border-0"><FaSearch /></InputGroup.Text>
-                <FormControl
-                  placeholder="Tìm theo tên hoặc mô tả..."
-                  value={searchQuery}
-                  onChange={handleSearchChange}
-                  className="border-0"
-                />
-                {searchQuery && (
-                  <InputGroup.Text className="bg-white border-0" onClick={handleClearFilters} style={{ cursor: 'pointer' }}>
-                    <FaTimes />
-                  </InputGroup.Text>
-                )}
-              </InputGroup>
-            </Col>
-          </Row>
+    <div className="p-6 max-w-6xl mx-auto bg-white rounded-lg shadow-lg">
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-2xl font-bold">Quản lý khoa</h2>
+        <button
+          onClick={handleAddNew}
+          className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded flex items-center"
+        >
+          <FaPlus className="mr-2" /> Thêm khoa
+        </button>
+      </div>
 
-          {loading ? (
-            <div className="text-center py-5">
-              <Spinner animation="border" variant="primary" />
-            </div>
-          ) : departments.length === 0 ? (
-            <p className="text-muted text-center">Không tìm thấy phòng ban nào.</p>
-          ) : (
-            <>
-              <div className="table-responsive">
-                <Table striped hover className="table-align-middle">
-                  <thead className="table-primary">
-                    <tr>
-                      <th>STT</th>
-                      <th>Tên</th>
-                      <th>Mô tả</th>
-                      <th>Hình ảnh</th>
-                      <th>Hành động</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {departments.map((department, index) => (
-                      <tr key={department._id}>
-                        <td>{(currentPage - 1) * paginationLimit + index + 1}</td>
-                        <td>{department.name}</td>
-                        <td className="text-muted">{department.description || "Không có"}</td>
-                        <td>
-                          {department.image ? (
-                            <img
-                              src={department.image}
-                              alt="Ảnh phòng ban"
-                              className="rounded-circle shadow-sm"
-                              style={{ width: "50px", height: "50px", objectFit: "cover" }}
-                            />
-                          ) : (
-                            <Badge bg="secondary">Không có</Badge>
-                          )}
-                        </td>
-                        <td>
-                          <Button variant="outline-primary" size="sm" className="me-2" onClick={() => handleEdit(department)}>
-                            <FaEdit />
-                          </Button>
-                          <Button variant="outline-danger" size="sm" onClick={() => handleDeleteClick(department._id)}>
-                            <FaTrash />
-                          </Button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </Table>
-              </div>
-
-              <div className="d-flex justify-content-between align-items-center mt-4">
-                <small className="text-muted">
-                  Hiển thị từ {(currentPage - 1) * paginationLimit + 1} đến{" "}
-                  {Math.min(currentPage * paginationLimit, totalItems)} / {totalItems}
-                </small>
-                <Pagination className="mb-0">
-                  <Pagination.Prev
-                    onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-                    disabled={currentPage === 1}
-                  />
-                  {[...Array(totalPages).keys()].map((_, idx) => (
-                    <Pagination.Item
-                      key={idx + 1}
-                      active={currentPage === idx + 1}
-                      onClick={() => setCurrentPage(idx + 1)}
-                    >
-                      {idx + 1}
-                    </Pagination.Item>
-                  ))}
-                  <Pagination.Next
-                    onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
-                    disabled={currentPage === totalPages}
-                  />
-                </Pagination>
-              </div>
-            </>
+      <div className="flex items-center gap-4 mb-6">
+        <label className="font-semibold">Tìm kiếm:</label>
+        <div className="relative">
+          <input
+            type="text"
+            placeholder="Tìm theo tên hoặc mô tả..."
+            value={searchQuery}
+            onChange={handleSearchChange}
+            className="border px-3 py-1 rounded w-full max-w-xs"
+          />
+          {searchQuery && (
+            <FaTimes
+              className="absolute right-2 top-2 cursor-pointer text-gray-500"
+              onClick={handleClearFilters}
+            />
           )}
-        </Card.Body>
-      </Card>
+        </div>
+      </div>
+
+      {loading ? (
+        <p className="text-gray-600 italic">Đang tải dữ liệu...</p>
+      ) : departments.length === 0 ? (
+        <p className="text-gray-600 italic">Không tìm thấy phòng ban nào.</p>
+      ) : (
+        <div className="overflow-auto rounded-lg border">
+          <table className="min-w-full text-sm">
+            <thead className="bg-gray-100 text-gray-700 font-semibold text-left">
+              <tr>
+                <th className="px-4 py-2 border">STT</th>
+                <th className="px-4 py-2 border">Tên</th>
+                <th className="px-4 py-2 border">Mô tả</th>
+                <th className="px-4 py-2 border">Hình ảnh</th>
+                <th className="px-4 py-2 border text-center">Hành động</th>
+              </tr>
+            </thead>
+            <tbody>
+              {departments.map((department, index) => (
+                <tr key={department._id} className="hover:bg-gray-50">
+                  <td className="px-4 py-2 border">{(currentPage - 1) * paginationLimit + index + 1}</td>
+                  <td className="px-4 py-2 border">{department.name}</td>
+                  <td className="px-4 py-2 border">{truncateDescription(department.description)}</td>
+                  <td className="px-4 py-2 border">
+                    {department.image ? (
+                      <img
+                        src={department.image}
+                        alt="Ảnh phòng ban"
+                        className="rounded-circle shadow-sm"
+                        style={{ width: "50px", height: "50px", objectFit: "cover" }}
+                      />
+                    ) : (
+                      <span className="text-gray-500">Không có</span>
+                    )}
+                  </td>
+                  <td className="px-4 py-2 border text-center">
+                    <button
+                      onClick={() => handleEdit(department)}
+                      className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded mr-2"
+                    >
+                      <FaEdit />
+                    </button>
+                    <button
+                      onClick={() => handleDeleteClick(department._id)}
+                      className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded"
+                    >
+                      <FaTrash />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {departments.length > 0 && (
+        <div className="flex justify-between items-center mt-4">
+          <span className="text-gray-600">
+            Hiển thị từ {(currentPage - 1) * paginationLimit + 1} đến{" "}
+            {Math.min(currentPage * paginationLimit, totalItems)} / {totalItems}
+          </span>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+              disabled={currentPage === 1}
+              className="px-3 py-1 border rounded hover:bg-gray-100 disabled:opacity-50"
+            >
+              Trước
+            </button>
+            {[...Array(totalPages).keys()].map((_, idx) => (
+              <button
+                key={idx + 1}
+                onClick={() => setCurrentPage(idx + 1)}
+                className={`px-3 py-1 border rounded ${currentPage === idx + 1 ? "bg-blue-500 text-white" : "hover:bg-gray-100"}`}
+              >
+                {idx + 1}
+              </button>
+            ))}
+            <button
+              onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+              disabled={currentPage === totalPages}
+              className="px-3 py-1 border rounded hover:bg-gray-100 disabled:opacity-50"
+            >
+              Sau
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Modal Thêm / Sửa */}
-      <Modal show={showModal} onHide={() => setShowModal(false)} centered size="md">
-        <Modal.Header closeButton className="bg-primary text-white">
-          <Modal.Title>{currentDepartment ? "Cập nhật phòng ban" : "Thêm phòng ban"}</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <Form>
-            <Form.Group className="mb-3">
-              <Form.Label>Tên phòng ban</Form.Label>
-              <Form.Control
-                name="name"
-                value={form.name}
-                onChange={handleChange}
-                placeholder="Nhập tên phòng ban"
-                className="rounded-pill"
-              />
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>Mô tả</Form.Label>
-              <Form.Control
-                as="textarea"
-                rows={3}
-                name="description"
-                value={form.description}
-                onChange={handleChange}
-                placeholder="Nhập mô tả"
-                className="rounded-3"
-              />
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>Ảnh đại diện</Form.Label>
-              <Form.Control type="file" accept="image/*" onChange={(e) => setImageFile(e.target.files[0])} className="rounded-pill" />
-              {currentDepartment?.image && (
-                <div className="mt-2">
+      {showModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white rounded-lg shadow-lg max-w-md w-full p-6">
+            <h2 className="text-xl font-bold mb-4">
+              {currentDepartment ? "Cập nhật phòng ban" : "Thêm phòng ban"}
+            </h2>
+            <div className="space-y-4">
+              <div>
+                <label className="block font-semibold mb-1">Tên phòng ban</label>
+                <input
+                  name="name"
+                  value={form.name}
+                  onChange={handleChange}
+                  placeholder="Nhập tên phòng ban"
+                  className="w-full border px-3 py-2 rounded"
+                />
+              </div>
+              <div>
+                <label className="block font-semibold mb-1">Mô tả</label>
+                <textarea
+                  name="description"
+                  value={form.description}
+                  onChange={handleChange}
+                  placeholder="Nhập mô tả"
+                  className="w-full border rounded px-3 py-2"
+                  rows={3}
+                />
+              </div>
+              <div>
+                <label className="block font-semibold mb-1">Ảnh đại diện</label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => setImageFile(e.target.files[0])}
+                  className="w-full border rounded px-3 py-2"
+                />
+                {currentDepartment?.image && (
                   <img
                     src={currentDepartment.image}
                     alt="Current"
-                    className="rounded-circle shadow-sm"
+                    className="mt-2 rounded-circle shadow-sm"
                     style={{ width: "80px", height: "80px", objectFit: "cover" }}
                   />
-                </div>
-              )}
-            </Form.Group>
-          </Form>
-        </Modal.Body>
-        <Modal.Footer className="border-0 pt-0">
-          <Button variant="outline-secondary" onClick={() => setShowModal(false)} className="rounded-pill px-4">
-            Hủy
-          </Button>
-          <Button variant="primary" onClick={handleSubmit} className="rounded-pill px-4">
-            {currentDepartment ? "Lưu" : "Thêm"}
-          </Button>
-        </Modal.Footer>
-      </Modal>
+                )}
+              </div>
+            </div>
+            <div className="mt-6 flex justify-end gap-3">
+              <button
+                onClick={() => setShowModal(false)}
+                className="px-4 py-2 border rounded hover:bg-gray-100"
+              >
+                Hủy
+              </button>
+              <button
+                onClick={handleSubmit}
+                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+              >
+                {currentDepartment ? "Lưu" : "Thêm"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Modal Xác nhận Xóa */}
-      <Modal show={showDeleteModal} onHide={cancelDelete} centered size="sm">
-        <Modal.Header closeButton className="bg-danger text-white">
-          <Modal.Title>Xác nhận xóa</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>Bạn có chắc chắn muốn xóa phòng ban này?</Modal.Body>
-        <Modal.Footer className="border-0">
-          <Button variant="outline-secondary" onClick={cancelDelete} className="rounded-pill px-4">
-            Hủy
-          </Button>
-          <Button variant="danger" onClick={confirmDelete} className="rounded-pill px-4">
-            Xóa
-          </Button>
-        </Modal.Footer>
-      </Modal>
-    </Container>
+      {showDeleteModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg shadow-lg max-w-sm w-full p-6">
+            <h2 className="text-xl font-bold mb-4">Xác nhận xóa</h2>
+            <p>Bạn có chắc chắn muốn xóa phòng ban này?</p>
+            <div className="mt-6 flex justify-end gap-3">
+              <button
+                onClick={cancelDelete}
+                className="px-4 py-2 border rounded hover:bg-gray-100"
+              >
+                Hủy
+              </button>
+              <button
+                onClick={confirmDelete}
+                className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+              >
+                Xóa
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
   );
 };
 

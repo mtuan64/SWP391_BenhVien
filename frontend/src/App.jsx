@@ -62,6 +62,7 @@ import NotificationDetail from "./pages/NotificationDetail";
 import Doctor2Layout from "./components/doctor2/Doctor2Layout";
 import PatientList from "./pages/Doctor2/PatientList";
 import LabTest from "./pages/Doctor2/Labtest";
+import TestResultList from "./pages/Doctor2/LabtestHistory";
 import {
   PrivateRoute,
   PrivateRouteNotAllowUser,
@@ -325,6 +326,7 @@ const AppRoutes = () => {
             <Route index element={<PatientList />} />
             <Route path="procedure-requests" element={<PatientList />} />
             <Route path="lab-tests" element={<LabTest />} />
+            <Route path="labtest/result" element={<TestResultList />} />
           </Route>
           <Route
             path="/doctor"
@@ -349,7 +351,7 @@ const AppRoutes = () => {
           {/* Public routes */}
           <Route path="/home" element={<HomePage />} />
           <Route path="/service-home" element={<ServicePage />} />
-          <Route path="/doctor-home" element={<DoctorPage />} />
+          <Route path="/doctor-list" element={<DoctorPage />} />
           <Route path="/blogs" element={<BlogListPage />} />
           <Route path="/news" element={<NewsListPage />} />
           <Route path="/blog/:slug" element={<BlogDetail />} />

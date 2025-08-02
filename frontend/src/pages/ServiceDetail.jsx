@@ -1,87 +1,141 @@
 import React, { useEffect, useState } from "react";
+import { useParams, Link } from "react-router-dom";
 import axios from "axios";
-import { Link, useParams } from "react-router-dom";
 import "../assets/css/ServiceDetail.css";
-import HeroBanner from "../components/HeroBanner";
 import TopBarComponent from "../components/TopBarComponent";
 
 const DEPT_BANNER = "https://xdcs.cdnchinhphu.vn/446259493575335936/2024/1/13/bv-1705119640880430272769.jpg";
 
 const ServiceDetail = () => {
-    const { serviceId } = useParams();
-    const [service, setService] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+  const { serviceId } = useParams();
+  const [service, setService] = useState(null);
+  const [allServices, setAllServices] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-    useEffect(() => {
-        const fetchService = async () => {
-            try {
-                const res = await axios.get(`/api/user/service/${serviceId}`);
-                console.log("API Response:", res.data);
-                if (Array.isArray(res.data.service)) {
-                    setService(res.data.service[0]);
-                } else if (res.data.data) {
-                    setService(res.data.data);
-                } else if (res.data.service) {
-                    setService(res.data.service);
-                } else {
-                    throw new Error("Invalid response format");
-                }
-                setLoading(false);
-            } catch (error) {
-                console.error("Error fetching service details:", error);
-                setError("Failed to load service details. Please check the console for more details.");
-                setLoading(false);
-            }
-        };
+  // Hàm trích xuất và giới hạn nội dung
+  const truncateText = (text, maxLength) => {
+    if (!text || text.length <= maxLength) return text || "";
+    return text.substring(0, maxLength - 3) + "...";
+  };
 
-        fetchService();
-    }, [serviceId]);
+  useEffect(() => {
+  const fetchData = async () => {
+    try {
+      const serviceResponse = await axios.get(`http://localhost:9999/api/user/service/${serviceId}`);
+      console.log("Service Response:", serviceResponse.data);
+      if (serviceResponse.data.service && Array.isArray(serviceResponse.data.service) && serviceResponse.data.service.length > 0) {
+        setService(serviceResponse.data.service[0]); // Take the first item from the array
+      } else {
+        throw new Error("No valid service data found in response");
+      }
 
-    if (loading) {
-        return (
-            <div className="text-center py-5">
-                <h3>Loading...</h3>
-            </div>
-        );
+      const allServicesResponse = await axios.get(`http://localhost:9999/api/user/service`);
+      console.log("All Services Response:", allServicesResponse.data);
+      const services = allServicesResponse.data.services || allServicesResponse.data.data || allServicesResponse.data || [];
+      setAllServices(services);
+
+      setLoading(false);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+      console.log("Error response data:", error.response?.data);
+      setError("Không thể tải thông tin dịch vụ. Vui lòng kiểm tra console.");
+      setLoading(false);
     }
+  };
 
-    if (error) {
-        return (
-            <div className="text-center py-5">
-                <h3>{error}</h3>
-                <Link to="/service-home" className="btn btn-primary mt-3">Back to Service Home</Link>
-            </div>
-        );
-    }
+  fetchData();
+}, [serviceId]);
 
+  if (loading) {
+    return <div className="servicedetail-loading">Đang tải...</div>;
+  }
+
+  if (error || !service) {
     return (
-        <>
-            {/* Topbar */}
-            <TopBarComponent />
-
-            {/* Hero Carousel */}
-            <HeroBanner
-                image={DEPT_BANNER}
-                title="Dịch Vụ Y Tế KiwiCare"
-                subtitle="Chăm sóc sức khỏe toàn diện với các chuyên khoa hàng đầu"
-            />
-
-            <div className="service-detail-container">
-                <h1 className="service-detail-title">{service.name}</h1>
-                <div className="service-detail-desc">
-                    <b>Mô tả dịch vụ:</b>
-                    <div>{service.description || "Chưa cập nhật mô tả."}</div>
-                </div>
-                <div className="service-detail-price">
-                    <b>Giá dịch vụ:</b>
-                    <span>{service.price?.toLocaleString()} VNĐ</span>
-                </div>
-                <Link className="btn btn-secondary mt-4" to="/service-home">Quay lại danh sách dịch vụ</Link>
-            </div>
-        </>
-
+      <div className="servicedetail-error">
+        Lỗi: {error || "Không tìm thấy dịch vụ."}
+        <Link to="/service-home" className="btn btn-primary mt-3">Quay lại danh sách dịch vụ</Link>
+      </div>
     );
+  }
+
+  return (
+    <div className="servicedetail-page">
+      {/* Topbar */}
+      <TopBarComponent />
+
+      <div className="servicedetail-wrapper">
+        <div className="servicedetail-main">
+          <div className="servicedetail-container">
+            <div className="servicedetail-card">
+              <div className="servicedetail-header">
+                <h1 className="servicedetail-title">{service.name || "Dịch vụ không rõ tên"}</h1>
+              </div>
+              {service.image && (
+                <div className="servicedetail-image">
+                  <img
+                    src={service.image}
+                    alt={service.name || "Service"}
+                    className="servicedetail-main-image"
+                  />
+                </div>
+              )}
+              <div className="servicedetail-content">
+                <p><strong>Mô tả:</strong> {service.description || "Chưa cập nhật mô tả."}</p>
+                <p><strong>Giá dịch vụ:</strong> {service.price ? `${service.price.toLocaleString()} VNĐ` : "Chưa cập nhật giá."}</p>
+                <Link to="/service-home" className="servicedetail-read-more">Quay lại danh sách dịch vụ</Link>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="servicedetail-sidebar">
+          <h3 className="servicedetail-sidebar-title">Danh sách dịch vụ</h3>
+          <div className="servicedetail-featured-services">
+            {allServices.filter((s) => s._id !== service._id).length === 0 ? (
+              <p>Không có dịch vụ nào khác.</p>
+            ) : (
+              allServices
+                .filter((s) => s._id !== service._id)
+                .map((otherService, index) => (
+                  <div key={index} className="servicedetail-featured-service-card">
+                    <Link to={`/service/${otherService._id}`}>
+                      <img
+                        src={otherService.image || "https://via.placeholder.com/100x100"}
+                        alt={otherService.name || "Unknown Service"}
+                        className="servicedetail-featured-service-image"
+                        onError={(e) => (e.target.src = "https://via.placeholder.com/100x100")}
+                      />
+                    </Link>
+                    <div className="servicedetail-featured-service-content">
+                      <Link
+                        to={`/service/${otherService._id}`}
+                        className="servicedetail-featured-service-title-link"
+                      >
+                        <h4 className="servicedetail-featured-service-title">
+                          {(otherService.name || "Dịch vụ không rõ tên").length > 20
+                            ? (otherService.name || "Dịch vụ không rõ tên").substring(0, 20) + "..."
+                            : otherService.name || "Dịch vụ không rõ tên"}
+                        </h4>
+                      </Link>
+                      <p className="servicedetail-featured-service-excerpt">
+                        {truncateText(otherService.description || "Chưa có mô tả", 50)}
+                      </p>
+                      <Link
+                        to={`/service/${otherService._id}`}
+                        className="servicedetail-read-more"
+                      >
+                        Xem chi tiết
+                      </Link>
+                    </div>
+                  </div>
+                ))
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 };
 
 export default ServiceDetail;
