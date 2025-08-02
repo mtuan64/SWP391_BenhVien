@@ -1,3 +1,4 @@
+// testParameters.js
 module.exports = {
     blood: [
         { name: 'Hemoglobin', unit: 'g/dL', referenceRange: '12-16' },
@@ -10,10 +11,21 @@ module.exports = {
         { name: 'Glucose', unit: 'mg/dL', referenceRange: '0-15' }
     ],
     xray: [
-        { name: 'Findings', unit: '', referenceRange: 'Normal/Abnormal' },
-        { name: 'Location', unit: '', referenceRange: 'e.g., Chest, Spine' }
+        { name: 'Chest X-Ray', unit: '', referenceRange: 'Normal/Abnormal' },
+        { name: 'Spine X-Ray', unit: '', referenceRange: 'Normal/Abnormal' }
     ],
-    other: [
-        { name: 'Custom Parameter', unit: '', referenceRange: '' }
+    ultrasound: [
+        { name: 'Abdominal Ultrasound', unit: '', referenceRange: 'Normal/Abnormal' },
+        { name: 'Obstetric Ultrasound', unit: '', referenceRange: 'Normal/Abnormal' }
+    ],
+    ecg: [
+        { name: 'Electrocardiogram (ECG)', unit: '', referenceRange: 'Normal/Abnormal' },
+        { name: 'Heart Rate', unit: 'bpm', referenceRange: '60-100' }
+    ],
+    lipid: [ // New test type
+        { name: 'Cholesterol Total', unit: 'mg/dL', referenceRange: '125-200' },
+        { name: 'HDL Cholesterol', unit: 'mg/dL', referenceRange: '40-60' },
+        { name: 'LDL Cholesterol', unit: 'mg/dL', referenceRange: '0-100' },
+        { name: 'Triglycerides', unit: 'mg/dL', referenceRange: '0-150' }
     ]
 };

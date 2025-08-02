@@ -58,11 +58,13 @@ const PatientList = () => {
   }, [navigate]);
 
   useEffect(() => {
-    const filtered = procedureRequests.filter((request) => {
-      if (!request.requestedAt) return false;
-      const requestDate = new Date(request.requestedAt).toISOString().split('T')[0];
-      return requestDate === selectedDate;
-    });
+    const filtered = procedureRequests
+      .filter((request) => {
+        if (!request.requestedAt) return false;
+        const requestDate = new Date(request.requestedAt).toISOString().split('T')[0];
+        return requestDate === selectedDate;
+      })
+      .sort((a, b) => new Date(a.requestedAt) - new Date(b.requestedAt)); // Sort by requestedAt time
     setFilteredRequests(filtered);
   }, [procedureRequests, selectedDate]);
 
@@ -122,6 +124,7 @@ const PatientList = () => {
                 <table className="min-w-full text-sm text-gray-700">
                   <thead className="bg-gray-100 text-left">
                     <tr>
+                      <th className="py-3 px-4 font-semibold">STT</th>
                       <th className="py-3 px-4 font-semibold">Tên bệnh nhân</th>
                       <th className="py-3 px-4 font-semibold">CCCD</th>
                       <th className="py-3 px-4 font-semibold">Bác sĩ yêu cầu</th>
@@ -132,11 +135,12 @@ const PatientList = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {filteredRequests.map((request) =>
+                    {filteredRequests.map((request, index) =>
                       request.services.map((service, serviceIndex) => (
                         <tr key={`${request._id}-${service._id}`} className="border-b hover:bg-gray-50">
                           {serviceIndex === 0 && (
                             <>
+                              <td className="py-3 px-4">{index + 1}</td>
                               <td className="py-3 px-4">
                                 <button
                                   className="text-blue-600 hover:text-blue-800 flex items-center"

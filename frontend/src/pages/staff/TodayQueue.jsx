@@ -1,5 +1,3 @@
-
-// export default TodayQueue;
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 
@@ -16,6 +14,27 @@ const TodayQueue = () => {
     const [selectedServices, setSelectedServices] = useState([]);
     const [selectedProcedure, setSelectedProcedure] = useState(null);
     const [testResult, setTestResult] = useState(null);
+
+    const [medicalRecords, setMedicalRecords] = useState([]);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [selectedProfile, setSelectedProfile] = useState(null);
+
+    const fetchMedicalRecords = async (profileId) => {
+        try {
+            const response = await axios.get(`/api/doctor/danhsachhosobenhancuabenhnhan`, {
+                params: { profileId },
+            });
+            setMedicalRecords(response.data);
+        } catch (error) {
+            console.error('Error fetching medical records:', error);
+        }
+    };
+    const handleViewHistory = (profile) => {
+        console.log(profile);
+        setSelectedProfile(profile);
+        fetchMedicalRecords(profile);
+        setIsModalOpen(true);
+    };
 
     const doctorId = JSON.parse(localStorage.getItem('user'))?._id;
 
@@ -331,6 +350,8 @@ const TodayQueue = () => {
                                 <th className="px-4 py-2 border">Tên bệnh nhân</th>
                                 <th className="px-4 py-2 border">CCCD</th>
                                 <th className="px-4 py-2 border text-center">Hành động</th>
+                                <th className="px-4 py-2 border text-center">Lịch sử khám</th>
+
                             </tr>
                         </thead>
                         <tbody>
@@ -347,6 +368,7 @@ const TodayQueue = () => {
                                             >
                                                 Xem kết quả
                                             </button>
+
                                         )}
 
                                         {selectedDate === new Date().toISOString().split('T')[0] && (
@@ -365,9 +387,19 @@ const TodayQueue = () => {
                                             >
                                                 Khám bệnh
                                             </button>
-                                        )}
-                                    </td>
 
+
+                                        )}
+
+                                    </td>
+                                    <td className="p-2 border text-center">
+                                        <button
+                                            onClick={() => handleViewHistory(ticket.patientId._id)}
+                                            className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded"
+                                        >
+                                            Xem lịch sử
+                                        </button>
+                                    </td>
 
                                 </tr>
                             ))}
@@ -469,6 +501,7 @@ const TodayQueue = () => {
                             <button onClick={handleCompleteExam} className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">
                                 Hoàn thành khám
                             </button>
+
                         </div>
                     </div>
                 </div>
@@ -526,6 +559,37 @@ const TodayQueue = () => {
                     </div>
                 </div>
             )}
+            {isModalOpen && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4 overflow-y-auto">
+                    <div className="bg-white rounded-lg shadow-lg max-w-3xl w-full p-6">
+                        <h2 className="text-xl font-bold mb-4 text-center text-blue-700">
+                            Lịch sử khám của: {selectedProfile?.name}
+                        </h2>
+
+                        <ul className="space-y-3 max-h-96 overflow-y-auto">
+                            {medicalRecords.map((record) => (
+                                <li key={record._id} className="border p-3 rounded text-sm">
+                                    <p><strong>Ngày khám:</strong> {new Date(record.createdAt).toLocaleString()}</p>
+                                    <p><strong>Triệu chứng:</strong> {record.symptoms}</p>
+                                    <p><strong>Chẩn đoán:</strong> {record.diagnosis}</p>
+                                    <p><strong>Kết luận:</strong> {record.conclusion}</p>
+                                </li>
+                            ))}
+                        </ul>
+
+                        <div className="mt-6 text-right">
+                            <button
+                                onClick={() => setIsModalOpen(false)}
+                                className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
+                            >
+                                Đóng
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+
 
         </div>
     );

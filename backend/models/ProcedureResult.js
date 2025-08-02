@@ -15,13 +15,8 @@ const ProcedureResultSchema = new mongoose.Schema({
     },
     testType: {
         type: String,
-        enum: ['blood', 'urine', 'xray', 'other'],
+        enum: ['blood', 'urine', 'xray', 'ultrasound', 'ecg', 'lipid'],
         required: true
-    },
-    status: {
-        type: String,
-        enum: ['pending', 'completed'],
-        default: 'pending'
     },
     resultDetails: [ResultDetailSchema],
     resultNote: String,

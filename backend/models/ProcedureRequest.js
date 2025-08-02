@@ -13,7 +13,7 @@ const procedureRequestSchema = new mongoose.Schema({
         resultFile: String,
         resultNote: String,
         doctorId2: { type: mongoose.Schema.Types.ObjectId, ref: 'Employee', required: true },
-        testType: { type: String, enum: ['blood', 'urine', 'xray', 'other'], required: true }
+       testType: { type: String, enum: ['blood', 'urine', 'xray', 'ultrasound', 'ecg', 'lipid'], required: true }
     }]
 }, { timestamps: true });
 
