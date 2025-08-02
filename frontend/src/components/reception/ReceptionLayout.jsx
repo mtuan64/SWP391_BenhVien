@@ -18,105 +18,77 @@ import {
   CheckCircleOutlined,
 } from "@ant-design/icons";
 import { Link, Outlet, useNavigate, useLocation } from "react-router-dom";
-import AttendanceButton from "../AttendanceButton";
-import AttendanceAction from "../AttendanceButton";
 
 const { Header, Sider, Content } = Layout;
 
-const StaffLayout = ({ user }) => {
+const ReceptionLayout = () => {
   const [collapsed, setCollapsed] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const [selectedKey, setSelectedKey] = useState("1");
 
-  // Map routes to menu keys
+  // Menu items for Doctor2 role
   const menuItems = [
     {
       key: "1",
-      path: "/staff/blogs",
-      icon: <FileTextOutlined />,
-      label: "Quản Lý Bài Viết",
-    },
-    {
-      key: "2",
-      path: "/staff/services",
-      icon: <AppstoreOutlined />,
-      label: "Quản Lý Dịch Vụ",
-    },
-    {
-      key: "3",
-      path: "/staff/departments",
-      icon: <AppstoreOutlined />,
-      label: "Quản Lý Khoa Phòng",
+      path: "/recep/appointments",
+      icon: <CalendarOutlined />,
+      label: "Lịch Hẹn",
     },
 
     {
-      key: "4",
-      path: "/staff/notifications",
-      icon: <BellOutlined />,
-      label: "Quản Lý Thông Báo",
+      key: "3",
+      path: "/recep/users",
+      icon: <UserOutlined />,
+      label: "Quản Lý Người Dùng",
     },
+    // {
+    //   key: "4",
+    //   path: "/recep/medicalrecord",
+    //   icon: <FileTextOutlined />,
+    //   label: "Hồ Sơ Y Tế",
+    // },
 
     {
       key: "5",
-      path: "/staff/medicalrecord",
-      icon: <FileTextOutlined />,
-      label: "Hồ Sơ Y Tế",
+      path: "/recep/invoices",
+      icon: <DollarOutlined />,
+      label: "Quản Lý Hóa Đơn",
     },
     {
       key: "6",
-      path: "/staff/medicines",
-      icon: <PlusCircleOutlined />,
-      label: "Quản Lý Thuốc",
+      path: "/recep/payments",
+      icon: <DollarOutlined />,
+      label: "Quản Lý Thanh Toán",
     },
 
     {
       key: "7",
-      path: "/staff/news",
-      icon: <NotificationOutlined />,
-      label: "Quản Lý Tin Tức",
+      path: "/recep/datlichoffline",
+      icon: <QuestionCircleOutlined />,
+      label: "Đặt lịch",
     },
     {
       key: "8",
-      path: "/staff/feedback",
-      icon: <CommentOutlined />,
-      label: "Quản Lý Feedback",
+      path: "/recep/tao-ho-so",
+      icon: <QuestionCircleOutlined />,
+      label: "Tạo hồ sơ",
     },
     {
       key: "9",
-      path: "/staff/qna",
-      icon: <QuestionCircleOutlined />,
-      label: "Q/A",
-    },
-    {
-      key: "10",
-      path: "/staff/schedule",
-      icon: <QuestionCircleOutlined />,
-      label: "Quản Lý Lịch Trình",
-    },
-
-    {
-      key: "11",
-      path: "/staff/profile",
+      path: "/recep/profile",
       icon: <QuestionCircleOutlined />,
       label: "Hồ Sơ Cá Nhân",
     },
-
     {
-      key: "12",
-      path: "/staff/attendance",
-      icon: <CheckCircleOutlined />,
-      label: "Điểm danh",
-    },
-    {
-      key: "13",
+      key: "10",
       path: null,
       icon: <LogoutOutlined />,
       label: "Đăng Xuất",
       onClick: () => handleLogout(),
     },
   ];
-const employeeId = localStorage.getItem("employeeId");
+
   // Handle logout
   const handleLogout = () => {
     localStorage.removeItem("user");
@@ -149,7 +121,7 @@ const employeeId = localStorage.getItem("employeeId");
             fontWeight: "bold",
           }}
         >
-          {collapsed ? "KC" : "KiwiCare"}
+          {collapsed ? "KC" : "Lễ Tân"}
         </div>
         <Menu theme="dark" mode="inline" selectedKeys={[selectedKey]}>
           {menuItems.map((item) => (
@@ -171,10 +143,11 @@ const employeeId = localStorage.getItem("employeeId");
         <Header
           style={{
             background: "#fff",
-            padding: "0 16px",
+            padding: 0,
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
+            paddingLeft: 16,
           }}
         >
           <div
@@ -183,19 +156,15 @@ const employeeId = localStorage.getItem("employeeId");
           >
             {collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
           </div>
-
-          
         </Header>
-
         <Content
           style={{ margin: "24px 16px", padding: 24, background: "#fff" }}
         >
           <Outlet />
-          
         </Content>
       </Layout>
     </Layout>
   );
 };
 
-export default StaffLayout;
+export default ReceptionLayout;

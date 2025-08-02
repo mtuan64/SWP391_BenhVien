@@ -1,5 +1,5 @@
 const Attendance = require("../../models/Attendance");
-const AttendConfig = require("../../models/AttendanceConfig");
+const Employee = require("../../models/Employee");
 const dayjs = require("dayjs");
 
 exports.getAllAttendance = async (req, res) => {
@@ -142,5 +142,150 @@ exports.updateAttendConfig = async (req, res) => {
     res.status(200).json({ message: "Updated successfully", data: config });
   } catch (err) {
     res.status(500).json({ message: err.message });
+  }
+};
+
+exports.startAttendance = async (req, res) => {
+  try {
+    const todayStart = dayjs().startOf("day").toDate();
+    const todayEnd = dayjs().endOf("day").toDate();
+
+    // Bước 1: Lấy tất cả nhân viên không phải Admin
+    const employees = await Employee.find({
+      role: { $ne: "Admin" },
+      status: "active",
+    });
+
+    if (employees.length === 0) {
+      return res
+        .status(404)
+        .json({ message: "Không có nhân viên để điểm danh." });
+    }
+
+    // Bước 2: Kiểm tra nhân viên nào hôm nay chưa có bản ghi điểm danh
+    const existingAttendance = await Attendance.find({
+      date: { $gte: todayStart, $lte: todayEnd },
+    }).select("employeeId");
+
+    const attendedIds = new Set(
+      existingAttendance.map((a) => a.employeeId.toString())
+    );
+
+    // Bước 3: Tạo bản ghi "Absent" cho những nhân viên chưa có điểm danh
+    const toCreate = employees
+      .filter((emp) => !attendedIds.has(emp._id.toString()))
+      .map((emp) => ({
+        employeeId: emp._id,
+        date: new Date(),
+        status: "Absent",
+        checkInTime: null,
+        notes: "",
+      }));
+
+    if (toCreate.length === 0) {
+      return res
+        .status(200)
+        .json({ message: "Tất cả nhân viên đã có điểm danh hôm nay." });
+    }
+
+    await Attendance.insertMany(toCreate);
+
+    res
+      .status(200)
+      .json({ message: `Đã tạo điểm danh cho ${toCreate.length} nhân viên.` });
+  } catch (err) {
+    console.error("Lỗi khi tạo điểm danh:", err);
+    res.status(500).json({ message: "Lỗi server khi khởi tạo điểm danh." });
+  }
+};
+
+exports.checkIn = async (req, res) => {
+  try {
+    const { employeeId } = req.params;
+    const todayStart = dayjs().startOf("day").toDate();
+    const todayEnd = dayjs().endOf("day").toDate();
+
+    const attendance = await Attendance.findOne({
+      employeeId,
+      date: { $gte: todayStart, $lte: todayEnd },
+    });
+
+    if (!attendance) {
+      return res
+        .status(404)
+        .json({ message: "Chưa khởi tạo điểm danh cho nhân viên này." });
+    }
+
+    if (attendance.status === "Present") {
+      return res.status(400).json({ message: "Bạn đã check-in rồi." });
+    }
+
+    attendance.status = "Present";
+    attendance.checkInTime = new Date();
+    await attendance.save();
+
+    res.status(200).json({ message: "Check-in thành công." });
+  } catch (err) {
+    console.error("Check-in Error:", err);
+    res.status(500).json({ message: "Lỗi server khi check-in." });
+  }
+};
+
+exports.checkOut = async (req, res) => {
+  try {
+    const { employeeId } = req.params;
+    const todayStart = dayjs().startOf("day").toDate();
+    const todayEnd = dayjs().endOf("day").toDate();
+
+    const attendance = await Attendance.findOne({
+      employeeId,
+      date: { $gte: todayStart, $lte: todayEnd },
+    });
+
+    if (!attendance) {
+      return res
+        .status(404)
+        .json({ message: "Không tìm thấy bản ghi điểm danh hôm nay." });
+    }
+
+    if (!attendance.checkInTime) {
+      return res
+        .status(400)
+        .json({ message: "Bạn chưa check-in nên không thể check-out." });
+    }
+
+    attendance.checkOutTime = new Date();
+    await attendance.save();
+
+    res.status(200).json({ message: "Check-out thành công." });
+  } catch (err) {
+    console.error("Check-out Error:", err);
+    res.status(500).json({ message: "Lỗi server khi check-out." });
+  }
+};
+
+exports.getTodayStatus = async (req, res) => {
+  try {
+    const { employeeId } = req.params;
+    const todayStart = dayjs().startOf("day").toDate();
+    const todayEnd = dayjs().endOf("day").toDate();
+
+    const attendance = await Attendance.findOne({
+      employeeId,
+      date: { $gte: todayStart, $lte: todayEnd },
+    });
+
+    if (!attendance) {
+      return res.status(200).json({ status: "Absent", checkInTime: null, checkOutTime: null });
+    }
+
+    res.status(200).json({
+      status: attendance.status,
+      checkInTime: attendance.checkInTime || null,
+      checkOutTime: attendance.checkOutTime || null,
+    });
+  } catch (err) {
+    console.error("Get Today Status Error:", err);
+    res.status(500).json({ message: "Lỗi server khi lấy trạng thái điểm danh." });
   }
 };

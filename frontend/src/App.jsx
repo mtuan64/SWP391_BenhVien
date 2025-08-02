@@ -79,8 +79,8 @@ import NewsDetail from "./pages/NewsDetail";
 import BlogDetail from "./pages/BlogDetail";
 import ViewMedicalRecord from "./pages/ViewMedicalRecord";
 import NotFoundPage from "./pages/NotFoundPage";
-import DoctorAttendance from './components/staff/DoctorAttendance';
-import StaffAttendance from './pages/staff/attendanceStaff.jsx';
+import DoctorAttendance from "./components/staff/DoctorAttendance";
+import StaffAttendance from "./pages/staff/attendanceStaff.jsx";
 import MedicineListPage from "./pages/MedicineListPage.jsx";
 import MedicineDetail from "./pages/MedicineDetail";
 import ServiceDetail from "./pages/ServiceDetail.jsx";
@@ -106,6 +106,7 @@ import BookingFormStaff from "./pages/staff/StaffBooking.jsx";
 import StaffCreateProfile from "./pages/staff/StaffTaoProfile.jsx";
 import AppointmentList from "./pages/staff/StaffAppointment.jsx";
 import MedicalRecordPage from "./pages/Hosobenhan.jsx";
+import ReceptionLayout from "./components/reception/ReceptionLayout.jsx";
 
 const DRAWER_WIDTH = 240;
 
@@ -124,6 +125,7 @@ const RoleRedirect = () => {
     if (path === "/") {
       if (role === "Admin") navigate("/admin", { replace: true });
       else if (role === "Staff") navigate("/staff", { replace: true });
+      else if (role === "Reception") navigate("/recep", { replace: true });
       else if (role === "Doctor") navigate("/doctor", { replace: true });
       else if (role === "Doctor2") navigate("/doctor2", { replace: true });
       else navigate("/home", { replace: true });
@@ -134,13 +136,18 @@ const RoleRedirect = () => {
       navigate("/admin", { replace: true });
     } else if (role === "Staff" && !path.startsWith("/staff")) {
       navigate("/staff", { replace: true });
+    } else if (role === "Reception" && !path.startsWith("/recep")) {
+      navigate("/recep", { replace: true });
     } else if (role === "Doctor" && !path.startsWith("/doctor")) {
       navigate("/doctor", { replace: true });
     } else if (role === "Doctor2" && !path.startsWith("/doctor2")) {
       navigate("/doctor2", { replace: true });
     } else if (
       role === "patient" &&
-      (path.startsWith("/admin") || path.startsWith("/staff") || path.startsWith("/doctor") || path.startsWith("/doctor2"))
+      (path.startsWith("/admin") ||
+        path.startsWith("/staff") ||
+        path.startsWith("/doctor") ||
+        path.startsWith("/doctor2"))
     ) {
       navigate("/home", { replace: true });
     }
@@ -194,10 +201,7 @@ const AppRoutes = () => {
             <Route path="medicine" element={<MedicinePage />} />
             <Route path="exam-queue" element={<TodayQueue />} />
 
-            <Route
-              path="appointments"
-              element={<DoctorAppointments />}
-            />
+            <Route path="appointments" element={<DoctorAppointments />} />
             <Route
               path="notifications"
               element={<div>Notifications Page</div>}
@@ -206,7 +210,6 @@ const AppRoutes = () => {
             <Route path="/doctor/labtest" element={<LabTestPage />} />
             <Route path="work-schedule" element={<WorkSchedulePage />} />
           </Route>
-
           <Route path="/" element={<HomePage />} />
           {/* Admin Layout Routes */}
           <Route
@@ -222,9 +225,7 @@ const AppRoutes = () => {
             <Route path="employees" element={<EmployeeManagement />} />
             <Route path="attendance" element={<AttendanceManagement />} />
             <Route path="taolich" element={<ScheduleCreate />} />
-
           </Route>
-
           {/* Staff */}
           <Route
             path="/staff/*"
@@ -235,9 +236,11 @@ const AppRoutes = () => {
             }
           >
             <Route index element={<BlogManagement />} />
-
             <Route path="blogs" element={<BlogManagement />} />
-            <Route path="category-management" element={<CategoryManagement />} />
+            <Route
+              path="category-management"
+              element={<CategoryManagement />}
+            />
             <Route path="invoices/create" element={<CreateInvoice2 />}></Route>
             <Route path="services" element={<ServiceManagement />} />
             <Route path="services/create" element={<CreateServicePage />} />
@@ -253,27 +256,63 @@ const AppRoutes = () => {
               element={<ViewMedicalRecords />}
             />
             <Route path="datlichoffline" element={<BookingFormStaff />} />
-            <Route path="tao-ho-so" element={< StaffCreateProfile />} />
-
+            <Route path="tao-ho-so" element={<StaffCreateProfile />} />
             <Route path="feedback" element={<FeedbackManagement />} />
             <Route path="qna" element={<QnAView />} />
             {/* <Route
               path="appointments"
               element={<AppointmentScheduleManagement />}
             /> */}
-            <Route
-              path="appointments"
-              element={<AppointmentList />}
-            />
+            <Route path="appointments" element={<AppointmentList />} />
             <Route path="notifications" element={<NotificationManagement />} />
             <Route path="users" element={<UserManagement />} />
             <Route path="medicalrecord" element={<MedicalRecord />} />
             <Route path="medicines" element={<MedicineManagement />} />
             <Route path="schedule" element={<StaffScheduleManager />} />
             <Route path="profile" element={<ProfileStaff />} />
-            <Route path="attendance" element={<StaffAttendance />} /> {/* Add Staff Attendance route */}
+            <Route path="attendance" element={<StaffAttendance />} />{" "}
+            {/* Add Staff Attendance route */}
           </Route>
 
+          {/* Reception Layout Routes */}
+          <Route
+            path="/recep/*"
+            element={
+              <PrivateRouteByRole allowedRoles={["Reception"]}>
+                <ReceptionLayout />
+              </PrivateRouteByRole>
+            }
+          >
+            <Route index element={<AppointmentList />} />
+            
+            
+            <Route path="invoices/create" element={<CreateInvoice2 />}></Route>
+            
+            
+            
+            <Route path="invoices" element={<InvoiceList />} />
+            <Route path="payments" element={<PaymentView />} />
+            
+            <Route path="add/medicalrecords" element={<AddMedicalRecord />} />
+            <Route
+              path="view/medicalrecords"
+              element={<ViewMedicalRecords />}
+            />
+            <Route path="datlichoffline" element={<BookingFormStaff />} />
+            <Route path="tao-ho-so" element={<StaffCreateProfile />} />
+            
+            
+            <Route path="appointments" element={<AppointmentList />} />
+            
+            <Route path="users" element={<UserManagement />} />
+            <Route path="medicalrecord" element={<MedicalRecord />} />
+            <Route path="medicines" element={<MedicineManagement />} />
+            <Route path="schedule" element={<StaffScheduleManager />} />
+            <Route path="profile" element={<ProfileStaff />} />
+           
+            {/* End Reception */}
+          </Route>
+          
           {/* Doctor2 Layout Routes */}
           <Route
             path="/doctor2/*"
@@ -286,23 +325,25 @@ const AppRoutes = () => {
             <Route index element={<PatientList />} />
             <Route path="procedure-requests" element={<PatientList />} />
             <Route path="lab-tests" element={<LabTest />} />
-
           </Route>
-
-          <Route path="/doctor" element={<PrivateRouteByRole allowedRoles={["Doctor"]}><DoctorLayout /></PrivateRouteByRole>}>
+          <Route
+            path="/doctor"
+            element={
+              <PrivateRouteByRole allowedRoles={["Doctor"]}>
+                <DoctorLayout />
+              </PrivateRouteByRole>
+            }
+          >
             <Route path="medical-profile" element={<UserMedicalProfile />} />
             <Route path="medicine" element={<div>View Medicine Page</div>} />
             <Route
               path="appointments"
               element={<div>Appointment List Page</div>}
             />
-            <Route
-              path="notifications"
-              element={<div>Notifications Page</div>}
-            />
+            
             <Route path="today" element={<TodayQueue />} />
             <Route path="work-schedule" element={<WorkSchedulePage />} />
-
+            <Route path="attendance" element={<DoctorAttendance />} />
             <Route path="profile" element={<ProfileDoctor />} />
           </Route>
           {/* Public routes */}
@@ -322,18 +363,22 @@ const AppRoutes = () => {
           <Route path="/invoice" element={<InvoiceUser />} />
           <Route path="/profilemanage" element={<ProfileManagePage />} />
           <Route path="/appointment" element={<AppointmentPage />} />
-          <Route path="/appointmentmanage" element={<AppointmentManagePage />} />
+          <Route
+            path="/appointmentmanage"
+            element={<AppointmentManagePage />}
+          />
           <Route path="/not-found" element={<NotFoundPage />} />
           <Route path="/doctor/:doctorId" element={<DoctorDetail />} />
           <Route path="/medicines/:medicineId" element={<MedicineDetail />} />
           <Route path="service/:serviceId" element={<ServiceDetail />} />
-          <Route path="/department/:departmentId" element={<DepartmentDetail />} />
+          <Route
+            path="/department/:departmentId"
+            element={<DepartmentDetail />}
+          />
           <Route path="/myappointments" element={<ListAppointmentPage />} />
           <Route path="/datlich" element={<BookingForm />} />
           <Route path="/taoprofile" element={<CreateProfile />} />
           {/* <Route path="/doctor2/lab-tests" element={<LabTest />} /> */}
-
-
           {/* <Route path="/medicalrecord" element={<AddMedicalRecord />} />
           <Route path="/medicalrecords" element={<ViewMedicalRecords />} /> */}
           <Route path="/payment" element={<InvoiceList />} />
@@ -341,10 +386,8 @@ const AppRoutes = () => {
           <Route path="/payment/fail" element={<PaymentFail />} />
           {/* <Route path="/labtests" element={<LabtestResult />} /> */}
           <Route path="/health/calculator" element={<HealthCalculatorPage />} />
-
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
-
           <Route path="/changepass" element={<Changepass />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
@@ -353,9 +396,12 @@ const AppRoutes = () => {
           <Route path="/health/food" element={<NutritionAdvice />} />
           <Route path="/qahistory" element={<QAHistories />} />
           <Route path="/qa" element={<SendQAForm />} />
-          <Route path="/faq" element={<FAQList />} /> {/*them FAQ cho user xem*/}
-    <Route path="/medical-records/:profileId" element={<MedicalRecordPage />} />
-
+          <Route path="/faq" element={<FAQList />} />{" "}
+          {/*them FAQ cho user xem*/}
+          <Route
+            path="/medical-records/:profileId"
+            element={<MedicalRecordPage />}
+          />
           {/* Protected routes */}
           <Route
             path="/appointment"

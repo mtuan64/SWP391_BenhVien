@@ -29,14 +29,12 @@ const AttendanceManagement = () => {
   const [noteModal, setNoteModal] = useState(false);
   const [deadlineTime, setDeadlineTime] = useState("08:00");
   const [configModalOpen, setConfigModalOpen] = useState(false);
-
-  const fetchConfig = async () => {
-    try {
-      const res = await axios.get("/api/admin/attend-config");
-      setDeadlineTime(res.data.data.checkInDeadline || "08:00");
-    } catch (err) {
-      message.warning("Failed to load check-in deadline config.");
-    }
+  const deadlineHour = 8; 
+  const deadlineMinute = 15;
+  const isLate = (checkInTime) => {
+    if (!checkInTime) return false;
+    const hour = new Date(checkInTime).getHours();
+    return hour >= deadlineHour;
   };
 
   const fetchAttendance = async () => {
@@ -66,8 +64,20 @@ const AttendanceManagement = () => {
     }
   };
 
+  const handleStartAttendance = async () => {
+    try {
+      const res = await axios.post("/api/admin/attend/start");
+      message.success(res.data.message || "Khởi tạo điểm danh thành công.");
+      fetchAttendance();
+    } catch (err) {
+      console.error(err);
+      message.error(
+        err.response?.data?.message || "Lỗi khi khởi tạo điểm danh."
+      );
+    }
+  };
+
   useEffect(() => {
-    fetchConfig();
     fetchAttendance();
   }, []);
 
@@ -109,13 +119,15 @@ const AttendanceManagement = () => {
     {
       title: "Đi trễ",
       render: (_, record) => {
-        const mins = calculateLateMinutes(record.checkInTime, record.date);
-        if (mins <= 0) return "-";
-        const hours = Math.floor(mins / 60);
-        const minutes = mins % 60;
-        return `${hours.toString().padStart(2, "0")}:${minutes
-          .toString()
-          .padStart(2, "0")}`;
+        return (
+          <span
+            style={{ color: isLate(record.checkInTime) ? "red" : "inherit" }}
+          >
+            {record.checkInTime
+              ? dayjs(record.checkInTime).format("HH:mm:ss")
+              : "—"}
+          </span>
+        );
       },
     },
     {
@@ -210,6 +222,12 @@ const AttendanceManagement = () => {
           Đặt lại bộ lọc
         </Button>
       </div>
+      <div className="mb-4">
+        <Button type="primary" onClick={handleStartAttendance}>
+          Bắt Đầu Điểm Danh
+        </Button>
+      </div>
+
       <Table
         columns={columns}
         dataSource={records}
@@ -235,7 +253,7 @@ const AttendanceManagement = () => {
         open={configModalOpen}
         onClose={() => {
           setConfigModalOpen(false);
-          fetchConfig();
+
           fetchAttendance();
         }}
       />

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Button, Card, Typography, message, Table, Empty } from "antd"; // Đã thêm Empty để hiển thị khi không có dữ liệu
+import { Button, Card, Typography, message, Table, Empty, Spin } from "antd";
 
 const { Title, Text } = Typography;
 
@@ -7,33 +7,40 @@ const EmployeeAttendance = () => {
   const [hasCheckedIn, setHasCheckedIn] = useState(false);
   const [hasCheckedOut, setHasCheckedOut] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [attendanceData, setAttendanceData] = useState([]); // Để lưu trữ dữ liệu chấm công
-
-  const employee = JSON.parse(localStorage.getItem("user")); // Ensure employee._id exists
+  const [attendanceData, setAttendanceData] = useState([]);
+  const employee = JSON.parse(localStorage.getItem("user"));
 
   useEffect(() => {
-    checkStatus(); // Gọi checkStatus khi component được render lần đầu tiên để tải dữ liệu
+    if (employee?._id) {
+      checkStatus();
+    }
   }, [employee._id]);
 
-  // Hàm để tải lại dữ liệu chấm công từ server
   const checkStatus = async () => {
+    setLoading(true);
     try {
-      const res = await fetch(`http://localhost:9999/api/attendance/status/${employee._id}`);
+      // Lấy trạng thái điểm danh hôm nay
+      const res = await fetch(`http://localhost:9999/api/admin/todaystatus/${employee._id}`);
       const data = await res.json();
 
-      if (data) {
+      if (data.status === "Present") {
         setHasCheckedIn(true);
         if (data.checkOutTime) {
           setHasCheckedOut(true);
         }
       }
 
-      // Lấy tất cả dữ liệu chấm công của nhân viên
-      const attendanceRes = await fetch(`http://localhost:9999/api/attendance/history/${employee._id}`);
-      const attendanceData = await attendanceRes.json();
-      setAttendanceData(Array.isArray(attendanceData) ? attendanceData : []);
+      // Lấy lịch sử điểm danh
+      const historyRes = await fetch(`http://localhost:9999/api/attendance/history/${employee._id}`);
+      const historyData = await historyRes.json();
+
+      if (Array.isArray(historyData)) {
+        setAttendanceData(historyData);
+      } else {
+        setAttendanceData([]);
+      }
     } catch (err) {
-      message.error("Failed to load attendance status");
+      message.error("Không thể tải trạng thái điểm danh.");
     } finally {
       setLoading(false);
     }
@@ -41,95 +48,105 @@ const EmployeeAttendance = () => {
 
   const handleCheckIn = async () => {
     try {
-      // Kiểm tra nếu nhân viên đã check-in trong ngày
       if (hasCheckedIn) {
-        message.warning("You have already checked in today!");
-        return;
+        return message.warning("Bạn đã check-in hôm nay.");
       }
 
-      const res = await fetch("http://localhost:9999/api/attendance/checkin", {
+      const res = await fetch(`http://localhost:9999/api/admin/check-in/${employee._id}`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ employeeId: employee._id }),
       });
 
       if (!res.ok) throw new Error((await res.json()).message);
-      message.success("Checked in successfully!");
+      message.success("Check-in thành công!");
       setHasCheckedIn(true);
-
-      // Gọi lại checkStatus để làm mới bảng sau khi check-in thành công
-      checkStatus(); 
+      checkStatus();
     } catch (err) {
-      message.error("Check-in failed: " + err.message);
+      message.error("Check-in thất bại: " + err.message);
     }
   };
 
   const handleCheckOut = async () => {
     try {
-      // Kiểm tra nếu nhân viên chưa check-in hoặc đã check-out rồi
       if (!hasCheckedIn) {
-        message.warning("You must check in before checking out!");
-        return;
+        return message.warning("Bạn cần check-in trước.");
       }
-
       if (hasCheckedOut) {
-        message.warning("You have already checked out today!");
-        return;
+        return message.warning("Bạn đã check-out hôm nay.");
       }
 
-      const res = await fetch("http://localhost:9999/api/attendance/checkout", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ employeeId: employee._id }),
+      const res = await fetch(`http://localhost:9999/api/admin/check-out/${employee._id}`, {
+        method: "POST",
       });
 
       if (!res.ok) throw new Error((await res.json()).message);
-      message.success("Checked out successfully!");
+      message.success("Check-out thành công!");
       setHasCheckedOut(true);
-
-      // Gọi lại checkStatus để làm mới bảng sau khi check-out thành công
-      checkStatus(); 
+      checkStatus();
     } catch (err) {
-      message.error("Check-out failed: " + err.message);
+      message.error("Check-out thất bại: " + err.message);
     }
   };
 
   const columns = [
     {
-      title: "Check-in Time",
+      title: "Ngày",
+      dataIndex: "date",
+      key: "date",
+      render: (text) => new Date(text).toLocaleDateString(),
+    },
+    {
+      title: "Giờ Check-in",
       dataIndex: "checkInTime",
       key: "checkInTime",
-      render: (text) => new Date(text).toLocaleString(), // Định dạng lại thời gian check-in
+      render: (text) =>
+        text ? new Date(text).toLocaleTimeString() : <i style={{ color: "gray" }}>Chưa có</i>,
     },
     {
-      title: "Check-out Time",
+      title: "Giờ Check-out",
       dataIndex: "checkOutTime",
       key: "checkOutTime",
-      render: (text) => (text ? new Date(text).toLocaleString() : "N/A"), // Định dạng lại thời gian check-out, nếu chưa có thì hiển thị "N/A"
+      render: (text) =>
+        text ? new Date(text).toLocaleTimeString() : <i style={{ color: "gray" }}>Chưa có</i>,
     },
     {
-      title: "Status",
+      title: "Trạng thái",
       dataIndex: "status",
       key: "status",
-      render: (text) => (text ? "Checked out" : "Checked in"),
+      render: (text) => {
+        switch (text) {
+          case "Present":
+            return <span style={{ color: "green" }}>Có mặt</span>;
+          case "Absent":
+            return <span style={{ color: "red" }}>Vắng mặt</span>;
+          default:
+            return <span>{text}</span>;
+        }
+      },
+    },
+    {
+      title: "Ghi chú",
+      dataIndex: "notes",
+      key: "notes",
+      render: (text) => text || "-",
     },
   ];
 
-  if (loading) return <p>Loading...</p>;
+  if (loading) return <Spin style={{ display: "block", marginTop: 100 }} />;
 
   return (
-    <Card style={{ maxWidth: 800, margin: "auto", marginTop: 50, textAlign: "center" }}>
-      <Title level={3}>Điểm danh nhân viên</Title>
-      <Text strong>Tên: {employee.name}</Text>
-      <br /><br />
+    <Card style={{ maxWidth: 900, margin: "auto", marginTop: 50 }}>
+      <Title level={3}>Điểm danh hôm nay</Title>
+      <Text strong>Tên nhân viên:</Text> <Text>{employee?.name}</Text>
+      <br />
+      <br />
       <Button
         type="primary"
         onClick={handleCheckIn}
         disabled={hasCheckedIn}
+        style={{ marginRight: 10 }}
       >
         Check In
       </Button>
-      <br /><br />
       <Button
         type="default"
         onClick={handleCheckOut}
@@ -137,16 +154,18 @@ const EmployeeAttendance = () => {
       >
         Check Out
       </Button>
-      <br /><br />
-      
+
+      <br />
+      <br />
       <Title level={4}>Lịch sử điểm danh</Title>
       {attendanceData.length === 0 ? (
-        <Empty description="No attendance history found" /> // Hiển thị khi không có dữ liệu
+        <Empty description="Chưa có dữ liệu điểm danh" />
       ) : (
         <Table
           columns={columns}
           dataSource={attendanceData}
-          rowKey="id" // assuming each attendance record has a unique "id"
+          rowKey={(record) => record._id}
+          pagination={{ pageSize: 5 }}
         />
       )}
     </Card>

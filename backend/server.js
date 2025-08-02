@@ -1,7 +1,7 @@
 // Load environment variables early
 require("dotenv").config();
 const cron = require("node-cron");
-const autoMarkAbsent = require('./utils/autoMarkAbsentJob');
+
 // Import packages
 const express = require("express");
 const morgan = require("morgan");

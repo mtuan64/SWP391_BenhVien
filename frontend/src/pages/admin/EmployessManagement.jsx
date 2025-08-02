@@ -132,7 +132,9 @@ function EmployeeManagement() {
         >
           <Option value="Admin">Quản trị viên</Option>
           <Option value="Staff">Nhân viên</Option>
-          <Option value="Doctor">Bác sĩ</Option>
+          <Option value="Reception">Lễ tân</Option>
+          <Option value="Doctor">Bác sĩ lâm sàn</Option>
+          <Option value="Doctor2">Bác sĩ xét nghiệm</Option>
         </Select>
 
         <Select
@@ -185,7 +187,20 @@ function EmployeeManagement() {
             sorter: (a, b) => a.name.localeCompare(b.name),
           },
           { title: "Email", dataIndex: "email" },
-          { title: "Vai trò", dataIndex: "role" },
+          {
+            title: "Vai trò",
+            dataIndex: "role",
+            render: (role) => {
+              const roleMap = {
+                Doctor: "Bác sĩ lâm sàn",
+                Doctor2: "Bác sĩ xét nghiệm",
+                Reception: "Lễ tân",
+                Staff: "Nhân viên",
+                Admin: "Quản lý",
+              };
+              return roleMap[role] || "N/A";
+            },
+          },
           {
             title: "Trạng thái",
             dataIndex: "status",
@@ -279,7 +294,9 @@ function EmployeeManagement() {
             <Select>
               <Option value="Admin">Quản trị viên</Option>
               <Option value="Staff">Nhân viên</Option>
-              <Option value="Doctor">Bác sĩ</Option>
+              <Option value="Reception">Lễ tân</Option>
+              <Option value="Doctor">Bác sĩ lâm sàn</Option>
+              <Option value="Doctor2">Bác sĩ xét nghiệm</Option>
             </Select>
           </Form.Item>
           <Form.Item
@@ -345,7 +362,9 @@ function EmployeeManagement() {
             <Select>
               <Option value="Admin">Quản trị viên</Option>
               <Option value="Staff">Nhân viên</Option>
-              <Option value="Doctor">Bác sĩ</Option>
+              <Option value="Reception">Lễ tân</Option>
+              <Option value="Doctor">Bác sĩ lâm sàn</Option>
+              <Option value="Doctor2">Bác sĩ xét nghiệm</Option>
             </Select>
           </Form.Item>
           <Form.Item
