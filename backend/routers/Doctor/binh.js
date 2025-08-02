@@ -103,20 +103,25 @@ router.post('/taohosobenhnhan', async (req, res) => {
 // routes/procedureRequest.js
 router.post('/chidinhdichvu', async (req, res) => {
     try {
-        const {
-            medicalRecordId,
-            profileId,
-            doctorId,
-            services // [{ serviceId, scheduledTime?, status?, doctorId }]
-        } = req.body;
+        const { medicalRecordId, profileId, doctorId, services } = req.body;
 
-        const formattedServices = services.map(s => ({
-            serviceId: s.serviceId,
-            scheduledTime: s.scheduledTime || null,
-            status: s.status || 'Waiting',
-            doctorId2: s.doctorId,
-            testType: s.testType || 'other'
-        }));
+        // Validate input
+        if (!medicalRecordId || !profileId || !doctorId || !services?.length) {
+            return res.status(400).json({ message: 'Missing required fields' });
+        }
+
+        const formattedServices = services.map(s => {
+            if (!s.testType || !['blood', 'urine', 'xray', 'ultrasound', 'ecg', 'lipid'].includes(s.testType)) {
+                throw new Error(`Invalid testType: ${s.testType}`);
+            }
+            return {
+                serviceId: s.serviceId,
+                scheduledTime: s.scheduledTime || null,
+                status: s.status || 'Waiting',
+                doctorId2: s.doctorId,
+                testType: s.testType
+            };
+        });
 
         const request = await ProcedureRequest.create({
             medicalRecordId,
@@ -124,10 +129,12 @@ router.post('/chidinhdichvu', async (req, res) => {
             doctorId,
             services: formattedServices
         });
+
         await MedicalRecord.findByIdAndUpdate(
             medicalRecordId,
             { $push: { procedureRequests: request._id } }
         );
+
         res.status(201).json(request);
     } catch (err) {
         res.status(400).json({ message: err.message });

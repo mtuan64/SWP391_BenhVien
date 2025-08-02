@@ -12,35 +12,48 @@ const LabTest = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const { procedureRequestId, serviceId, testType } = location.state || {};
+  // Extract from location.state or query parameters
+  const query = new URLSearchParams(location.search);
+  const procedureRequestId = query.get('procedureRequestId') || location.state?.procedureRequestId;
+  const serviceId = query.get('serviceId') || location.state?.serviceId;
+  const testType = query.get('testType') || location.state?.testType;
 
   useEffect(() => {
-    console.log('Received state:', { procedureRequestId, serviceId, testType }); // Thêm log để debug
-    const fetchParameters = async () => {
-      if (!testType || !procedureRequestId || !serviceId) {
-        setError('Thiếu thông tin yêu cầu xét nghiệm, dịch vụ hoặc loại xét nghiệm');
-        setLoading(false);
-        return;
-      }
+    const validTestTypes = ['blood', 'urine', 'xray', 'ultrasound', 'ecg', 'lipid'];
+    console.log('Received state:', { procedureRequestId, serviceId, testType });
 
+    if (!procedureRequestId || !serviceId || !testType || !validTestTypes.includes(testType)) {
+      setError(`Thiếu hoặc không hợp lệ: procedureRequestId, serviceId, hoặc testType (${testType || 'N/A'})`);
+      setLoading(false);
+      return;
+    }
+
+    const fetchParameters = async (retries = 2) => {
       setLoading(true);
       setError(null);
-
       try {
         const token = localStorage.getItem('token');
+        if (!token) {
+          throw new Error('No authentication token found');
+        }
         const res = await axios.get(`http://localhost:9999/api/doctor2/parameters/${testType}`, {
           headers: { Authorization: `Bearer ${token}` },
-          timeout: 10000,
+          timeout: 15000, // Increased timeout
         });
 
         if (res.data.success) {
           setParameters(res.data.data || []);
         } else {
-          setError(res.data.message || 'Không thể lấy thông số xét nghiệm');
+          setError(res.data.message || `Không tìm thấy thông số cho loại xét nghiệm: ${testType}`);
         }
       } catch (err) {
-        console.error('Lỗi lấy thông số:', err);
-        setError('Lỗi hệ thống: ' + (err.message || 'Network Error') + ' (Mã lỗi: ' + err.response?.status + ')');
+        if (retries > 0 && err.code === 'ECONNABORTED') {
+          console.warn(`Retrying fetchParameters (${retries} attempts left)`);
+          return fetchParameters(retries - 1);
+        }
+        console.error(`Lỗi lấy thông số (${testType}):`, err);
+        const errorMsg = err.response?.data?.message || err.message || 'Network Error';
+        setError(`Lỗi hệ thống: ${errorMsg} (Mã lỗi: ${err.response?.status || 'N/A'})`);
         if (err.response?.status === 401) {
           navigate('/login');
         }
@@ -50,18 +63,23 @@ const LabTest = () => {
     };
 
     fetchParameters();
-  }, [testType, procedureRequestId, serviceId, navigate]);
+  }, [procedureRequestId, serviceId, testType, navigate]);
 
   const onFinish = async (values) => {
     try {
       setLoading(true);
       const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
       const resultDetails = parameters.map((param) => ({
         name: param.name,
         value: values[param.name],
         unit: param.unit,
         referenceRange: param.referenceRange,
       }));
+
+      console.log('Submitting results:', { procedureRequestId, serviceId, testType, resultDetails, resultNote: values.resultNote });
 
       const res = await axios.post(
         'http://localhost:9999/api/doctor2/submit',
@@ -72,18 +90,18 @@ const LabTest = () => {
           resultDetails,
           resultNote: values.resultNote,
         },
-        { headers: { Authorization: `Bearer ${token}` }, timeout: 10000 }
+        { headers: { Authorization: `Bearer ${token}` }, timeout: 15000 }
       );
 
       if (res.data.success) {
-        message.success('Kết quả xét nghiệm đã được gửi thành công!');
+        message.success(`Kết quả xét nghiệm ${testType} đã được gửi thành công!`);
         navigate('/doctor2/procedure-requests');
       } else {
         message.error(res.data.message || 'Không thể gửi kết quả xét nghiệm');
       }
     } catch (err) {
       console.error('Lỗi gửi kết quả:', err);
-      message.error('Lỗi hệ thống: ' + (err.response?.data?.message || err.message));
+      message.error(`Lỗi hệ thống: ${err.response?.data?.message || err.message}`);
     } finally {
       setLoading(false);
     }
@@ -119,7 +137,12 @@ const LabTest = () => {
                   key={param.name}
                   name={param.name}
                   label={`${param.name} (${param.unit || ''}, Tham chiếu: ${param.referenceRange || 'N/A'})`}
-                  rules={[{ required: true, message: `Vui lòng nhập ${param.name}` }]}
+                  rules={[
+                    { required: true, message: `Vui lòng nhập ${param.name}` },
+                    testType === 'lipid' || testType === 'blood'
+                      ? { pattern: /^\d*\.?\d*$/, message: `${param.name} phải là số` }
+                      : {}, // Numeric validation for lipid and blood tests
+                  ]}
                 >
                   <Input placeholder={`Nhập giá trị ${param.name}`} />
                 </Form.Item>

@@ -283,26 +283,28 @@ const TodayQueue = () => {
                     services: selectedServices.map(s => {
                         const matchedService = servicesList.find(item => item._id === s.serviceId);
                         const serviceName = matchedService?.name?.toLowerCase() || '';
-                        let testType = 'other';
+                        let testType;
                         if (serviceName.includes('máu')) {
                             testType = 'blood';
                         } else if (serviceName.includes('nước tiểu')) {
                             testType = 'urine';
                         } else if (serviceName.includes('x-quang') || serviceName.includes('x quang')) {
                             testType = 'xray';
-                        }
-                        else if (serviceName.includes('Siêu âm')) {
+                        } else if (serviceName.includes('siêu âm')) {
                             testType = 'ultrasound';
-                        }
-                        else if (serviceName.includes('Điện tim')) {
+                        } else if (serviceName.includes('điện tim')) {
                             testType = 'ecg';
+                        } else if (serviceName.includes('mỡ máu')) {
+                            testType = 'lipid';
+                        } else {
+                            throw new Error(`Invalid testType for service: ${serviceName}`);
                         }
                         return {
                             serviceId: s.serviceId,
                             scheduledTime: null,
                             status: 'Waiting',
                             doctorId: s.doctorId || '',
-                            testType // thêm testType cho mỗi dịch vụ
+                            testType
                         };
                     })
                 });

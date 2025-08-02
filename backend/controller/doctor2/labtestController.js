@@ -103,8 +103,18 @@ exports.getAllProcedureResultByDoctorId2 = async (req, res) => {
                 path: 'procedureRequestId',
                 select: 'medicalRecordId profileId doctorId services',
                 populate: [
-                    { path: 'profileId', select: 'name identityNumber' },
-                    { path: 'doctorId', select: 'name' }
+                    { 
+                        path: 'profileId', 
+                        select: 'name identityNumber' 
+                    },
+                    { 
+                        path: 'doctorId', 
+                        select: 'name' 
+                    },
+                    {
+                        path: 'medicalRecordId',
+                        select: 'ticketId'
+                    }
                 ]
             })
             .lean();
@@ -115,11 +125,16 @@ exports.getAllProcedureResultByDoctorId2 = async (req, res) => {
 
         // Format response to include service status
         const formattedResults = procedureResults.map(result => {
-            const procedureRequest = procedureRequests.find(pr => pr._id.toString() === result.procedureRequestId.toString());
-            const service = procedureRequest?.services.find(s => s._id.toString() === result.serviceId.toString());
+            const procedureRequest = procedureRequests.find(pr => 
+                pr._id.toString() === result.procedureRequestId._id.toString()
+            );
+            const service = procedureRequest?.services.find(s => 
+                s.testType === result.testType && s.doctorId2.toString() === doctorId2
+            );
             return {
                 ...result,
-                status: service?.status || 'N/A'
+                serviceStatus: service?.status || 'N/A',
+                serviceId: service?._id || null
             };
         });
 
