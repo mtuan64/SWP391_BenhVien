@@ -4,7 +4,9 @@ import axios from 'axios';
 const AppointmentList = () => {
     const [editingAppointment, setEditingAppointment] = useState(null);
     const [showModal, setShowModal] = useState(false);
-
+    const [page, setPage] = useState(1);
+    const [limit] = useState(10); // Số lịch hẹn mỗi trang
+    const [totalPages, setTotalPages] = useState(1);
     const [appointments, setAppointments] = useState([]);
     const [filters, setFilters] = useState({
         status: '',
@@ -16,45 +18,36 @@ const AppointmentList = () => {
 
     const fetchAppointments = async () => {
         try {
-            const params = {};
-            if (filters.status) params.status = filters.status;
-            if (filters.department) params.department = filters.department;
-            if (filters.date) params.date = filters.date;
+            const params = {
+                page,
+                limit,
+                ...filters
+            };
 
             const res = await axios.get('/api/doctor/appointments', { params });
-            const appts = res.data;
+            const appts = res.data.appointments || res.data; // fallback nếu backend chưa sửa
+            const total = res.data.total || res.data.length || 0;
 
             setAppointments(appts);
+            setTotalPages(Math.ceil(total / limit));
 
             const waitingMap = {};
-
-            // Kiểm tra trạng thái ticket tương ứng
             for (let appt of appts) {
-                try {
-                    const res = await axios.get('/api/doctor/ticket/status', {
-                        params: {
-                            doctorId: appt.doctorId._id || appt.doctorId,
-                            profileId: appt.profileId._id || appt.profileId,
-                            date: appt.appointmentDate,
-                            ticketNumber: appt.ticketNumber
-                        }
-                    });
-
-                    if (res.data.status === 'Waiting') {
-                        waitingMap[appt._id] = true;
-                    }
-                } catch (err) {
-                    console.error('Không lấy được trạng thái ticket', err);
+                if (appt.ticketStatus === 'Waiting') {
+                    waitingMap[appt._id] = true;
                 }
             }
-
             setWaitingTickets(waitingMap);
+
         } catch (err) {
             console.error('Lỗi khi lấy lịch hẹn:', err);
             alert('Không thể tải lịch hẹn');
         }
     };
 
+    useEffect(() => {
+        fetchAppointments();
+    }, [filters, page]);
     const fetchDepartments = async () => {
         try {
             const res = await axios.get('/api/doctor/department');
@@ -94,7 +87,7 @@ const AppointmentList = () => {
     };
     const handleSaveEdit = async () => {
         try {
-            await axios.put(`/api/appointment/${editingAppointment._id}`, editingAppointment);
+await axios.put(`/api/appointment/${editingAppointment._id}`, editingAppointment);
             setShowModal(false);
             fetchAppointments(); // Refresh danh sách
         } catch (err) {
@@ -106,7 +99,7 @@ const AppointmentList = () => {
     const handleDelete = async (id) => {
         if (!window.confirm("Bạn có chắc muốn xoá lịch hẹn này?")) return;
         try {
-            await axios.delete(`/api/appointment/${id}`);
+            await axios.delete(`/api/doctor/delapt/${id}`);
             fetchAppointments();
         } catch (err) {
             alert("Lỗi khi xoá lịch hẹn");
@@ -164,7 +157,7 @@ const AppointmentList = () => {
                     <tbody>
                         {appointments.map((appt) => (
                             <tr key={appt._id} className="text-center hover:bg-gray-50">
-                                <td className="border p-2">{appt.profileId?.name || 'Không rõ'}</td>
+<td className="border p-2">{appt.profileId?.name || 'Không rõ'}</td>
                                 <td className="border p-2">{appt.department?.name || 'N/A'}</td>
                                 <td className="border p-2">{appt.doctorId?.name || 'N/A'}</td>
                                 <td className="border p-2">{new Date(appt.appointmentDate).toLocaleDateString()}</td>
@@ -200,6 +193,23 @@ const AppointmentList = () => {
                     </tbody>
                 </table>
             )}
+            <div className="flex justify-center mt-4 space-x-2">
+                <button
+                    disabled={page <= 1}
+                    onClick={() => setPage(p => p - 1)}
+                    className="px-3 py-1 border rounded disabled:opacity-50"
+                >
+                    Trang trước
+                </button>
+                <span className="px-2 py-1">{page} / {totalPages}</span>
+                <button
+                    disabled={page >= totalPages}
+                    onClick={() => setPage(p => p + 1)}
+                    className="px-3 py-1 border rounded disabled:opacity-50"
+                >
+                    Trang sau
+                </button>
+</div>
 
         </div>
     );

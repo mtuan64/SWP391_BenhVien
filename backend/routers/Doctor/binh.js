@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { checkticket, HasArrived, getDepartments, getAppointments, createSchedule, getScheduleByEmployeeAndDate, getTodayQueue, createOfflineTicket, createOnlineTicket, TaoProfile, LayDanhSachProfile, LayTatCaDanhSachProfile } = require('../../controller/doctor/binhtroller');
+const { checkticket, HasArrived, getDepartments, getAppointments, createSchedule, getScheduleByEmployeeAndDate, getTodayQueue, createOfflineTicket, createOnlineTicket, TaoProfile, LayDanhSachProfile, LayTatCaDanhSachProfile, deleteAppointment} = require('../../controller/doctor/binhtroller');
 const Schedule = require('../../models/Schedule');
 const Department = require('../../models/Department');
 const Services = require('../../models/Service');
@@ -258,5 +258,7 @@ router.get('/ketquakham', async (req, res) => {
     }
 }
 );
+
+router.delete('/delapt/:id', deleteAppointment);
 
 module.exports = router;

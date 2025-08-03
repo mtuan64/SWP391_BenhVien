@@ -90,7 +90,7 @@ exports.getDepartments = async (req, res) => {
 
 exports.getAppointments = async (req, res) => {
     try {
-        const { status, department, date } = req.query;
+        const { status, department, date, page = 1, limit = 10, sort = '-appointmentDate' } = req.query;
 
         const filter = {};
 
@@ -103,12 +103,39 @@ exports.getAppointments = async (req, res) => {
             filter.appointmentDate = { $gte: start, $lte: end };
         }
 
+        const skip = (parseInt(page) - 1) * parseInt(limit);
+
+        // Tính tổng số lượng bản ghi khớp filter
+        const total = await Appointment.countDocuments(filter);
+
+        // Lấy dữ liệu theo phân trang + populate
         const appointments = await Appointment.find(filter)
+            .sort(sort) // sắp xếp theo query, mặc định '-appointmentDate'
+            .skip(skip)
+            .limit(parseInt(limit))
             .populate('profileId')
             .populate('doctorId')
             .populate('department');
 
-        res.json(appointments);
+        const totalPages = Math.ceil(total / parseInt(limit));
+        for (const appt of appointments) {
+            try {
+                const ticket = await Ticket.findOne({
+                    doctorId: appt.doctorId._id || appt.doctorId,
+                    patientId: appt.profileId._id || appt.profileId,
+                    date: {
+                        $gte: new Date(appt.appointmentDate.setHours(0, 0, 0, 0)),
+                        $lte: new Date(appt.appointmentDate.setHours(23, 59, 59, 999))
+                    },
+                    queueNumber: appt.ticketNumber
+                });
+
+                appt._doc.ticketStatus = ticket?.status || null;
+            } catch (err) {
+                appt._doc.ticketStatus = null;
+            }
+        }
+        res.json({ appointments, total, totalPages });
     } catch (err) {
         console.error('❌ getAppointments error:', err);
         res.status(500).json({ message: 'Lỗi server' });
@@ -601,5 +628,23 @@ exports.createSchedule = async (req, res) => {
         res.status(201).json({ message: 'Schedule created', schedule });
     } catch (err) {
         res.status(500).json({ message: 'Error creating schedule', error: err.message });
+    }
+};
+
+
+exports.deleteAppointment = async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const deleted = await Appointment.findByIdAndDelete(id);
+
+        if (!deleted) {
+            return res.status(404).json({ message: 'Không tìm thấy lịch hẹn để xoá' });
+        }
+
+        res.json({ message: 'Xoá lịch hẹn thành công' });
+    } catch (err) {
+        console.error('Lỗi khi xoá lịch hẹn:', err);
+        res.status(500).json({ message: 'Đã xảy ra lỗi khi xoá lịch hẹn' });
     }
 };
