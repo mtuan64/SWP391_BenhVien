@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const TodayQueue = () => {
     const [tickets, setTickets] = useState([]);
@@ -12,8 +14,8 @@ const TodayQueue = () => {
     const [servicesList, setServicesList] = useState([]);
     const [doctorsList, setDoctorsList] = useState([]);
     const [selectedServices, setSelectedServices] = useState([]);
-    const [selectedProcedure, setSelectedProcedure] = useState(null);
-    const [testResult, setTestResult] = useState(null);
+    const [selectedProcedures, setSelectedProcedures] = useState([]);
+    const [testResults, setTestResults] = useState([]);
 
     const [medicalRecords, setMedicalRecords] = useState([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -27,12 +29,13 @@ const TodayQueue = () => {
             setMedicalRecords(response.data);
         } catch (error) {
             console.error('Error fetching medical records:', error);
+            toast.error('Lỗi khi lấy lịch sử bệnh án.');
         }
     };
-    const handleViewHistory = (profile) => {
-        console.log(profile);
-        setSelectedProfile(profile);
-        fetchMedicalRecords(profile);
+
+    const handleViewHistory = (profileId) => {
+        setSelectedProfile(profileId);
+        fetchMedicalRecords(profileId);
         setIsModalOpen(true);
     };
 
@@ -49,7 +52,7 @@ const TodayQueue = () => {
                     .sort((a, b) => a.queueNumber - b.queueNumber);
                 setTickets(filteredTickets);
             } catch (err) {
-                alert('Lỗi khi lấy hàng chờ: ' + (err.response?.data?.message || err.message));
+                toast.error('Lỗi khi lấy hàng chờ: ' + (err.response?.data?.message || err.message));
             } finally {
                 setLoading(false);
             }
@@ -67,7 +70,7 @@ const TodayQueue = () => {
                 setServicesList(servicesRes.data);
                 setDoctorsList(doctorsRes.data);
             } catch (err) {
-                alert('Lỗi khi tải dữ liệu dịch vụ/bác sĩ.');
+                toast.error('Lỗi khi tải dữ liệu dịch vụ/bác sĩ.');
             }
         };
         fetchMetadata();
@@ -76,34 +79,55 @@ const TodayQueue = () => {
     const handleViewResult = async (ticket) => {
         const record = ticket.medicalRecordId;
         if (!record || !record.procedureRequests || record.procedureRequests.length === 0) {
-            alert("Không có yêu cầu xét nghiệm.");
+            toast.warn('Không có yêu cầu xét nghiệm.');
             return;
         }
 
-        const procedure = record.procedureRequests[0]; // lấy cái đầu tiên (có thể lặp nếu nhiều cái)
-        const testType = procedure.testType || (procedure.services?.[0]?.testType);
-        const procedureRequestId = procedure._id;
-
-        if (!procedureRequestId || !testType) {
-            alert("Thiếu dữ liệu procedureRequestId hoặc testType.");
-            return;
-        }
+        const results = [];
+        const procedures = [];
 
         try {
-            const res = await axios.get('/api/doctor/ketquakham', {
-                params: {
-                    procedureRequestId,
-                    testType
-                }
-            });
+            for (const procedure of record.procedureRequests) {
+                for (const service of procedure.services || []) {
+                    const testType = service.testType;
+                    const procedureRequestId = procedure._id;
 
-            setTestResult(res.data);
-            setSelectedProcedure(procedure);
+                    if (!procedureRequestId || !testType) {
+                        console.warn(`Thiếu dữ liệu procedureRequestId hoặc testType cho service: ${service.serviceId}`);
+                        continue;
+                    }
+
+                    try {
+                        const res = await axios.get('/api/doctor/ketquakham', {
+                            params: {
+                                procedureRequestId,
+                                testType
+                            }
+                        });
+                        results.push({ ...res.data, testType, serviceName: service.serviceId?.name || 'Không xác định' });
+                        procedures.push({ ...procedure, service });
+                    } catch (err) {
+                        console.error(`Lỗi khi lấy kết quả cho testType ${testType}:`, err);
+                        results.push({
+                            testType,
+                            serviceName: service.serviceId?.name || 'Không xác định',
+                            error: err.response?.data?.message || err.message
+                        });
+                    }
+                }
+            }
+
+            if (results.length === 0) {
+                toast.warn('Không có kết quả xét nghiệm nào hợp lệ.');
+                return;
+            }
+
+            setTestResults(results);
+            setSelectedProcedures(procedures);
         } catch (err) {
-            alert("Lỗi khi lấy kết quả: " + (err.response?.data?.message || err.message));
+            toast.error('Lỗi khi lấy kết quả xét nghiệm: ' + (err.response?.data?.message || err.message));
         }
     };
-
 
     const handleStartExam = async (ticket) => {
         setSelectedTicket(ticket);
@@ -124,7 +148,7 @@ const TodayQueue = () => {
                     setFormData(prev => ({ ...prev, medicines: presRes.data.medicines || [] }));
                 }
             } catch (err) {
-                alert('Lỗi khi tải hồ sơ bệnh án: ' + (err.response?.data?.message || err.message));
+                toast.error('Lỗi khi tải hồ sơ bệnh án: ' + (err.response?.data?.message || err.message));
             }
         }
     };
@@ -215,16 +239,16 @@ const TodayQueue = () => {
                     console.log("Tạo hóa đơn thành công:", res.data);
                 } catch (error) {
                     console.error("Tạo hóa đơn thất bại:", error.response?.data || error.message);
+                    toast.error("Tạo hóa đơn thất bại: " + (error.response?.data?.message || error.message));
                 }
             } else {
                 console.warn("Không có dịch vụ nào để tạo hóa đơn.");
             }
 
-            alert('Đã hoàn thành khám!');
+            toast.success('Đã hoàn thành khám!');
             handleCloseModal();
-
         } catch (err) {
-            alert('Lỗi: ' + (err.response?.data?.message || err.message));
+            toast.error('Lỗi: ' + (err.response?.data?.message || err.message));
         }
     };
 
@@ -252,7 +276,6 @@ const TodayQueue = () => {
                     statusMedical: 'Labtest'
                 });
             } else {
-                // Nếu nó là object, chuyển sang chuỗi id
                 if (medicalRecordId && typeof medicalRecordId === 'object') {
                     medicalRecordId = medicalRecordId._id?.toString?.() || medicalRecordId.toString();
                 }
@@ -260,20 +283,6 @@ const TodayQueue = () => {
                     symptoms, diagnosis, conclusion, status: 'Labtest'
                 });
             }
-
-            // if (selectedServices.length > 0) {
-            //     await axios.post('/api/doctor/chidinhdichvu', {
-            //         medicalRecordId,
-            //         profileId,
-            //         doctorId,
-            //         services: selectedServices.map(s => ({
-            //             serviceId: s.serviceId,
-            //             scheduledTime: null,
-            //             status: 'Waiting',
-            //             doctorId: s.doctorId || ''
-            //         }))
-            //     });
-            // }
 
             if (selectedServices.length > 0) {
                 await axios.post('/api/doctor/chidinhdichvu', {
@@ -310,16 +319,29 @@ const TodayQueue = () => {
                 });
             }
 
-            alert('Đã chỉ định dịch vụ!');
+            toast.success('Đã chỉ định dịch vụ!');
             handleCloseModal();
-
         } catch (err) {
-            alert('Lỗi: ' + (err.response?.data?.message || err.message));
+            toast.error('Lỗi: ' + (err.response?.data?.message || err.message));
         }
     };
 
     return (
         <div className="p-6 max-w-6xl mx-auto bg-white rounded-lg shadow-lg">
+            {/* Toast Container */}
+            <ToastContainer
+                position="top-right"
+                autoClose={3000}
+                hideProgressBar={false}
+                newestOnTop={false}
+                closeOnClick
+                rtl={false}
+                pauseOnFocusLoss
+                draggable
+                pauseOnHover
+                theme="colored"
+            />
+
             <div className="flex items-center gap-4 mb-6">
                 <label className="font-semibold">Lọc theo:</label>
                 <select
@@ -353,7 +375,6 @@ const TodayQueue = () => {
                                 <th className="px-4 py-2 border">CCCD</th>
                                 <th className="px-4 py-2 border text-center">Hành động</th>
                                 <th className="px-4 py-2 border text-center">Lịch sử khám</th>
-
                             </tr>
                         </thead>
                         <tbody>
@@ -370,9 +391,7 @@ const TodayQueue = () => {
                                             >
                                                 Xem kết quả
                                             </button>
-
                                         )}
-
                                         {selectedDate === new Date().toISOString().split('T')[0] && (
                                             <button
                                                 onClick={() => handleStartExam(ticket)}
@@ -381,7 +400,6 @@ const TodayQueue = () => {
                                                 Khám bệnh
                                             </button>
                                         )}
-
                                         {selectedDate !== new Date().toISOString().split('T')[0] && (
                                             <button
                                                 className="px-3 py-1 bg-gray-300 text-gray-500 rounded text-sm cursor-not-allowed"
@@ -389,10 +407,7 @@ const TodayQueue = () => {
                                             >
                                                 Khám bệnh
                                             </button>
-
-
                                         )}
-
                                     </td>
                                     <td className="p-2 border text-center">
                                         <button
@@ -402,7 +417,6 @@ const TodayQueue = () => {
                                             Xem lịch sử
                                         </button>
                                     </td>
-
                                 </tr>
                             ))}
                         </tbody>
@@ -419,7 +433,7 @@ const TodayQueue = () => {
                         {/* Triệu chứng, chẩn đoán, kết luận */}
                         <div className="grid gap-4 mb-4">
                             <textarea placeholder="Triệu chứng" className="w-full border rounded px-3 py-2" value={formData.symptoms} onChange={e => setFormData({ ...formData, symptoms: e.target.value })} />
-                            <textarea placeholder="Chuẩn đoán" className="w-full border rounded px-3 py-2" value={formData.diagnosis} onChange={e => setFormData({ ...formData, diagnosis: e.target.value })} />
+                            <textarea placeholder="Chẩn đoán" className="w-full border rounded px-3 py-2" value={formData.diagnosis} onChange={e => setFormData({ ...formData, diagnosis: e.target.value })} />
                             <textarea placeholder="Kết luận" className="w-full border rounded px-3 py-2" value={formData.conclusion} onChange={e => setFormData({ ...formData, conclusion: e.target.value })} />
                         </div>
 
@@ -434,18 +448,6 @@ const TodayQueue = () => {
                                     <div key={service._id} className="flex items-center gap-2 mb-2">
                                         <input type="checkbox" checked={checked} onChange={() => handleCheckboxChange(service._id)} />
                                         <span>{service.name}</span>
-                                        {/* {checked && (
-                                            <select
-                                                className="border px-2 py-1 rounded"
-                                                value={current?.doctorId || ''}
-                                                onChange={(e) => handleDoctorSelect(service._id, e.target.value)}
-                                            >
-                                                <option value="">-- Chọn bác sĩ --</option>
-                                                {doctorsList.map(doc => (
-                                                    <option key={doc._id} value={doc._id}>{doc.name}</option>
-                                                ))}
-                                            </select>
-                                        )} */}
                                         {checked && (() => {
                                             const serviceDoctors = service.doctors || [];
                                             const filteredDoctors = doctorsList.filter(doc => serviceDoctors.includes(doc._id));
@@ -462,7 +464,6 @@ const TodayQueue = () => {
                                                 </select>
                                             );
                                         })()}
-
                                     </div>
                                 );
                             })}
@@ -500,58 +501,67 @@ const TodayQueue = () => {
                             <button onClick={handleAssignServices} className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
                                 Chỉ định dịch vụ
                             </button>
-                            <button onClick={handleCompleteExam} className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">
+                            <button onClick={handleCompleteExam} className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-600">
                                 Hoàn thành khám
                             </button>
-
                         </div>
                     </div>
                 </div>
             )}
-            {selectedProcedure && testResult && (
+
+            {/* Modal kết quả xét nghiệm */}
+            {testResults.length > 0 && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4 overflow-y-auto">
-                    <div className="bg-white rounded-2xl shadow-lg max-w-3xl w-full p-6">
-                        <h2 className="text-2xl font-bold mb-4 text-center text-blue-700">Kết quả xét nghiệm ({testResult.testType})</h2>
+                    <div className="bg-white rounded-2xl shadow-lg max-w-4xl w-full p-6">
+                        <h2 className="text-2xl font-bold mb-6 text-center text-blue-700">Kết quả xét nghiệm</h2>
 
-                        {testResult.resultDetails?.length > 0 ? (
-                            <table className="w-full border text-sm">
-                                <thead className="bg-blue-100 text-gray-800">
-                                    <tr>
-                                        <th className="p-2 border">Chỉ số</th>
-                                        <th className="p-2 border">Giá trị</th>
-                                        <th className="p-2 border">Đơn vị</th>
-                                        <th className="p-2 border">Khoảng tham chiếu</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {testResult.resultDetails.map((item, index) => (
-                                        <tr key={index} className="hover:bg-gray-50">
-                                            <td className="p-2 border">{item.name}</td>
-                                            <td className="p-2 border">{item.value}</td>
-                                            <td className="p-2 border">{item.unit || '-'}</td>
-                                            <td className="p-2 border">{item.referenceRange || '-'}</td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        ) : (
-                            <p className="text-center text-gray-600">Không có chi tiết kết quả.</p>
-                        )}
-
-                        {testResult.resultNote && (
-                            <div className="mt-4">
-                                <h4 className="font-semibold text-gray-700 mb-1">Ghi chú:</h4>
-                                <p className="p-2 bg-gray-100 rounded text-gray-800 text-sm">
-                                    {testResult.resultNote}
-                                </p>
+                        {testResults.map((result, index) => (
+                            <div key={index} className="mb-8 border-b pb-6 last:border-b-0">
+                                <h3 className="text-lg font-semibold mb-3 text-gray-800">
+                                    Xét nghiệm: {result.serviceName} ({result.testType})
+                                </h3>
+                                {result.error ? (
+                                    <p className="text-red-600 italic">Lỗi: {result.error}</p>
+                                ) : result.resultDetails?.length > 0 ? (
+                                    <table className="w-full border text-sm">
+                                        <thead className="bg-blue-100 text-gray-800">
+                                            <tr>
+                                                <th className="p-2 border">Chỉ số</th>
+                                                <th className="p-2 border">Giá trị</th>
+                                                <th className="p-2 border">Đơn vị</th>
+                                                <th className="p-2 border">Khoảng tham chiếu</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {result.resultDetails.map((item, itemIndex) => (
+                                                <tr key={itemIndex} className="hover:bg-gray-50">
+                                                    <td className="p-2 border">{item.name}</td>
+                                                    <td className="p-2 border">{item.value}</td>
+                                                    <td className="p-2 border">{item.unit || '-'}</td>
+                                                    <td className="p-2 border">{item.referenceRange || '-'}</td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                ) : (
+                                    <p className="text-gray-600 italic">Không có chi tiết kết quả cho xét nghiệm này.</p>
+                                )}
+                                {result.resultNote && (
+                                    <div className="mt-4">
+                                        <h4 className="font-semibold text-gray-700 mb-1">Ghi chú:</h4>
+                                        <p className="p-2 bg-gray-100 rounded text-gray-800 text-sm">
+                                            {result.resultNote}
+                                        </p>
+                                    </div>
+                                )}
                             </div>
-                        )}
+                        ))}
 
                         <div className="mt-6 text-right">
                             <button
                                 onClick={() => {
-                                    setSelectedProcedure(null);
-                                    setTestResult(null);
+                                    setSelectedProcedures([]);
+                                    setTestResults([]);
                                 }}
                                 className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
                             >
@@ -561,6 +571,8 @@ const TodayQueue = () => {
                     </div>
                 </div>
             )}
+
+            {/* Modal lịch sử khám */}
             {isModalOpen && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4 overflow-y-auto">
                     <div className="bg-white rounded-lg shadow-lg max-w-3xl w-full p-6">
@@ -590,9 +602,6 @@ const TodayQueue = () => {
                     </div>
                 </div>
             )}
-
-
-
         </div>
     );
 };

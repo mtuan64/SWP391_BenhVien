@@ -7,9 +7,8 @@ import {
   HomeOutlined,
   InfoCircleOutlined,
   BookOutlined,
-  MedicineBoxOutlined,
+  FileTextOutlined,
   HeartOutlined,
-  TeamOutlined,
   UserOutlined,
   LoginOutlined,
   UserAddOutlined,
@@ -20,7 +19,7 @@ import {
 } from "@ant-design/icons";
 import "../assets/css/Header.css";
 import MenuComponent from "./MenuComponent";
-import axios from "axios"; // Ensure axios is imported
+import axios from "axios";
 
 const Header = ({ onMenuClick, menuOpen }) => {
   const { user, token, logout } = useAuth();
@@ -109,11 +108,11 @@ const Header = ({ onMenuClick, menuOpen }) => {
           <Link to="/service-home" className="header-link">
             <CustomerServiceOutlined /> <span>Dịch Vụ</span>
           </Link>
-          <Link to="/doctor-list" className="header-link">
-            <TeamOutlined /> <span>Bác Sĩ</span>
+          <Link to="/health/food" className="header-link">
+            <HeartOutlined /> <span>Foods</span>
           </Link>
-          <Link to="/medicines-home" className="header-link">
-            <MedicineBoxOutlined /> <span>Thuốc</span>
+          <Link to="/health/calculator" className="header-link">
+            <FileTextOutlined /> <span>BMI</span>
           </Link>
           {user ? (
             <>

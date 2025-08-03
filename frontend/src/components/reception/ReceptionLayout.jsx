@@ -2,20 +2,15 @@ import React, { useState, useEffect } from "react";
 import { Layout, Menu } from "antd";
 import {
   FileTextOutlined,
-  AppstoreOutlined,
-  MedicineBoxOutlined,
+  UserOutlined,
   DollarOutlined,
-  CommentOutlined,
-  NotificationOutlined,
-  QuestionCircleOutlined,
   LogoutOutlined,
   MenuFoldOutlined,
   MenuUnfoldOutlined,
   CalendarOutlined,
-  BellOutlined,
-  UserOutlined,
   PlusCircleOutlined,
-  CheckCircleOutlined,
+  ProfileOutlined,
+  SolutionOutlined,
 } from "@ant-design/icons";
 import { Link, Outlet, useNavigate, useLocation } from "react-router-dom";
 
@@ -35,20 +30,12 @@ const ReceptionLayout = () => {
       icon: <CalendarOutlined />,
       label: "Lịch Hẹn",
     },
-
     {
       key: "3",
       path: "/recep/users",
       icon: <UserOutlined />,
       label: "Quản Lý Người Dùng",
     },
-    // {
-    //   key: "4",
-    //   path: "/recep/medicalrecord",
-    //   icon: <FileTextOutlined />,
-    //   label: "Hồ Sơ Y Tế",
-    // },
-
     {
       key: "5",
       path: "/recep/invoices",
@@ -61,23 +48,22 @@ const ReceptionLayout = () => {
       icon: <DollarOutlined />,
       label: "Quản Lý Thanh Toán",
     },
-
     {
       key: "7",
       path: "/recep/datlichoffline",
-      icon: <QuestionCircleOutlined />,
+      icon: <PlusCircleOutlined />,
       label: "Đặt lịch",
     },
     {
       key: "8",
       path: "/recep/tao-ho-so",
-      icon: <QuestionCircleOutlined />,
+      icon: <SolutionOutlined />,
       label: "Tạo hồ sơ",
     },
     {
       key: "9",
       path: "/recep/profile",
-      icon: <QuestionCircleOutlined />,
+      icon: <ProfileOutlined />,
       label: "Hồ Sơ Cá Nhân",
     },
     {

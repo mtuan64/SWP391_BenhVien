@@ -1,121 +1,3 @@
-// import React, { useState, useEffect } from 'react';
-// import axios from 'axios';
-
-// export default function BookingForm() {
-//     const [profiles, setProfiles] = useState([]);
-//     const [departments, setDepartments] = useState([]);
-//     const [doctors, setDoctors] = useState([]);
-//     const [slots, setSlots] = useState([]);
-
-//     const [form, setForm] = useState({
-//         profileId: '',
-//         department: '',
-//         doctorId: '',
-//         date: '',
-//         timeSlot: '',
-//     });
-
-//     // Lấy danh sách hồ sơ và khoa
-//     useEffect(() => {
-//         const user = JSON.parse(localStorage.getItem('user'));
-//         axios.get(`/api/doctor/danhsachprofile?userId=${user._id}`).then(res => setProfiles(res.data));
-//         axios.get('/api/departments').then(res => setDepartments(res.data.departments));
-//     }, []);
-
-//     // Lấy danh sách bác sĩ khi chọn khoa
-//     useEffect(() => {
-//         if (form.department) {
-//             axios.get(`/api/staff/employees?department=${form.department}`).then(res => setDoctors(res.data));
-//         }
-//     }, [form.department]);
-
-//     // Lấy lịch làm việc khi chọn bác sĩ và ngày
-//     useEffect(() => {
-//         if (form.doctorId && form.date) {
-//             axios
-//                 .get(`/api/doctor/lich?employeeId=${form.doctorId}&date=${form.date}`)
-//                 .then(res => {
-//                     const available = res.data?.timeSlots?.filter(t => t.status === 'Available') || [];
-//                     setSlots(available);
-//                 });
-//         }
-//     }, [form.doctorId, form.date]);
-
-//     const handleSubmit = async () => {
-//         try {
-//             const selectedSlot = slots.find(s => s.startTime === form.timeSlot);
-//             if (!selectedSlot) {
-//                 alert('Khung giờ không hợp lệ.');
-//                 return;
-//             }
-
-//             await axios.post('/api/doctor/datlich', {
-//                 profileId: form.profileId,
-//                 department: form.department,
-//                 doctorId: form.doctorId,
-//                 date: form.date,
-//                 timeSlot: selectedSlot // Gửi toàn bộ object
-//             });
-
-//             alert('Đặt lịch thành công!');
-//         } catch (err) {
-//             alert(err.response?.data?.message || 'Lỗi khi đặt lịch');
-//         }
-//     };
-
-//     return (
-//         <div className="p-4 max-w-xl mx-auto bg-white rounded shadow">
-//             <h2 className="text-xl font-bold mb-4">Đặt lịch khám bệnh</h2>
-
-//             <label>Hồ sơ:</label>
-//             <select value={form.profileId} onChange={e => setForm({ ...form, profileId: e.target.value })}>
-//                 <option value="">Chọn hồ sơ</option>
-//                 {profiles.map(p => (
-//                     <option key={p._id} value={p._id}>{p.name}</option>
-//                 ))}
-//             </select>
-
-//             <label>Khoa:</label>
-//             <select value={form.department} onChange={e => setForm({ ...form, department: e.target.value })}>
-//                 <option value="">Chọn khoa</option>
-//                 {departments.map(d => (
-//                     <option key={d._id} value={d._id}>{d.name}</option>
-//                 ))}
-//             </select>
-
-//             <label>Bác sĩ:</label>
-//             <select value={form.doctorId} onChange={e => setForm({ ...form, doctorId: e.target.value })}>
-//                 <option value="">Chọn bác sĩ</option>
-//                 {doctors.map(d => (
-//                     <option key={d._id} value={d._id}>{d.name}</option>
-//                 ))}
-//             </select>
-
-//             <label>Ngày khám:</label>
-//             <input
-//                 type="date"
-//                 value={form.date}
-//                 onChange={e => setForm({ ...form, date: e.target.value })}
-//             />
-
-//             <label>Khung giờ:</label>
-//             <select onChange={e => setForm({ ...form, timeSlot: e.target.value })}>
-//                 <option value="">Chọn khung giờ</option>
-//                 {slots.map((s, i) => (
-//                     <option key={i} value={s.startTime}>
-//                         {new Date(s.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} -{" "}
-//                         {new Date(s.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-//                     </option>
-//                 ))}
-//             </select>
-
-//             <button className="mt-4 p-2 bg-blue-500 text-white rounded" onClick={handleSubmit}>
-//                 Đặt lịch
-//             </button>
-//         </div>
-//     );
-// }
-
 import React, { useState, useEffect } from 'react';
 import { Calendar, User, Stethoscope, Clock, Building2, CheckCircle } from 'lucide-react';
 import axios from 'axios';
@@ -125,6 +7,7 @@ export default function BookingForm() {
     const [departments, setDepartments] = useState([]);
     const [doctors, setDoctors] = useState([]);
     const [slots, setSlots] = useState([]);
+    const [dateError, setDateError] = useState(''); // Thêm state để lưu thông báo lỗi ngày
 
     const [form, setForm] = useState({
         profileId: '',
@@ -160,8 +43,39 @@ export default function BookingForm() {
         }
     }, [form.doctorId, form.date]);
 
+    // Hàm kiểm tra ngày hợp lệ
+    const validateDate = (selectedDate) => {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0); // Đặt giờ về 00:00:00 để so sánh chỉ ngày
+        const selected = new Date(selectedDate);
+        selected.setHours(0, 0, 0, 0);
+
+        if (selected < today) {
+            setDateError('Không thể chọn ngày trong quá khứ.');
+            return false;
+        } else {
+            setDateError('');
+            return true;
+        }
+    };
+
+    // Xử lý khi thay đổi ngày
+    const handleDateChange = (e) => {
+        const selectedDate = e.target.value;
+        if (validateDate(selectedDate)) {
+            setForm({ ...form, date: selectedDate });
+        } else {
+            setForm({ ...form, date: '' }); // Reset ngày nếu không hợp lệ
+        }
+    };
+
     const handleSubmit = async () => {
         try {
+            if (!form.date || dateError) {
+                alert('Vui lòng chọn ngày hợp lệ.');
+                return;
+            }
+
             const selectedSlot = slots.find(s => s.startTime === form.timeSlot);
             if (!selectedSlot) {
                 alert('Khung giờ không hợp lệ.');
@@ -173,7 +87,7 @@ export default function BookingForm() {
                 department: form.department,
                 doctorId: form.doctorId,
                 date: form.date,
-                timeSlot: selectedSlot // Gửi toàn bộ object
+                timeSlot: selectedSlot,
             });
 
             alert('Đặt lịch thành công!');
@@ -197,7 +111,6 @@ export default function BookingForm() {
                 {/* Form Container */}
                 <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
                     <div className="p-8 space-y-8">
-
                         {/* Profile Selection */}
                         <div className="space-y-3">
                             <label className="flex items-center text-sm font-semibold text-gray-700 mb-2">
@@ -283,9 +196,13 @@ export default function BookingForm() {
                             <input
                                 type="date"
                                 value={form.date}
-                                onChange={e => setForm({ ...form, date: e.target.value })}
-                                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 hover:bg-gray-100"
+                                onChange={handleDateChange}
+                                min={new Date().toISOString().split('T')[0]} // Ngăn chọn ngày trong quá khứ trên giao diện
+                                className={`w-full px-4 py-3 bg-gray-50 border rounded-xl focus:outline-none focus:ring-2 transition-all duration-200 hover:bg-gray-100 ${
+                                    dateError ? 'border-red-500 focus:ring-red-500' : 'border-gray-200 focus:ring-purple-500 focus:border-purple-500'
+                                }`}
                             />
+                            {dateError && <p className="text-sm text-red-500 italic">{dateError}</p>}
                         </div>
 
                         {/* Time Slot Selection */}
@@ -298,7 +215,7 @@ export default function BookingForm() {
                                 <select
                                     onChange={e => setForm({ ...form, timeSlot: e.target.value })}
                                     className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-200 appearance-none cursor-pointer hover:bg-gray-100"
-                                    disabled={!form.doctorId || !form.date}
+                                    disabled={!form.doctorId || !form.date || dateError}
                                 >
                                     <option value="">Chọn khung giờ</option>
                                     {slots.map((s, i) => (
@@ -314,7 +231,7 @@ export default function BookingForm() {
                                     </svg>
                                 </div>
                             </div>
-                            {slots.length === 0 && form.doctorId && form.date && (
+                            {slots.length === 0 && form.doctorId && form.date && !dateError && (
                                 <p className="text-sm text-gray-500 italic">Không có khung giờ trống cho ngày này</p>
                             )}
                         </div>
@@ -324,6 +241,7 @@ export default function BookingForm() {
                             <button
                                 className="w-full bg-gradient-to-r from-blue-600 to-teal-600 hover:from-blue-700 hover:to-teal-700 text-white font-semibold py-4 px-6 rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200 flex items-center justify-center space-x-2"
                                 onClick={handleSubmit}
+                                disabled={dateError} // Vô hiệu hóa nút nếu có lỗi ngày
                             >
                                 <CheckCircle className="w-5 h-5" />
                                 <span>Đặt lịch khám</span>

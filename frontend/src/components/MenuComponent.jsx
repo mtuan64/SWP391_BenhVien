@@ -2,18 +2,14 @@ import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Drawer } from "antd";
 import {
-  HomeOutlined,
   UserOutlined,
   CloseOutlined,
-  FileTextOutlined,
-  HeartOutlined,
-  BookOutlined,
+  QuestionCircleOutlined,
   DollarOutlined,
   CalendarOutlined,
-  ClockCircleOutlined,
-  EditOutlined,
-  FileDoneOutlined,
-  QuestionCircleOutlined,
+  HistoryOutlined,
+  PlusCircleOutlined,
+  SolutionOutlined,
 } from "@ant-design/icons";
 
 const DRAWER_WIDTH = 240;
@@ -24,14 +20,12 @@ const menuByRole = (role) => {
     patient: [
       { title: "Quản Lý Hồ Sơ", path: "/profilemanage", icon: <UserOutlined /> },
       { title: "Lịch hẹn của tôi", path: "/myappointments", icon: <CalendarOutlined /> },
-      { title: "Foods", path: "/health/food", icon: <HeartOutlined /> },
-      { title: "BMI", path: "/health/calculator", icon: <FileTextOutlined /> },
-      { title: "Q/A", path: "/qa", icon: <BookOutlined /> },
-      { title: "Lịch Sử Q/A", path: "/qahistory", icon: <ClockCircleOutlined /> },
+      { title: "Q/A", path: "/qa", icon: <QuestionCircleOutlined /> },
+      { title: "Lịch Sử Q/A", path: "/qahistory", icon: <HistoryOutlined /> },
       { title: "Hóa đơn", path: "/invoice", icon: <DollarOutlined /> },
       { title: "FAQ", path: "/faq", icon: <QuestionCircleOutlined /> },
-      { title: "Đặt lịch", path: "/datlich", icon: <UserOutlined /> },
-      { title: "Tạo hồ sơ", path: "/taoprofile", icon: <UserOutlined /> },
+      { title: "Đặt lịch", path: "/datlich", icon: <PlusCircleOutlined /> },
+      { title: "Tạo hồ sơ", path: "/taoprofile", icon: <SolutionOutlined /> },
     ],
   };
 
