@@ -153,6 +153,9 @@ const Header = ({ onMenuClick, menuOpen }) => {
                   </li>
                 </ul>
               </div>
+              <Link to="/datlich" className="appointment-button">
+                <CalendarOutlined /> <span>Lịch Hẹn</span>
+              </Link>
             </>
           ) : (
             <Dropdown menu={{ items: guestMenuItems }} trigger={["click"]}>
@@ -161,9 +164,6 @@ const Header = ({ onMenuClick, menuOpen }) => {
               </div>
             </Dropdown>
           )}
-          <Link to="/appointment" className="appointment-button">
-            <CalendarOutlined /> <span>Lịch Hẹn</span>
-          </Link>
         </div>
       </div>
       {user && (

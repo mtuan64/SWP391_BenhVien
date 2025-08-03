@@ -329,6 +329,7 @@ const AppRoutes = () => {
             <Route path="lab-tests" element={<LabTest />} />
             <Route path="labtest/result" element={<TestResultList />} />
             <Route path="attendance" element={<DoctorAttendance />} />
+            <Route path="profile" element={<ProfileDoctor />} />
           </Route>
           <Route
             path="/doctor"
