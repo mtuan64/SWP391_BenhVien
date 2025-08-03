@@ -258,7 +258,7 @@ const AppRoutes = () => {
               element={<ViewMedicalRecords />}
             />
             <Route path="datlichoffline" element={<BookingFormStaff />} />
-            <Route path="tao-ho-so" element={<StaffCreateProfile />} />
+            
             <Route path="feedback" element={<FeedbackManagement />} />
             <Route path="qna" element={<QnAView />} />
             {/* <Route

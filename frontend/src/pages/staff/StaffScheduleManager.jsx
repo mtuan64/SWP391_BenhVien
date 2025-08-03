@@ -326,10 +326,10 @@ const handleAutoGenerateSchedule = async (values) => {
           value={filterDate}
         />
         <Button onClick={clearFilters}>Xóa Filter</Button>
-        <Button type="default" onClick={() => setAutoModalVisible(true)}>
+        {/* <Button type="default" onClick={() => setAutoModalVisible(true)}>
           Tạo lịch tự động
-        </Button>
-        <Button
+        </Button> */}
+        {/* <Button
           type="primary"
           icon={<PlusOutlined />}
           onClick={() => {
@@ -339,7 +339,7 @@ const handleAutoGenerateSchedule = async (values) => {
           }}
         >
           Thêm lịch
-        </Button>
+        </Button> */}
       </Space>
 
       <Divider />
