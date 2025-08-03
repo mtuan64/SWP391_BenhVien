@@ -7,6 +7,7 @@ import {
   LogoutOutlined,
   MenuFoldOutlined,
   MenuUnfoldOutlined,
+  CheckCircleOutlined,
 } from "@ant-design/icons";
 import { Link, Outlet, useNavigate, useLocation } from "react-router-dom";
 
@@ -34,12 +35,18 @@ const Doctor2Layout = () => {
     },
     {
       key: "3",
+      path: "/doctor2/attendance",
+      icon: <CheckCircleOutlined />,
+      label: "Điểm danh",
+    },
+    {
+      key: "4",
       path: "/doctor2/profile",
       icon: <UserOutlined />,
       label: "Hồ sơ cá nhân",
     },
     {
-      key: "4",
+      key: "5",
       path: null,
       icon: <LogoutOutlined />,
       label: "Đăng xuất",
@@ -57,7 +64,9 @@ const Doctor2Layout = () => {
 
   // Update selected key based on current route
   useEffect(() => {
-    const currentItem = menuItems.find((item) => item.path === location.pathname);
+    const currentItem = menuItems.find(
+      (item) => item.path === location.pathname
+    );
     if (currentItem && currentItem.key !== selectedKey) {
       setSelectedKey(currentItem.key);
     }
@@ -81,8 +90,16 @@ const Doctor2Layout = () => {
         </div>
         <Menu theme="dark" mode="inline" selectedKeys={[selectedKey]}>
           {menuItems.map((item) => (
-            <Menu.Item key={item.key} icon={item.icon} onClick={item.onClick || undefined}>
-              {item.path ? <Link to={item.path}>{item.label}</Link> : item.label}
+            <Menu.Item
+              key={item.key}
+              icon={item.icon}
+              onClick={item.onClick || undefined}
+            >
+              {item.path ? (
+                <Link to={item.path}>{item.label}</Link>
+              ) : (
+                item.label
+              )}
             </Menu.Item>
           ))}
         </Menu>

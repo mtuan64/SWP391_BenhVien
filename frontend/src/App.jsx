@@ -328,6 +328,7 @@ const AppRoutes = () => {
             <Route path="procedure-requests" element={<PatientList />} />
             <Route path="lab-tests" element={<LabTest />} />
             <Route path="labtest/result" element={<TestResultList />} />
+            <Route path="attendance" element={<DoctorAttendance />} />
           </Route>
           <Route
             path="/doctor"
