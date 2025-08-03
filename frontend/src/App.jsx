@@ -268,7 +268,7 @@ const AppRoutes = () => {
             <Route path="appointments" element={<AppointmentList />} />
             <Route path="notifications" element={<NotificationManagement />} />
             <Route path="users" element={<UserManagement />} />
-            <Route path="medicalrecord" element={<MedicalRecord />} />
+            
             <Route path="medicines" element={<MedicineManagement />} />
             <Route path="schedule" element={<StaffScheduleManager />} />
             <Route path="profile" element={<ProfileStaff />} />
@@ -286,7 +286,7 @@ const AppRoutes = () => {
             }
           >
             <Route index element={<AppointmentList />} />
-            
+            <Route path="medicalrecord" element={<MedicalRecord />} />
             
             <Route path="invoices/create" element={<CreateInvoice2 />}></Route>
             

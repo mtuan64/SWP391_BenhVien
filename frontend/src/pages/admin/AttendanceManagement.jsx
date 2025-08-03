@@ -29,8 +29,8 @@ const AttendanceManagement = () => {
   const [noteModal, setNoteModal] = useState(false);
   const [deadlineTime, setDeadlineTime] = useState("08:00");
   const [configModalOpen, setConfigModalOpen] = useState(false);
-  const deadlineHour = 8; 
-  const deadlineMinute = 15;
+  const deadlineHour = 8;
+  const deadlineMinute = 0;
   const isLate = (checkInTime) => {
     if (!checkInTime) return false;
     const hour = new Date(checkInTime).getHours();
@@ -43,8 +43,8 @@ const AttendanceManagement = () => {
       const params = {};
       if (filters.status) params.status = filters.status;
       if (filters.dates.length === 2) {
-        params.startDate = filters.dates[0].format("YYYY-MM-DD");
-        params.endDate = filters.dates[1].format("YYYY-MM-DD");
+        params.startDate = filters.dates[0].format("DD-MM-YYYY");
+        params.endDate = filters.dates[1].format("DD-MM-YYYY");
       }
       const res = await axios.get("/api/admin/attend", { params });
       let data = res.data.data;
@@ -94,7 +94,18 @@ const AttendanceManagement = () => {
     const deadline = dayjs(
       `${dayjs(date).format("YYYY-MM-DD")}T${deadlineTime}`
     );
-    return checkIn.isAfter(deadline) ? checkIn.diff(deadline, "minute") : 0;
+    return checkIn.isAfter(deadline)
+      ? formatDuration(checkIn.diff(deadline, "minute"))
+      : null;
+  };
+
+  const formatDuration = (minutes) => {
+    const hrs = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    let result = "";
+    if (hrs > 0) result += `${hrs} giờ `;
+    if (mins > 0) result += `${mins} phút`;
+    return result.trim();
   };
 
   const columns = [
@@ -119,17 +130,16 @@ const AttendanceManagement = () => {
     {
       title: "Đi trễ",
       render: (_, record) => {
-        return (
-          <span
-            style={{ color: isLate(record.checkInTime) ? "red" : "inherit" }}
-          >
-            {record.checkInTime
-              ? dayjs(record.checkInTime).format("HH:mm:ss")
-              : "—"}
-          </span>
+        if (!record.checkInTime) return "—";
+        const lateText = calculateLateMinutes(record.checkInTime, record.date);
+        return lateText ? (
+          <span style={{ color: "red" }}>{lateText}</span>
+        ) : (
+          "Đúng giờ"
         );
       },
     },
+
     {
       title: "Giờ Check-Out",
       dataIndex: "checkOutTime",
