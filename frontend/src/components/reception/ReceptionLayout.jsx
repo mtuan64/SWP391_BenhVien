@@ -38,36 +38,43 @@ const ReceptionLayout = () => {
     },
     {
       key: "5",
+      path: "/recep/medicalrecord",
+      icon: <FileTextOutlined />,
+      label: "Hồ Sơ Y Tế",
+    },
+
+    {
+      key: "6",
       path: "/recep/invoices",
       icon: <DollarOutlined />,
       label: "Quản Lý Hóa Đơn",
     },
     {
-      key: "6",
+      key: "7",
       path: "/recep/payments",
       icon: <DollarOutlined />,
       label: "Quản Lý Thanh Toán",
     },
     {
-      key: "7",
+      key: "8",
       path: "/recep/datlichoffline",
       icon: <PlusCircleOutlined />,
       label: "Đặt lịch",
     },
     {
-      key: "8",
+      key: "9",
       path: "/recep/tao-ho-so",
       icon: <SolutionOutlined />,
       label: "Tạo hồ sơ",
     },
     {
-      key: "9",
+      key: "10",
       path: "/recep/profile",
       icon: <ProfileOutlined />,
       label: "Hồ Sơ Cá Nhân",
     },
     {
-      key: "10",
+      key: "11",
       path: null,
       icon: <LogoutOutlined />,
       label: "Đăng Xuất",

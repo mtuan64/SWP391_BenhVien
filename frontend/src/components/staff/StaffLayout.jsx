@@ -56,67 +56,53 @@ const StaffLayout = ({ user }) => {
       icon: <BellOutlined />,
       label: "Quản Lý Thông Báo",
     },
-
     {
       key: "5",
-      path: "/staff/medicalrecord",
-      icon: <FileTextOutlined />,
-      label: "Hồ Sơ Y Tế",
-    },
-    {
-      key: "6",
-      path: "/staff/medicines",
-      icon: <PlusCircleOutlined />,
-      label: "Quản Lý Thuốc",
-    },
-
-    {
-      key: "7",
       path: "/staff/news",
       icon: <NotificationOutlined />,
       label: "Quản Lý Tin Tức",
     },
     {
-      key: "8",
+      key: "6",
       path: "/staff/feedback",
       icon: <CommentOutlined />,
       label: "Quản Lý Feedback",
     },
     {
-      key: "9",
+      key: "7",
       path: "/staff/qna",
       icon: <QuestionCircleOutlined />,
       label: "Q/A",
     },
     {
-      key: "10",
+      key: "8",
       path: "/staff/schedule",
       icon: <QuestionCircleOutlined />,
       label: "Quản Lý Lịch Trình",
     },
 
     {
-      key: "11",
+      key: "9",
       path: "/staff/profile",
       icon: <QuestionCircleOutlined />,
       label: "Hồ Sơ Cá Nhân",
     },
 
     {
-      key: "12",
+      key: "10",
       path: "/staff/attendance",
       icon: <CheckCircleOutlined />,
       label: "Điểm danh",
     },
     {
-      key: "13",
+      key: "11",
       path: null,
       icon: <LogoutOutlined />,
       label: "Đăng Xuất",
       onClick: () => handleLogout(),
     },
   ];
-const employeeId = localStorage.getItem("employeeId");
+  const employeeId = localStorage.getItem("employeeId");
   // Handle logout
   const handleLogout = () => {
     localStorage.removeItem("user");
@@ -183,15 +169,12 @@ const employeeId = localStorage.getItem("employeeId");
           >
             {collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
           </div>
-
-          
         </Header>
 
         <Content
           style={{ margin: "24px 16px", padding: 24, background: "#fff" }}
         >
           <Outlet />
-          
         </Content>
       </Layout>
     </Layout>
