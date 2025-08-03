@@ -293,7 +293,7 @@ const HomePage = () => {
                 </h1>
                 <div>
                   <Link
-                    to="/appointment"
+                    to="/datlich"
                     className="btn btn-primary btn-lg px-4 me-3 shadow"
                   >
                     Đặt Lịch Hẹn

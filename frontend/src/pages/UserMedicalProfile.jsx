@@ -1,379 +1,256 @@
-// File: UserMedicalProfileDetail.js
-// --- BẮT ĐẦU CODE ---
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import Modal from 'react-modal';
 
-import { useState, useEffect } from "react";
-import {
-  Form,
-  Input,
-  Button,
-  List, // Sử dụng List để hiển thị danh sách gọn gàng hơn
-  Space,
-  Typography,
-  message,
-  Modal,
-  Select,
-  Checkbox,
-  Spin,
-  DatePicker,
-} from "antd";
-import dayjs from "dayjs";
-
-const { Title, Text } = Typography;
-const { Option } = Select;
-
-// Component con để hiển thị danh sách lựa chọn trong Modal
-const ProfileSelectionList = ({ profiles, onSelect }) => (
-  <List
-    itemLayout="horizontal"
-    dataSource={profiles}
-    renderItem={(profile) => (
-      <List.Item
-        actions={[
-          <Button type="primary" onClick={() => onSelect(profile)}>
-            Chọn
-          </Button>,
-        ]}
-      >
-        <List.Item.Meta
-          title={<Text strong>{profile.name}</Text>}
-          description={`Ngày tháng năm sinh : ${dayjs(profile.dateOfBirth).format(
-            "DD/MM/YYYY"
-          )} - Giới tính : ${profile.gender}`}
-        />
-      </List.Item>
-    )}
-  />
-);
+Modal.setAppElement('#root');
 
 const UserMedicalProfileDetail = () => {
-  const [modalForm] = Form.useForm();
-
-  // State quản lý UI chính
-  const [identityToSearch, setIdentityToSearch] = useState("");
-  const [isSearching, setIsSearching] = useState(false);
-
-  // State quản lý Modal
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [modalView, setModalView] = useState("list"); // 'list' hoặc 'edit'
-  const [foundProfiles, setFoundProfiles] = useState([]);
+  const [profiles, setProfiles] = useState([]);
   const [selectedProfile, setSelectedProfile] = useState(null);
-  const [isUpdating, setIsUpdating] = useState(false);
+  const [medicalRecords, setMedicalRecords] = useState([]);
+  const [search, setSearch] = useState('');
+  const [page, setPage] = useState(1);
+  const [limit] = useState(10);
+  const [total, setTotal] = useState(0);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedService, setSelectedService] = useState(null);
+  const [procedureResult, setProcedureResult] = useState(null);
+  const [resultModalOpen, setResultModalOpen] = useState(false);
+  const [hasSearched, setHasSearched] = useState(false);
 
-  // State cho dữ liệu phụ (dịch vụ, thuốc)
-  const [services, setServices] = useState([]);
-  const [medicines, setMedicines] = useState([]);
-  const [isMedicineLoading, setIsMedicineLoading] = useState(false);
-
-  // --- I. HÀM GỌI API ---
-
-  // 1. Lấy danh sách dịch vụ
   useEffect(() => {
-    const fetchServices = async () => {
-      try {
-        const response = await fetch("http://localhost:9999/api/services");
-        if (!response.ok) throw new Error("Failed to fetch services");
-        const data = await response.json();
-        setServices(data);
-      } catch (error) {
-        message.error(error.message);
-      }
-    };
-    fetchServices();
-  }, []);
-
-  // 2. Tìm kiếm hồ sơ và mở popup lựa chọn
-  const handleSearchAndShowSelection = async () => {
-    if (!identityToSearch.trim()) {
-      message.warn("Nhập căn cước công dân hoặc chứng minh nhân để tìm hồ sơ bệnh nhân.");
-      return;
+    if (hasSearched) {
+      fetchProfiles();
     }
-    setIsSearching(true);
+  }, [search, page, hasSearched]);
+
+  const fetchProfiles = async () => {
     try {
-      const response = await fetch(
-        `http://localhost:9999/api/doctor/by-identity/${identityToSearch}`
-      );
-      if (!response.ok && response.status !== 404) {
-        throw new Error("Xảy ra lỗi khi tìm hồ sơ.");
-      }
-      const result = await response.json();
-      const profilesData = result.data || [];
-
-      if (profilesData.length === 0) {
-        message.info("Không có hồ sơ cho CCCD/CMND này.");
-      } else {
-        setFoundProfiles(profilesData);
-        setModalView("list"); // Đặt chế độ xem là danh sách
-        setIsModalOpen(true); // Mở Modal
-      }
-    } catch (error) {
-      message.error(error.message);
-    } finally {
-      setIsSearching(false);
+      const res = await axios.get('/api/doctor/danhsachhosocuatatcabenhnhan', {
+        params: { search, page, limit },
+      });
+      setProfiles(res.data.profiles);
+      setTotal(res.data.total);
+    } catch (err) {
+      console.error('Loi khi lay danh sach profile', err);
     }
   };
 
-  // 3. Tìm kiếm thuốc
-  const handleMedicineSearch = async (searchText) => {
-    if (searchText && searchText.length > 0) {
-      setIsMedicineLoading(true);
-      try {
-        const response = await fetch(
-          `http://localhost:9999/api/medicines?search=${searchText}`
-        );
-        const data = await response.json();
-
-        // Lọc client-side để đảm bảo chỉ hiển thị thuốc bắt đầu bằng từ khóa
-        const filtered = data.filter((med) =>
-          med.name.toLowerCase().startsWith(searchText.toLowerCase())
-        );
-
-        setMedicines(filtered);
-      } catch (error) {
-        console.error(error);
-        setMedicines([]);
-      } finally {
-        setIsMedicineLoading(false);
-      }
-    } else {
-      setMedicines([]);
-    }
-  };
-
-  // 4. Gửi dữ liệu cập nhật
-  const handleUpdateProfile = async (values) => {
-    setIsUpdating(true);
+  const fetchMedicalRecords = async (profileId) => {
     try {
-      const doctor = JSON.parse(localStorage.getItem("user"));
-      const response = await fetch(
-        `http://localhost:9999/api/doctor/${selectedProfile._id}`,
-        {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ ...values, doctorId: doctor._id }),
-        }
-      );
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Lỗi khi cập nhật hồ sơ.");
-      }
-      message.success("Hồ sơ được cập nhật thành công!");
-      handleCloseModal(); // Đóng và reset mọi thứ
-    } catch (error) {
-      message.error(error.message);
-    } finally {
-      setIsUpdating(false);
+      const res = await axios.get('/api/doctor/danhsachhosobenhancuabenhnhan', {
+        params: { profileId },
+      });
+      setMedicalRecords(res.data);
+    } catch (err) {
+      console.error('Loi khi lay ho so benh an', err);
     }
   };
 
-  // --- II. HÀM XỬ LÝ GIAO DIỆN ---
-
-  // Chuyển từ màn hình danh sách sang màn hình chỉnh sửa
-  const handleProfileSelect = (profile) => {
+  const handleView = (profile) => {
     setSelectedProfile(profile);
-    modalForm.setFieldsValue({
-      service: profile.service || [],
-      diagnose: profile.diagnose || "",
-      note: profile.note || "",
-      issues: profile.issues || "",
-      medicine: (profile.medicine || []).map((m) =>
-        typeof m === "object" ? m.name : m
-      ),
-      dayTest:
-        profile.labTestId != null && profile.labTestId.dayTest != null
-          ? dayjs(profile.labTestId.dayTest)
-          : dayjs(),
-      result:
-        profile.labTestId != null && profile.labTestId.result != null
-          ? profile.labTestId.result
-          : "",
-    });
-    setModalView("edit"); // Chuyển sang chế độ chỉnh sửa
+    fetchMedicalRecords(profile._id);
+    setIsModalOpen(true);
   };
 
-  // Quay lại màn hình danh sách từ màn hình chỉnh sửa
-  const handleBackToList = () => {
-    setSelectedProfile(null);
-    modalForm.resetFields();
-    setModalView("list");
+  const handleViewResult = async (service) => {
+    setSelectedService(service);
+    try {
+      const res = await axios.get('/api/doctor/ketquakham', {
+        params: {
+          procedureRequestId: service.procedureRequestId,
+          testType: service.testType,
+        },
+      });
+      setProcedureResult(res.data);
+      setResultModalOpen(true);
+    } catch (err) {
+      console.error('Loi khi lay ket qua dich vu', err);
+    }
   };
 
-  // Đóng và reset hoàn toàn modal
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
-    setFoundProfiles([]);
-    setSelectedProfile(null);
-    modalForm.resetFields();
-    // Không reset identityToSearch để người dùng có thể thấy số họ vừa tìm
+  const handleSearchCCCD = (e) => {
+    if (e.key === 'Enter' || e.type === 'click' || e.type === 'blur') {
+      setHasSearched(true);
+      setPage(1); // reset về trang 1 khi tìm kiếm mới
+    }
   };
-
-  // --- III. RENDER COMPONENT ---
 
   return (
-    <div style={{ padding: 24, maxWidth: 1200, margin: "auto" }}>
-      <Title level={3}>Tìm hồ sơ y tế</Title>
+    <div className="p-4">
+      <h2 className="text-2xl font-semibold mb-4">Tìm kiếm bệnh nhân theo CCCD</h2>
 
-      <Form
-        layout="inline"
-        onFinish={handleSearchAndShowSelection}
-        style={{ marginTop: 16, marginBottom: 24 }}
-      >
-        <Form.Item
-          name="identity"
-          validateTrigger="onSubmit"
-          rules={[
-            {
-              required: true,
-              message: "Vui lòng nhập số CMND/CCCD!",
-            },
-            {
-              pattern: /^\d{12}$/,
-              message:
-                "Số CMND/CCCD phải là 12 ký tự số, không chứa chữ, không khoảng trắng và không ký tự đặc biệt!",
-            },
-          ]}
-          style={{ flex: 1 }}
+      <div className="flex gap-2 mb-4">
+        <input
+          type="text"
+          placeholder="Nhập CCCD để tìm kiếm"
+          className="border p-2 rounded w-full max-w-md"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          onKeyDown={handleSearchCCCD}
+          onBlur={handleSearchCCCD}
+        />
+        <button
+          onClick={handleSearchCCCD}
+          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 font-semibold"
         >
-          <Input
-            placeholder="Nhập số CMND/CCCD (12 chữ số)"
-            allowClear
-            onChange={(e) => setIdentityToSearch(e.target.value)}
-          />
-        </Form.Item>
-        <Form.Item>
-          <Button
-            type="primary"
-            htmlType="submit"
-            loading={isSearching}
-          >
-            Tìm hồ sơ
-          </Button>
-        </Form.Item>
-      </Form>
+          Tìm kiếm
+        </button>
+      </div>
 
+      {hasSearched && (
+        <>
+          <table className="table-auto w-full border mb-8">
+            <thead>
+              <tr className="bg-gray-200">
+                <th className="border px-4 py-2">Tên</th>
+                <th className="border px-4 py-2">CCCD</th>
+                <th className="border px-4 py-2">Giới tính</th>
+                <th className="border px-4 py-2">Ngày sinh</th>
+                <th className="border px-4 py-2">Xem</th>
+              </tr>
+            </thead>
+            <tbody>
+              {profiles.map((p) => (
+                <tr key={p._id} className="hover:bg-gray-100">
+                  <td className="border px-4 py-2">{p.name}</td>
+                  <td className="border px-4 py-2">{p.identityNumber}</td>
+                  <td className="border px-4 py-2">{p.gender}</td>
+                  <td className="border px-4 py-2">{new Date(p.dateOfBirth).toLocaleDateString()}</td>
+                  <td className="border px-4 py-2 text-center">
+                    <button
+                      onClick={() => handleView(p)}
+                      className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600"
+                    >
+                      View
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
 
+          {total > limit && (
+            <div className="flex justify-center mt-4 gap-2">
+              {Array.from({ length: Math.ceil(total / limit) }, (_, i) => (
+                <button
+                  key={i}
+                  className={`px-3 py-1 rounded ${page === i + 1 ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
+                  onClick={() => setPage(i + 1)}
+                >
+                  {i + 1}
+                </button>
+              ))}
+            </div>
+          )}
+        </>
+      )}
 
       <Modal
-        open={isModalOpen}
-        onCancel={handleCloseModal}
-        width={modalView === "list" ? 600 : 800}
-        title={
-          modalView === "list"
-            ? "Chọn 1 hồ sơ"
-            : `Chỉnh sửa hồ sơ: ${selectedProfile?.name}`
-        }
-        footer={
-          modalView === "list"
-            ? [
-              <Button key="cancelList" onClick={handleCloseModal}>
-                Đóng
-              </Button>,
-            ]
-            : [
-              <Button key="back" onClick={handleBackToList}>
-                Quay lại danh sách hồ sơ
-              </Button>,
-              <Button key="cancelEdit" onClick={handleCloseModal}>
-                Đóng
-              </Button>,
-              <Button
-                key="submit"
-                type="primary"
-                loading={isUpdating}
-                onClick={() => modalForm.submit()}
-              >
-                Cập nhật hồ sơ
-              </Button>,
-            ]
-        }
+        isOpen={isModalOpen}
+        onRequestClose={() => setIsModalOpen(false)}
+        className="bg-white p-6 rounded shadow-lg max-w-4xl mx-auto my-10 overflow-y-auto max-h-screen"
+        overlayClassName="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50"
       >
-        {modalView === "list" ? (
-          <ProfileSelectionList
-            profiles={foundProfiles}
-            onSelect={handleProfileSelect}
-          />
-        ) : (
-          <Form
-            form={modalForm}
-            layout="vertical"
-            onFinish={handleUpdateProfile}
-          >
-            <Form.Item
-              name="service"
-              label="1. Dịch vụ khám bệnh"
-              rules={[
-                {
-                  required: true,
-                  message: "Chọn ít nhất 1 dịch vụ khám.",
-                },
-              ]}
-            >
-              <Checkbox.Group>
-                <Space direction="vertical">
-                  {services.map((s) => (
-                    <Checkbox key={s._id} value={s._id}>
-                      {s.name} - ${s.price}
-                    </Checkbox>
+        <button className="text-right text-red-500 font-bold mb-2" onClick={() => setIsModalOpen(false)}>Đóng</button>
+
+        {selectedProfile && (
+          <>
+            <h3 className="text-xl font-semibold mb-4">Hồ sơ bệnh án của: {selectedProfile.name}</h3>
+            {medicalRecords.length === 0 ? (
+              <p>Chưa có hồ sơ bệnh án nào.</p>
+            ) : (
+              <table className="table-auto w-full border">
+                <thead>
+                  <tr className="bg-gray-200">
+                    <th className="border px-4 py-2">Ngày tạo</th>
+                    <th className="border px-4 py-2">Triệu chứng</th>
+                    <th className="border px-4 py-2">Chẩn đoán</th>
+                    <th className="border px-4 py-2">Kết luận</th>
+                    <th className="border px-4 py-2">Trạng thái</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {medicalRecords.map((record) => (
+                    <React.Fragment key={record._id}>
+                      <tr>
+                        <td className="border px-4 py-2">{new Date(record.createdAt).toLocaleString()}</td>
+                        <td className="border px-4 py-2">{record.symptoms || '-'}</td>
+                        <td className="border px-4 py-2">{record.diagnosis || '-'}</td>
+                        <td className="border px-4 py-2">{record.conclusion || '-'}</td>
+                        <td className="border px-4 py-2">{record.status}</td>
+                      </tr>
+                      {record.procedureRequests?.map((req, idx) => (
+                        <tr key={req._id} className="bg-gray-50">
+                          <td colSpan={5} className="border px-4 py-2">
+                            <p className="font-semibold mb-2">Yêu cầu thủ tục #{idx + 1}</p>
+                            {req.services?.map((service, idx2) => (
+                              <div key={idx2} className="ml-4 mt-2 border-l-4 pl-2 border-blue-300">
+                                <p>- Dịch vụ: {service.testType}</p>
+                                <p>- Trạng thái: {service.status}</p>
+                                <button
+                                  className="text-blue-500 underline"
+                                  onClick={() =>
+                                    handleViewResult({
+                                      ...service,
+                                      procedureRequestId: req._id,
+                                    })
+                                  }
+                                >
+                                  📄 Xem kết quả
+                                </button>
+                              </div>
+                            ))}
+                          </td>
+                        </tr>
+                      ))}
+                    </React.Fragment>
                   ))}
-                </Space>
-              </Checkbox.Group>
-            </Form.Item>
-            <Form.Item name="diagnose" label="2. Chẩn đoán">
-              <Input.TextArea
-                rows={4}
-                placeholder="Nhập chi tiết chẩn đoán..."
-              />
-            </Form.Item>
-            <Form.Item name="note" label="3. Ghi chú của bác sĩ">
-              <Input.TextArea
-                rows={2}
-                placeholder="Nhập ghi chú..."
-              />
-            </Form.Item>
-            <Form.Item name="issues" label="4. Các triệu chứng của bệnh nhân">
-              <Input.TextArea
-                rows={2}
-                placeholder="Mô tả các triệu chứng và vấn đề bệnh nhân gặp phải..."
-              />
-            </Form.Item>
-            <Form.Item name="medicine" label="5. Kê thuốc">
-              <Select
-                mode="multiple"
-                allowClear
-                showSearch
-                placeholder="Tìm và chọn thuốc..."
-                onSearch={handleMedicineSearch}
-                loading={isMedicineLoading}
-                filterOption={false}
-                notFoundContent={
-                  isMedicineLoading ? <Spin size="small" /> : null
-                }
-              >
-                {medicines.map((med) => (
-                  <Option key={med._id} value={med._id}>
-                    {med.name}
-                  </Option>
+                </tbody>
+              </table>
+            )}
+          </>
+        )}
+      </Modal>
+
+      <Modal
+        isOpen={resultModalOpen}
+        onRequestClose={() => setResultModalOpen(false)}
+        className="bg-white p-6 rounded shadow-lg max-w-2xl mx-auto my-10 overflow-y-auto max-h-screen"
+        overlayClassName="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50"
+      >
+        <button className="text-right text-red-500 font-bold mb-2" onClick={() => setResultModalOpen(false)}>Đóng</button>
+        {procedureResult ? (
+          <>
+            <h3 className="text-lg font-semibold mb-2">Kết quả xét nghiệm ({procedureResult.testType})</h3>
+            <p><strong>Ghi chú:</strong> {procedureResult.resultNote || 'Không có'}</p>
+            <table className="w-full border mt-4">
+              <thead>
+                <tr className="bg-gray-100">
+                  <th className="border px-2 py-1">Tên chỉ số</th>
+                  <th className="border px-2 py-1">Giá trị</th>
+                  <th className="border px-2 py-1">Đơn vị</th>
+                  <th className="border px-2 py-1">Khoảng tham chiếu</th>
+                </tr>
+              </thead>
+              <tbody>
+                {procedureResult.resultDetails.map((r, i) => (
+                  <tr key={i}>
+                    <td className="border px-2 py-1">{r.name}</td>
+                    <td className="border px-2 py-1">{r.value}</td>
+                    <td className="border px-2 py-1">{r.unit || '-'}</td>
+                    <td className="border px-2 py-1">{r.referenceRange || '-'}</td>
+                  </tr>
                 ))}
-              </Select>
-            </Form.Item>
-            <Form.Item name="result" label="4. Kết quả xét nghiệm">
-              <Input.TextArea
-                rows={2}
-                placeholder="Nhập kết quả xét nghiệm..."
-                disabled
-              />
-            </Form.Item>
-            <Form.Item name="dayTest" label="5. Ngày xét nghiệm">
-              <DatePicker
-                defaultValue={dayjs("01/01/2015", "DD/MM/YYYY")}
-                disabled
-              />
-            </Form.Item>
-          </Form>
+              </tbody>
+            </table>
+          </>
+        ) : (
+          <p>Đang tải dữ liệu...</p>
         )}
       </Modal>
     </div>
   );
-};
+}
 
 export default UserMedicalProfileDetail;
-// --- KẾT THÚC CODE ---
